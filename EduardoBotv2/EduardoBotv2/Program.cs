@@ -29,7 +29,7 @@ namespace EduardoBot
         {
             try
             {
-                using (StreamReader file = File.OpenText(@"D:\Thomas\Documents\EduardoBot\settings.json"))
+                using (StreamReader file = File.OpenText($@"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\EduardoBotConfig\settings.json"))
                 {
                     JsonSerializer serializer = new JsonSerializer();
                     _settings = (Settings)serializer.Deserialize(file, typeof(Settings));
@@ -37,7 +37,9 @@ namespace EduardoBot
             }
             catch
             {
-                Logger.Log(new LogMessage(LogSeverity.Critical, "Eduardo Bot", "Error loading file 'settings.json'. Please fix this issue and restart the bot."));
+                Logger.Log(new LogMessage(LogSeverity.Critical, "Eduardo Bot", "Error loading file 'settings.json'.\n" +
+                    "Make sure your documents contains a folder called \"EduardoBotConfig\" with that contains the settings file.\n" +
+                    "Please fix this issue and restart the bot.".Replace("\n", Environment.NewLine)));
                 Console.ReadLine();
                 Environment.Exit(0);
             }

@@ -27,12 +27,12 @@ namespace EduardoBot.Services
                 targetGuildUser = user as SocketGuildUser;
             }
 
-            //var targetSocketUserGame = (targetSocketUser. != null) ? targetSocketUser.Game.ToString() : "N/A";
+            var targetSocketUserGame = (targetSocketUser.Activity.Name != null) ? targetSocketUser.Activity.Name.ToString() : "N/A";
             var targetGuildUserNickname = (targetGuildUser.Nickname != null) ? targetGuildUser.Nickname : "N/A";
 
             var userInfo = $"Created: {string.Format("{0:dddd MMM d}{1} {0:yyyy} at {0:h:m tt}", targetSocketUser.CreatedAt, CommonHelper.GetDaySuffix(DateTime.Now.Day))}\n" +
                            $"Status: {targetSocketUser.Status}\n" +
-                           $"Game: ";/*{targetSocketUserGame}\n";*/
+                           $"Game: {targetSocketUserGame}\n";
 
             var memberInfo = $"Joined: {string.Format("{0:dddd MMM d}{1} {0:yyyy} at {0:h:m tt}", targetGuildUser.JoinedAt, CommonHelper.GetDaySuffix(DateTime.Now.Day))}\n" +
                              $"Nickname: {targetGuildUserNickname}\n";
