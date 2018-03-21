@@ -1,12 +1,12 @@
-﻿using EduardoBot.Common.Data;
-using EduardoBot.Common.Utilities.Helpers;
+﻿using EduardoBotv2.Common.Data;
+using EduardoBotv2.Common.Utilities.Helpers;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace EduardoBot.Services
+namespace EduardoBotv2.Services
 {
     public class ShortenService
     {

@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace EduardoBot.Common.Extensions
+namespace EduardoBotv2.Common.Extensions
 {
     public static class StringExtensions
     {

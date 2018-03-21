@@ -1,4 +1,4 @@
-﻿namespace EduardoBot.Common.Data.Enums
+﻿namespace EduardoBotv2.Common.Data.Enums
 {
     public enum YouTubeRequestType
     {

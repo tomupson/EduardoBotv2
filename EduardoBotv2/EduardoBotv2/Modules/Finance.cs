@@ -1,9 +1,9 @@
 ﻿using Discord.Commands;
-using EduardoBot.Common.Data;
-using EduardoBot.Services;
+using EduardoBotv2.Common.Data;
+using EduardoBotv2.Services;
 using System.Threading.Tasks;
 
-namespace EduardoBot.Modules
+namespace EduardoBotv2.Modules
 {
     public class Finance : ModuleBase<EduardoContext>
     {

@@ -1,14 +1,14 @@
 ﻿using Discord;
 using Newtonsoft.Json.Linq;
-using EduardoBot.Common.Data;
-using EduardoBot.Common.Utilities.Helpers;
+using EduardoBotv2.Common.Data;
+using EduardoBotv2.Common.Utilities.Helpers;
 using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-namespace EduardoBot.Services
+namespace EduardoBotv2.Services
 {
     public class NewsService
     {

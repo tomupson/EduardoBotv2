@@ -1,11 +1,11 @@
 ﻿using Discord.Commands;
-using EduardoBot.Services;
-using EduardoBot.Common.Data;
-using EduardoBot.Common.Data.Models;
+using EduardoBotv2.Services;
+using EduardoBotv2.Common.Data;
+using EduardoBotv2.Common.Data.Models;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-namespace EduardoBot.Modules
+namespace EduardoBotv2.Modules
 {
     public class Games : ModuleBase<EduardoContext>
     {

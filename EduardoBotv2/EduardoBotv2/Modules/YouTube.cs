@@ -1,9 +1,9 @@
 ﻿using Discord.Commands;
-using EduardoBot.Services;
-using EduardoBot.Common.Data;
+using EduardoBotv2.Services;
+using EduardoBotv2.Common.Data;
 using System.Threading.Tasks;
 
-namespace EduardoBot.Modules
+namespace EduardoBotv2.Modules
 {
     [Group("youtube")]
     public class YouTube : ModuleBase<EduardoContext>

@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace EduardoBot.Common.Utilities
+namespace EduardoBotv2.Common.Utilities
 {
     public static class Logger
     {

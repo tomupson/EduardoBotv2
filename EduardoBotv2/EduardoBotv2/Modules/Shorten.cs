@@ -1,14 +1,14 @@
 ﻿using Discord.Commands;
-using EduardoBot.Services;
-using EduardoBot.Common.Data;
+using EduardoBotv2.Services;
+using EduardoBotv2.Common.Data;
 using System.Threading.Tasks;
 
-namespace EduardoBot.Modules
+namespace EduardoBotv2.Modules
 {
-    public class Shortenn : ModuleBase<EduardoContext>
+    public class Shorten : ModuleBase<EduardoContext>
     {
         private readonly ShortenService _service;
-        public Shortenn(ShortenService service)
+        public Shorten(ShortenService service)
         {
             this._service = service;
         }

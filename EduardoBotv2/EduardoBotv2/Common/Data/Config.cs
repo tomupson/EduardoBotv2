@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace EduardoBot.Common.Data
+namespace EduardoBotv2.Common.Data
 {
     public static class Config
     {

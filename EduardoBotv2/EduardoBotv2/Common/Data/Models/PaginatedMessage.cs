@@ -1,9 +1,9 @@
 ﻿using Discord;
-using EduardoBot.Common.Data.Enums;
+using EduardoBotv2.Common.Data.Enums;
 using System;
 using System.Collections.Generic;
 
-namespace EduardoBot.Common.Data.Models
+namespace EduardoBotv2.Common.Data.Models
 {
     public class PaginatedMessage
     {

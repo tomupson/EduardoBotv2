@@ -1,12 +1,12 @@
 ﻿using Discord;
-using EduardoBot.Common.Data;
-using EduardoBot.Common.Data.Enums;
-using EduardoBot.Common.Data.Models;
+using EduardoBotv2.Common.Data;
+using EduardoBotv2.Common.Data.Enums;
+using EduardoBotv2.Common.Data.Models;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EduardoBot.Common.Extensions
+namespace EduardoBotv2.Common.Extensions
 {
     public static class PaginationExtension
     {

@@ -3,11 +3,11 @@ using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
 using Google.Apis.Urlshortener.v1;
 using Google.Apis.Urlshortener.v1.Data;
-using EduardoBot.Common.Data.Enums;
+using EduardoBotv2.Common.Data.Enums;
 using System;
 using System.Threading.Tasks;
 
-namespace EduardoBot.Common.Utilities.Helpers
+namespace EduardoBotv2.Common.Utilities.Helpers
 {
     public static class GoogleHelper
     {

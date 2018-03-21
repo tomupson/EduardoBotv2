@@ -1,9 +1,9 @@
 ﻿using Discord;
-using EduardoBot.Common.Data;
-using EduardoBot.Common.Extensions;
+using EduardoBotv2.Common.Data;
+using EduardoBotv2.Common.Extensions;
 using System.Threading.Tasks;
 
-namespace EduardoBot.Services
+namespace EduardoBotv2.Services
 {
     public class ModerationService
     {

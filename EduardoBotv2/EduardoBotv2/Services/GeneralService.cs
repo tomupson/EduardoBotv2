@@ -1,16 +1,16 @@
 ﻿using Discord;
 using Discord.Commands;
 using Newtonsoft.Json.Linq;
-using EduardoBot.Common.Data;
-using EduardoBot.Common.Extensions;
-using EduardoBot.Common.Data.Models;
+using EduardoBotv2.Common.Data;
+using EduardoBotv2.Common.Extensions;
+using EduardoBotv2.Common.Data.Models;
 using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-namespace EduardoBot.Services
+namespace EduardoBotv2.Services
 {
     public class GeneralService
     {

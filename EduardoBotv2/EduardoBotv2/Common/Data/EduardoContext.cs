@@ -2,9 +2,9 @@
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using EduardoBot.Common.Data.Models;
+using EduardoBotv2.Common.Data.Models;
 
-namespace EduardoBot.Common.Data
+namespace EduardoBotv2.Common.Data
 {
     public class EduardoContext : ICommandContext
     {

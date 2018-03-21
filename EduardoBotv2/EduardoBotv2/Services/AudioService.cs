@@ -1,14 +1,13 @@
 ﻿using Discord;
 using Discord.Audio;
 using Newtonsoft.Json.Linq;
-using EduardoBot.Common.Data;
-using EduardoBot.Common.Utilities;
-using EduardoBot.Common.Data.Enums;
-using EduardoBot.Common.Extensions;
-using EduardoBot.Common.Data.Models;
-using EduardoBot.Common.Utilities.Helpers;
+using EduardoBotv2.Common.Data;
+using EduardoBotv2.Common.Utilities;
+using EduardoBotv2.Common.Data.Enums;
+using EduardoBotv2.Common.Extensions;
+using EduardoBotv2.Common.Data.Models;
+using EduardoBotv2.Common.Utilities.Helpers;
 using System;
-using System.IO;
 using System.Xml;
 using System.Linq;
 using System.Diagnostics;
@@ -17,7 +16,7 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 
-namespace EduardoBot.Services
+namespace EduardoBotv2.Services
 {
     public class AudioService
     {

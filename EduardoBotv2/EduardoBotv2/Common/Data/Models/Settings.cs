@@ -1,4 +1,4 @@
-﻿namespace EduardoBot.Common.Data.Models
+﻿namespace EduardoBotv2.Common.Data.Models
 {
     public class Settings
     {
@@ -18,5 +18,8 @@
 
         // NewsApi.org
         public string NewsApiKey { get; set; }
+
+        // Fortnite Tracker
+        public string TRNApiKey { get; set; }
     }
 }

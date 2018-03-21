@@ -1,9 +1,9 @@
 ﻿using Imgur.API.Models.Impl;
-using EduardoBot.Common.Data;
-using EduardoBot.Common.Utilities.Helpers;
+using EduardoBotv2.Common.Data;
+using EduardoBotv2.Common.Utilities.Helpers;
 using System.Threading.Tasks;
 
-namespace EduardoBot.Services
+namespace EduardoBotv2.Services
 {
     public class ImgurService
     {

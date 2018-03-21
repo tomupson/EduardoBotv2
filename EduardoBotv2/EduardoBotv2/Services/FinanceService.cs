@@ -1,7 +1,7 @@
-﻿using EduardoBot.Common.Data;
+﻿using EduardoBotv2.Common.Data;
 using System.Threading.Tasks;
 
-namespace EduardoBot.Services
+namespace EduardoBotv2.Services
 {
     public class FinanceService
     {

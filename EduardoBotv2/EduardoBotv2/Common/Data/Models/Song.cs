@@ -1,7 +1,7 @@
 ﻿using Discord;
 using System;
 
-namespace EduardoBot.Common.Data.Models
+namespace EduardoBotv2.Common.Data.Models
 {
     public class Song
     {

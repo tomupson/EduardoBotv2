@@ -4,9 +4,9 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Newtonsoft.Json;
 using Microsoft.Extensions.DependencyInjection;
-using EduardoBot.Services;
-using EduardoBot.Common.Utilities;
-using EduardoBot.Common.Data.Models;
+using EduardoBotv2.Services;
+using EduardoBotv2.Common.Utilities;
+using EduardoBotv2.Common.Data.Models;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 /// Eduardo Bot created by Thomas Upson.
 /// </summary>
 
-namespace EduardoBot
+namespace EduardoBotv2
 {
     public class Program
     {
@@ -83,6 +83,8 @@ namespace EduardoBot
                 .AddSingleton<CommandHandler>()
                 // Services
                 .AddSingleton(new AudioService())
+                .AddSingleton(new FinanceService())
+                .AddSingleton(new FortniteService())
                 .AddSingleton(new GamesService())
                 .AddSingleton(new GeneralService())
                 .AddSingleton(new ImgurService())

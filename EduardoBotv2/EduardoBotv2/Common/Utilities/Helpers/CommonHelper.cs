@@ -1,4 +1,4 @@
-﻿namespace EduardoBot.Common.Utilities.Helpers
+﻿namespace EduardoBotv2.Common.Utilities.Helpers
 {
     public static class CommonHelper
     {

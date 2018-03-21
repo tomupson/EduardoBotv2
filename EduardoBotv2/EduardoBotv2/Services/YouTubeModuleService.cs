@@ -1,13 +1,13 @@
 ﻿using Discord;
-using EduardoBot.Common.Data;
-using EduardoBot.Common.Data.Enums;
-using EduardoBot.Common.Extensions;
-using EduardoBot.Common.Data.Models;
-using EduardoBot.Common.Utilities.Helpers;
+using EduardoBotv2.Common.Data;
+using EduardoBotv2.Common.Data.Enums;
+using EduardoBotv2.Common.Extensions;
+using EduardoBotv2.Common.Data.Models;
+using EduardoBotv2.Common.Utilities.Helpers;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-namespace EduardoBot.Services
+namespace EduardoBotv2.Services
 {
     public class YouTubeModuleService
     {

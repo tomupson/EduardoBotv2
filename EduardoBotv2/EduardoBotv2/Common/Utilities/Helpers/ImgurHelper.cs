@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-namespace EduardoBot.Common.Utilities.Helpers
+namespace EduardoBotv2.Common.Utilities.Helpers
 {
     public static class ImgurHelper
     {

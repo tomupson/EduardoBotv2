@@ -2,7 +2,7 @@
 using Discord.Commands;
 using System;
 
-namespace EduardoBot.Common.Extensions
+namespace EduardoBotv2.Common.Extensions
 {
     public static class CommonExtensions
     {
