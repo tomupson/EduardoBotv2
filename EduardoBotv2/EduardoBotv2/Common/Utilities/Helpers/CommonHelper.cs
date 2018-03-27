@@ -1,4 +1,7 @@
-﻿namespace EduardoBotv2.Common.Utilities.Helpers
+﻿using System;
+using System.Threading.Tasks;
+
+namespace EduardoBotv2.Common.Utilities.Helpers
 {
     public static class CommonHelper
     {
@@ -19,6 +22,15 @@
                 default:
                     return "th";
             }
+        }
+
+        public static async Task SetInterval(Action action, TimeSpan timeout)
+        {
+            await Task.Delay(timeout).ConfigureAwait(false);
+
+            action();
+
+            await SetInterval(action, timeout);
         }
     }
 }

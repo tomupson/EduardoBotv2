@@ -9,8 +9,9 @@
     <PackageReference Include="Discord.Net" Version="2.0.0-beta" />
     <PackageReference Include="Google.Apis.Urlshortener.v1" Version="1.32.2.138" />
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.32.2.1162" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.7.2" />
     <PackageReference Include="Imgur.API" Version="5.0.0-beta1" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 
   <ItemGroup>

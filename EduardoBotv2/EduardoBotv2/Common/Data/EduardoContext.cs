@@ -1,8 +1,8 @@
-﻿using System;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using EduardoBotv2.Common.Data.Models;
+using System;
 
 namespace EduardoBotv2.Common.Data
 {

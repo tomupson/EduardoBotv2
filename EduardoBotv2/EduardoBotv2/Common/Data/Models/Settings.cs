@@ -21,5 +21,9 @@
 
         // Fortnite Tracker
         public string TRNApiKey { get; set; }
+
+        // Fortnite API
+        public string FortniteLoginEmail { get; set; }
+        public string FortniteLoginPassword { get; set; }
     }
 }

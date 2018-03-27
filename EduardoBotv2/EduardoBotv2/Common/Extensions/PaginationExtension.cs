@@ -99,14 +99,14 @@ namespace EduardoBotv2.Common.Extensions
             switch(emoji.Name)
             {
                 case "◀":
-                    pm.CurrentIndex = Math.Max(pm.CurrentIndex - 1, 0);
+                    pm.CurrentIndex = pm.CurrentIndex - 1 >= 0 ? pm.CurrentIndex - 1 : pm.Embeds.Count - 1;
                     ct.CancelAfter(pm.Timeout);
                     break;
                 case "❌":
                     ct.Cancel();
                     break;
                 case "▶":
-                    pm.CurrentIndex = Math.Min(pm.CurrentIndex + 1, pm.Embeds.Count - 1);
+                    pm.CurrentIndex = pm.CurrentIndex + 1 <= pm.Embeds.Count - 1 ? pm.CurrentIndex + 1 : 0;
                     ct.CancelAfter(pm.Timeout);
                     break;
             }
