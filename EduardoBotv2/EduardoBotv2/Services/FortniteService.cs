@@ -50,22 +50,25 @@ namespace EduardoBotv2.Services
         {
             await CommonHelper.SetInterval(async () =>
             {
-                DateTime actualDate = new DateTime();
-                TimeSpan difference = DateTime.Now - DateTime.Parse(this.expiresAt);
-                DateTime expireDate = new DateTime(difference.Subtract(TimeSpan.FromMilliseconds(15)).Multiply(60000).Milliseconds);
-
-                if (this.expiresAt != string.Empty && expireDate < actualDate)
+                if (this.expiresAt != string.Empty)
                 {
-                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, Config.FORTNITE_OAUTH_TOKEN);
-                    request.Content = new FormUrlEncodedContent(new Dictionary<string, string>()
+                    DateTime actualDate = new DateTime();
+                    DateTime expireDate = DateTime.ParseExact(this.expiresAt, "dd/MM/yyyy HH:mm:ss", null);
+                    expireDate.Subtract(TimeSpan.FromMilliseconds(15));
+
+                    if (expireDate < actualDate)
+                    {
+                        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, Config.FORTNITE_OAUTH_TOKEN);
+                        request.Content = new FormUrlEncodedContent(new Dictionary<string, string>()
                 {
                     { "grant_type", "refresh_token" },
                     { "refresh_token", this.refreshToken },
                     { "includePerms", "true" }
                 });
-                    request.Headers.Add("Authorization", "basic " + Config.FORTNITE_CLIENT_TOKEN);
-                    HttpResponseMessage response = await MakeRequest(request);
-                    string responseString = await response.Content.ReadAsStringAsync();
+                        request.Headers.Add("Authorization", "basic " + Config.FORTNITE_CLIENT_TOKEN);
+                        HttpResponseMessage response = await MakeRequest(request);
+                        string responseString = await response.Content.ReadAsStringAsync();
+                    }
                 }
             }, TimeSpan.FromSeconds(1));
         }
@@ -108,6 +111,7 @@ namespace EduardoBotv2.Services
             string finalResponseString = await finalResponse.Content.ReadAsStringAsync();
             JObject finalJson = JObject.Parse(finalResponseString);
             this.expiresAt = finalJson["expires_at"].ToString();
+            Console.WriteLine(this.expiresAt);
             this.accessToken = finalJson["access_token"].ToString();
             this.refreshToken = finalJson["refresh_token"].ToString();
 
@@ -295,7 +299,7 @@ namespace EduardoBotv2.Services
                         Color = Color.Purple,
                         Title = newsItem["title"].ToString(),
                         Description = newsItem["body"].ToString(),
-                        ThumbnailUrl = newsItem["image"].ToString(),
+                        ImageUrl = newsItem["image"].ToString(),
                         Footer = new EmbedFooterBuilder()
                         {
                             Text = $"Fortnite News as of {string.Format("{0:dddd MMM d}{1} {0:yyyy} at {0:h:m tt}", DateTime.Now, CommonHelper.GetDaySuffix(DateTime.Now.Day))}"
