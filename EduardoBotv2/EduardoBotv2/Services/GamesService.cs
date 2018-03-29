@@ -5,8 +5,8 @@ using EduardoBotv2.Common.Utilities;
 using EduardoBotv2.Common.Data.Enums;
 using EduardoBotv2.Common.Extensions;
 using EduardoBotv2.Common.Data.Models;
+using EduardoBotv2.Common.Utilities.Helpers;
 using System;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -103,19 +103,10 @@ namespace EduardoBotv2.Services
 
         private async Task<Pokemon> GetPokemonFromApi(int roll)
         {
-            try
-            {
-                var httpClient = new HttpClient();
-                var response = await httpClient.GetAsync($"http://pokeapi.co/api/v2/pokemon/{roll}");
-                var result = await response.Content.ReadAsStringAsync();
-
-                return JsonConvert.DeserializeObject<Pokemon>(result);
-            }
-            catch (IOException e)
-            {
-                await Logger.Log(new LogMessage(LogSeverity.Critical, "Eduardo Bot", $"Error fetching Pokemon.\n{e}"));
-                return null;
-            }
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"http://pokeapi.co/api/v2/pokemon/{roll}");
+            HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
+            string result = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<Pokemon>(result);
         }
     }
 }

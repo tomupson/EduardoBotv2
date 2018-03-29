@@ -4,11 +4,13 @@ using Newtonsoft.Json.Linq;
 using EduardoBotv2.Common.Data;
 using EduardoBotv2.Common.Extensions;
 using EduardoBotv2.Common.Data.Models;
+using EduardoBotv2.Common.Utilities.Helpers;
 using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace EduardoBotv2.Services
 {
@@ -124,7 +126,37 @@ namespace EduardoBotv2.Services
 
         public async Task Ping(EduardoContext c)
         {
-            await c.Channel.SendMessageAsync("Pong!");
+            var ping = c.Message;
+            var pong = await c.Channel.SendMessageAsync("", false, new EmbedBuilder()
+            {
+                Title = "Measuring Latency...",
+                Color = Color.DarkRed
+            }.Build());
+
+            var delta = pong.CreatedAt - ping.CreatedAt;
+            var diffMs = delta.TotalSeconds * 1000;
+
+            await pong.ModifyAsync(n =>
+            {
+                n.Embed = new EmbedBuilder()
+                {
+                    Color = Color.DarkRed,
+                    Fields = new List<EmbedFieldBuilder>()
+                    {
+                        new EmbedFieldBuilder()
+                        {
+                            Name = "Round Trip",
+                            Value = $"{diffMs} ms"
+                        },
+                        new EmbedFieldBuilder()
+                        {
+                            Name = "Web Socket Latency",
+                            Value = $"{c.Client.Latency} ms"
+                        }
+                    },
+                    Title = "Latency Results"
+                }.Build();
+            });
         }
 
         public async Task Choose(EduardoContext c, string[] words)
@@ -137,49 +169,48 @@ namespace EduardoBotv2.Services
             await c.Channel.SendMessageAsync($"**Your special URL: **<http://lmgtfy.com/?q={ Uri.EscapeUriString(searchQuery) }>");
         }
 
-        public async Task SearchUrbanDictionary(EduardoContext c, string searchQuery)
+        public async void SearchUrbanDictionary(EduardoContext c, string searchQuery)
         {
-            using (var client = new HttpClient())
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"http://api.urbandictionary.com/v0/define?term={searchQuery.Replace(' ', '+')}");
+            HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
+            if (!response.IsSuccessStatusCode)
             {
-                var response = await client.GetAsync($"http://api.urbandictionary.com/v0/define?term={searchQuery.Replace(' ', '+')}");
-                if (!response.IsSuccessStatusCode)
-                {
-                    await c.Channel.SendFileAsync("**Failed to communicate with Urban's API.");
-                    return;
-                }
-
-                var data = JToken.Parse(await response.Content.ReadAsStringAsync()).ToObject<Urban>();
-                if (!data.List.Any())
-                {
-                    await c.Channel.SendMessageAsync($"**Couldn't find anything related to {searchQuery}**");
-                    return;
-                }
-
-                var termInfo = data.List[new Random().Next(0, data.List.Count)];
-                EmbedBuilder builder = new EmbedBuilder()
-                {
-                    Color = Color.Gold,
-                    Footer = new EmbedFooterBuilder()
-                    {
-                        Text = $"Related Terms: {string.Join(", ", data.Tags)}" ?? "No related terms."
-                    },
-                    Fields = new List<EmbedFieldBuilder>()
-                    {
-                        new EmbedFieldBuilder()
-                        {
-                            Name = $"Definition of {termInfo.Word}",
-                            Value = termInfo.Definition
-                        },
-                        new EmbedFieldBuilder()
-                        {
-                            Name = "Example",
-                            Value = termInfo.Example
-                        }
-                    }
-                };
-
-                await c.Channel.SendMessageAsync("", false, builder.Build());
+                await c.Channel.SendMessageAsync("**Failed to communicate with Urban's API**");
+                return;
             }
+
+            string result = await response.Content.ReadAsStringAsync();
+            Urban data = JsonConvert.DeserializeObject<Urban>(result);
+            if (!data.List.Any())
+            {
+                await c.Channel.SendMessageAsync($"**Couldn't find anything related to {searchQuery}**");
+                return;
+            }
+
+            List termInfo = data.List[new Random().Next(0, data.List.Count)];
+            EmbedBuilder builder = new EmbedBuilder()
+            {
+                Color = Color.Gold,
+                Footer = new EmbedFooterBuilder()
+                {
+                    Text = $"Related Terms: {string.Join(", ", data.Tags)}" ?? "No related terms."
+                },
+                Fields = new List<EmbedFieldBuilder>()
+                {
+                    new EmbedFieldBuilder()
+                    {
+                        Name = $"Definition of {termInfo.Word}",
+                        Value = termInfo.Definition
+                    },
+                    new EmbedFieldBuilder()
+                    {
+                        Name = "Example",
+                        Value = termInfo.Example
+                    }
+                }
+            };
+
+            await c.Channel.SendMessageAsync("", false, builder.Build());
         }
 
         public async Task RoboMe(EduardoContext c, string username)

@@ -1,6 +1,7 @@
 ﻿using Discord.Commands;
 using EduardoBotv2.Services;
 using EduardoBotv2.Common.Data;
+using EduardoBotv2.Common.Data.Enums;
 using System.Threading.Tasks;
 
 namespace EduardoBotv2.Modules
@@ -16,10 +17,10 @@ namespace EduardoBotv2.Modules
 
         [Command("fnstats", RunMode = RunMode.Async)]
         [Summary("Get Fortnite Battle Royale stats for a player.")]
-        [Remarks("UppyMeister")]
-        public async Task FortniteStatsCommand([Summary("The username of the player to get stats for.")] string username)
+        [Remarks("UppyMeister solo")]
+        public async Task FortniteStatsCommand([Summary("The username of the player to get stats for.")] string username, [Summary("The gamemode you want to get stats for.")] GameMode gamemode)
         {
-            await _service.GetStats(Context, username);
+            await _service.GetStats(Context, username, gamemode);
         }
 
         [Command("fnnews", RunMode = RunMode.Async)]

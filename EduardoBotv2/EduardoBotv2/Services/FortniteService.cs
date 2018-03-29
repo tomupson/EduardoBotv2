@@ -17,8 +17,6 @@ namespace EduardoBotv2.Services
 {
     public class FortniteService
     {
-        HttpClient httpClient = new HttpClient();
-
         private string refreshToken = string.Empty;
         private string accessToken = string.Empty;
         private string accountId = string.Empty;
@@ -31,19 +29,6 @@ namespace EduardoBotv2.Services
         {
             StartTokenChecker();
             loggedIn = false;
-        }
-
-        private async Task<HttpResponseMessage> MakeRequest(HttpRequestMessage request)
-        {
-            try
-            {
-                return await httpClient.SendAsync(request);
-            }
-            catch (IOException e)
-            {
-                await Logger.Log(new LogMessage(LogSeverity.Critical, "Eduardo Bot", $"Error fetching fortnite stats.\n{e}"));
-                return null;
-            }
         }
 
         private async void StartTokenChecker()
@@ -66,7 +51,7 @@ namespace EduardoBotv2.Services
                     { "includePerms", "true" }
                 });
                         request.Headers.Add("Authorization", "basic " + Config.FORTNITE_CLIENT_TOKEN);
-                        HttpResponseMessage response = await MakeRequest(request);
+                        HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                         string responseString = await response.Content.ReadAsStringAsync();
                     }
                 }
@@ -85,7 +70,7 @@ namespace EduardoBotv2.Services
                 { "includePerms", "true" }
             });
             oauthTokenRequest.Headers.Add("Authorization", "basic " + Config.FORTNITE_LAUNCHER_TOKEN);
-            HttpResponseMessage oauthTokenResponse = await MakeRequest(oauthTokenRequest);
+            HttpResponseMessage oauthTokenResponse = await NetworkHelper.MakeRequest(oauthTokenRequest);
             string oauthTokenResponseString = await oauthTokenResponse.Content.ReadAsStringAsync();
             JObject oauthTokenJson = JObject.Parse(oauthTokenResponseString);
             this.accessToken = oauthTokenJson["access_token"].ToString();
@@ -93,7 +78,7 @@ namespace EduardoBotv2.Services
 
             HttpRequestMessage oauthExchangeRequest = new HttpRequestMessage(HttpMethod.Get, Config.FORTNITE_OAUTH_EXCHANGE);
             oauthExchangeRequest.Headers.Add("Authorization", "bearer " + this.accessToken);
-            HttpResponseMessage oauthExchangeResponse = await MakeRequest(oauthExchangeRequest);
+            HttpResponseMessage oauthExchangeResponse = await NetworkHelper.MakeRequest(oauthExchangeRequest);
             string oauthExchangeResponseString = await oauthExchangeResponse.Content.ReadAsStringAsync();
             JObject oauthExchangeJson = JObject.Parse(oauthExchangeResponseString);
             this.code = oauthExchangeJson["code"].ToString();
@@ -107,11 +92,10 @@ namespace EduardoBotv2.Services
                 { "token_type", "egl" }
             });
             finalRequest.Headers.Add("Authorization", "basic " + Config.FORTNITE_CLIENT_TOKEN);
-            HttpResponseMessage finalResponse = await MakeRequest(finalRequest);
+            HttpResponseMessage finalResponse = await NetworkHelper.MakeRequest(finalRequest);
             string finalResponseString = await finalResponse.Content.ReadAsStringAsync();
             JObject finalJson = JObject.Parse(finalResponseString);
             this.expiresAt = finalJson["expires_at"].ToString();
-            Console.WriteLine(this.expiresAt);
             this.accessToken = finalJson["access_token"].ToString();
             this.refreshToken = finalJson["refresh_token"].ToString();
 
@@ -123,12 +107,12 @@ namespace EduardoBotv2.Services
         {
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Config.FORTNITE_PLAYER_LOOKUP(username));
             request.Headers.Add("Authorization", "bearer " + this.accessToken);
-            HttpResponseMessage response = await MakeRequest(request);
+            HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
             string responseString = await response.Content.ReadAsStringAsync();
             return JObject.Parse(responseString);
         }
 
-        public async Task GetStats(EduardoContext c, string username)
+        public async Task GetStats(EduardoContext c, string username, GameMode gamemode)
         {
             if (!loggedIn)
             {
@@ -137,9 +121,35 @@ namespace EduardoBotv2.Services
 
             if (username != string.Empty)
             {
-                JObject lookupJson = await Lookup(username);
                 JArray statsJson = await GetStatsFromApi(username);
-                Console.WriteLine(statsJson);
+
+                List<int> indices;
+                string title = string.Empty;
+                string second = string.Empty;
+                string third = string.Empty;
+
+                switch (gamemode)
+                {
+                    default:
+                    case GameMode.Solo:
+                        indices = new List<int>() { 8, 10, 7, 4, 5, 11, 17, 19 };
+                        title = "Solo";
+                        second = "Top 10s";
+                        third = "Top 25s";
+                        break;
+                    case GameMode.Duo:
+                        indices = new List<int>() { 2, 16, 14, 0, 21, 15, 20, 13 };
+                        title = "Duo";
+                        second = "Top 5s";
+                        third = "Top 12s";
+                        break;
+                    case GameMode.Squad:
+                        indices = new List<int>() { 12, 18, 6, 1, 9, 23, 3, 22 };
+                        title = "Squad";
+                        second = "Top 3s";
+                        third = "Top 6s";
+                        break;
+                }
 
                 if (statsJson != null)
                 {
@@ -147,10 +157,63 @@ namespace EduardoBotv2.Services
                     {
                         Author = new EmbedAuthorBuilder()
                         {
-                            IconUrl = @"https://d1u5p3l4wpay3k.cloudfront.net/fortnite_gamepedia/6/64/Favicon.ico",
-                            Name = $"Info for account {lookupJson["account_id"]}"
+                            IconUrl = "https://i.pinimg.com/originals/72/54/44/725444874a4c0bda8ea17fd6f6332c11.jpg",
+                            Name = "Fortnite Battle Royale Stats"
                         },
-                        Color = Color.Purple
+                        Color = Color.Purple,
+                        Fields = new List<EmbedFieldBuilder>()
+                        {
+                            new EmbedFieldBuilder()
+                            {
+                                IsInline = true,
+                                Name = "Matches Played",
+                                Value = statsJson[indices[0]]["value"]
+                            },
+                            new EmbedFieldBuilder()
+                            {
+                                IsInline = true,
+                                Name = "Minutes Played",
+                                Value = statsJson[indices[1]]["value"]
+                            },
+                            new EmbedFieldBuilder()
+                            {
+                                IsInline = true,
+                                Name = "Last Modified",
+                                Value = string.Format("{0:dddd MMM d}{1} {0:yyyy} at {0:HH:mm}", new DateTime(1970, 1, 1, 0, 0, 0, 0).AddSeconds((double)statsJson[indices[2]]["value"]), CommonHelper.GetDaySuffix(DateTime.Now.Day))
+                            },
+                            new EmbedFieldBuilder()
+                            {
+                                IsInline = true,
+                                Name = "Score",
+                                Value = statsJson[indices[3]]["value"]
+                            },
+                            new EmbedFieldBuilder()
+                            {
+                                IsInline = true,
+                                Name = "Kills",
+                                Value = statsJson[indices[4]]["value"]
+                            },
+                            new EmbedFieldBuilder()
+                            {
+                                Name = "Wins",
+                                Value = statsJson[indices[5]]["value"]
+                            },
+                            new EmbedFieldBuilder()
+                            {
+                                Name = second,
+                                Value = statsJson[indices[6]]["value"]
+                            },
+                            new EmbedFieldBuilder()
+                            {
+                                Name = third,
+                                Value = statsJson[indices[7]]["value"]
+                            }
+                        },
+                        Footer = new EmbedFooterBuilder()
+                        {
+                            Text = $"Fortnite Stats for {username} as of {string.Format("{0:dddd MMM d}{1} {0:yyyy} at {0:h:m tt}", DateTime.Now, CommonHelper.GetDaySuffix(DateTime.Now.Day))}"
+                        },
+                        Title = title
                     };
 
                     await c.Channel.SendMessageAsync("", false, builder.Build());
@@ -264,7 +327,7 @@ namespace EduardoBotv2.Services
         //    }
 
         //    JObject storeItemsJson = await GetStoreItemsFromApi();
-            
+
         //    if (storeItemsJson != null)
         //    {
 
@@ -315,7 +378,8 @@ namespace EduardoBotv2.Services
                     Timeout = Config.PAGINATION_TIMEOUT_TIME,
                     TimeoutBehaviour = TimeoutBehaviour.Default
                 });
-            } else
+            }
+            else
             {
                 await c.Channel.SendMessageAsync("Failed to load Fortnite News.");
             }
@@ -329,7 +393,7 @@ namespace EduardoBotv2.Services
 
                 JArray statusJson = await GetServerStatusFromApi();
                 Console.WriteLine(statusJson);
-                
+
                 if (statusJson != null)
                 {
                     string status = statusJson[0]["status"].ToString();
@@ -432,7 +496,6 @@ namespace EduardoBotv2.Services
                 request.Headers.Add("Authorization", "bearer " + this.accessToken);
                 HttpResponseMessage response = await MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();
-                Console.WriteLine(responseString);
                 return JArray.Parse(responseString);
             }
             catch (IOException e)
