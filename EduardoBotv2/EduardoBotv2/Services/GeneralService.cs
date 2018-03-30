@@ -169,7 +169,7 @@ namespace EduardoBotv2.Services
             await c.Channel.SendMessageAsync($"**Your special URL: **<http://lmgtfy.com/?q={ Uri.EscapeUriString(searchQuery) }>");
         }
 
-        public async void SearchUrbanDictionary(EduardoContext c, string searchQuery)
+        public async Task SearchUrbanDictionary(EduardoContext c, string searchQuery)
         {
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"http://api.urbandictionary.com/v0/define?term={searchQuery.Replace(' ', '+')}");
             HttpResponseMessage response = await NetworkHelper.MakeRequest(request);

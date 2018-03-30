@@ -179,7 +179,8 @@ namespace EduardoBotv2.Services
                             {
                                 IsInline = true,
                                 Name = "Last Modified",
-                                Value = string.Format("{0:dddd MMM d}{1} {0:yyyy} at {0:HH:mm}", new DateTime(1970, 1, 1, 0, 0, 0, 0).AddSeconds((double)statsJson[indices[2]]["value"]), CommonHelper.GetDaySuffix(DateTime.Now.Day))
+                                Value = string.Format("{0:dddd d/M/yy} at {0:HH:mm}", new DateTime(1970, 1, 1, 0, 0, 0, 0).AddSeconds((double)statsJson[indices[2]]["value"])),
+                                //Value = string.Format("{0:dddd MMM d}{1} {0:yyyy} at {0:HH:mm}", new DateTime(1970, 1, 1, 0, 0, 0, 0).AddSeconds((double)statsJson[indices[2]]["value"]), CommonHelper.GetDaySuffix(DateTime.Now.Day))
                             },
                             new EmbedFieldBuilder()
                             {
@@ -195,18 +196,45 @@ namespace EduardoBotv2.Services
                             },
                             new EmbedFieldBuilder()
                             {
+                                IsInline = true,
+                                Name = "Kills per Match",
+                                Value = (float)statsJson[indices[4]]["value"] / (float)statsJson[indices[0]]["value"]
+                            },
+                            new EmbedFieldBuilder()
+                            {
+                                IsInline = true,
                                 Name = "Wins",
                                 Value = statsJson[indices[5]]["value"]
                             },
                             new EmbedFieldBuilder()
                             {
+                                IsInline = true,
                                 Name = second,
                                 Value = statsJson[indices[6]]["value"]
                             },
                             new EmbedFieldBuilder()
                             {
+                                IsInline = true,
                                 Name = third,
                                 Value = statsJson[indices[7]]["value"]
+                            },
+                            new EmbedFieldBuilder()
+                            {
+                                IsInline = true,
+                                Name = "Win Percentage",
+                                Value = ((float)statsJson[indices[5]]["value"] / (float)statsJson[indices[0]]["value"]) * 100
+                            },
+                            new EmbedFieldBuilder()
+                            {
+                                IsInline = true,
+                                Name = "Avg. Minutes per Match",
+                                Value = (float)statsJson[indices[1]]["value"] / (float)statsJson[indices[0]]["value"]
+                            },
+                            new EmbedFieldBuilder()
+                            {
+                                IsInline = true,
+                                Name = "Kills per Minute",
+                                Value = (float)statsJson[indices[4]]["value"] / (float)statsJson[indices[1]]["value"]
                             }
                         },
                         Footer = new EmbedFooterBuilder()
@@ -442,7 +470,7 @@ namespace EduardoBotv2.Services
                 JObject lookupDataJson = await Lookup(username);
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Config.FORTNITE_STATS_BR(lookupDataJson["id"].ToString()));
                 request.Headers.Add("Authorization", "bearer " + this.accessToken);
-                HttpResponseMessage response = await MakeRequest(request);
+                HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();
                 return JArray.Parse(responseString);
             }
@@ -460,7 +488,7 @@ namespace EduardoBotv2.Services
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Config.FORTNITE_STORE);
                 request.Headers.Add("Authorization", "bearer " + this.accessToken);
                 request.Headers.Add("X-EpicGames-Language", "en");
-                HttpResponseMessage response = await MakeRequest(request);
+                HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();
                 return JObject.Parse(responseString);
             }
@@ -477,7 +505,7 @@ namespace EduardoBotv2.Services
             {
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Config.FORTNITE_NEWS);
                 request.Headers.Add("Authorization", "bearer " + this.accessToken);
-                HttpResponseMessage response = await MakeRequest(request);
+                HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();
                 return JObject.Parse(responseString);
             }
@@ -494,7 +522,7 @@ namespace EduardoBotv2.Services
             {
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Config.FORTNITE_SERVER_STATUS);
                 request.Headers.Add("Authorization", "bearer " + this.accessToken);
-                HttpResponseMessage response = await MakeRequest(request);
+                HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();
                 return JArray.Parse(responseString);
             }
