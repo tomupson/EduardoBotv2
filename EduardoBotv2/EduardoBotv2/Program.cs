@@ -52,6 +52,9 @@ namespace EduardoBotv2
             });
 
             _client.Log += Logger.Log;
+
+            //_client.SetGameAsync("", "", ActivityType.Streaming); // Change this to change the bot's activity (playing / streaming / listening)
+            _client.SetStatusAsync(UserStatus.Online); // Change this to change status (DND, Away e.t.c)
         }
 
         public async Task MainAsync()

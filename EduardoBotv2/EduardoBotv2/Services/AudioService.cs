@@ -20,7 +20,7 @@ namespace EduardoBotv2.Services
 {
     public class AudioService
     {
-        private readonly ConcurrentDictionary<ulong, IAudioClient> ConnectedChannels = new ConcurrentDictionary<ulong, IAudioClient>();
+        private readonly ConcurrentDictionary<ulong, IAudioClient> _connectedChannels = new ConcurrentDictionary<ulong, IAudioClient>();
         private readonly List<Song> _queue = new List<Song>();
         private static Song currentSong;
 
@@ -111,7 +111,7 @@ namespace EduardoBotv2.Services
             await ShowCurrentlyPlaying(c);
 
             IAudioClient client;
-            if (ConnectedChannels.TryGetValue(c.Guild.Id, out client))
+            if (_connectedChannels.TryGetValue(c.Guild.Id, out client))
             {
                 await Logger.Log(new LogMessage(LogSeverity.Debug, "Eduardo Bot", $"Starting playback of {song.Title} in {c.Guild.Name}"));
 
@@ -253,12 +253,12 @@ namespace EduardoBotv2.Services
             IVoiceChannel target = (c.User as IVoiceState).VoiceChannel;
             IAudioClient client;
 
-            if (ConnectedChannels.TryGetValue(c.Guild.Id, out client)) return;
+            if (_connectedChannels.TryGetValue(c.Guild.Id, out client)) return;
             if (target.Guild.Id != c.Guild.Id) return;
 
             var audioClient = await target.ConnectAsync();
 
-            if (ConnectedChannels.TryAdd(c.Guild.Id, audioClient))
+            if (_connectedChannels.TryAdd(c.Guild.Id, audioClient))
             {
                 await Logger.Log(new LogMessage(LogSeverity.Info, "Eduardo Bot", $"Connected to voice channel on {c.Guild.Name}"));
             } else
@@ -270,7 +270,7 @@ namespace EduardoBotv2.Services
         private async Task LeaveAudio(EduardoContext c)
         {
             IAudioClient client;
-            if (ConnectedChannels.TryRemove(c.Guild.Id, out client))
+            if (_connectedChannels.TryRemove(c.Guild.Id, out client))
             {
                 await client.StopAsync();
                 await Logger.Log(new LogMessage(LogSeverity.Info, "Eduardo Bot", $"Disconnected from voice channel on {c.Guild.Name}"));
