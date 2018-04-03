@@ -54,7 +54,6 @@ namespace EduardoBotv2.Common.Data
         // Fortnite API
         public const string FORTNITE_LAUNCHER_TOKEN = "MzRhMDJjZjhmNDQxNGUyOWIxNTkyMTg3NmRhMzZmOWE6ZGFhZmJjY2M3Mzc3NDUwMzlkZmZlNTNkOTRmYzc2Y2Y==";
         public const string FORTNITE_CLIENT_TOKEN = "ZWM2ODRiOGM2ODdmNDc5ZmFkZWEzY2IyYWQ4M2Y1YzY6ZTFmMzFjMjExZjI4NDEzMTg2MjYyZDM3YTEzZmM4NGQ==";
-        public const string PROXY_URL = "https://cors-anywhere.herokuapp.com/";
         // OAUTH URLS
         public const string FORTNITE_OAUTH_TOKEN = "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token";
         public const string FORTNITE_OAUTH_EXCHANGE = "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/exchange";
@@ -69,5 +68,10 @@ namespace EduardoBotv2.Common.Data
         // PVE
         public const string FORTNITE_PVE_INFO = "https://fortnite-public-service-prod11.ol.epicgames.com/fortnite/api/game/v2/world/info";
         public static string FORTNITE_PROFILE_LOOKUP(string accountId) => "https://fortnite-public-service-prod11.ol.epicgames.com/fortnite/api/game/v2/profile/" + accountId + "/public/QueryProfile";
+
+        // PUBG API
+        public static string PUBG_PLAYER_LOOKUP(string platform, string region, string username) => "https://api.playbattlegrounds.com/shards/" + platform + "-" + region + "/players?filter[playerNames]=" + username;
+        public static string PUBG_MATCH_LOOKUP(string platform, string region, string matchId) => "https://api.playbattlegrounds.com/shards/" + platform + "-" + region + "/matches/" + matchId;
+        public const string PUBG_API_STATUS = "https://api.playbattlegrounds.com/status";
     }
 }

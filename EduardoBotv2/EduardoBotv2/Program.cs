@@ -94,6 +94,7 @@ namespace EduardoBotv2
                 .AddSingleton(new ModerationService())
                 .AddSingleton(new MoneyService())
                 .AddSingleton(new NewsService())
+                .AddSingleton(new PUBGService())
                 .AddSingleton(new ShortenService())
                 .AddSingleton(new UserService())
                 .AddSingleton(new UtilityService())

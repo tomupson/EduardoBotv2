@@ -45,11 +45,11 @@ namespace EduardoBotv2.Services
                     {
                         HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, Config.FORTNITE_OAUTH_TOKEN);
                         request.Content = new FormUrlEncodedContent(new Dictionary<string, string>()
-                {
-                    { "grant_type", "refresh_token" },
-                    { "refresh_token", this.refreshToken },
-                    { "includePerms", "true" }
-                });
+                        {
+                            { "grant_type", "refresh_token" },
+                            { "refresh_token", this.refreshToken },
+                            { "includePerms", "true" }
+                        });
                         request.Headers.Add("Authorization", "basic " + Config.FORTNITE_CLIENT_TOKEN);
                         HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                         string responseString = await response.Content.ReadAsStringAsync();

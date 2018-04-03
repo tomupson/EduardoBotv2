@@ -1,4 +1,6 @@
-﻿namespace EduardoBotv2.Common.Data.Models
+﻿using System.Collections.Generic;
+
+namespace EduardoBotv2.Common.Data.Models
 {
     public class Settings
     {
@@ -25,5 +27,8 @@
         // Fortnite API
         public string FortniteLoginEmail { get; set; }
         public string FortniteLoginPassword { get; set; }
+
+        // PUBG API
+        public string PUBGApiKey { get; set; }
     }
 }
