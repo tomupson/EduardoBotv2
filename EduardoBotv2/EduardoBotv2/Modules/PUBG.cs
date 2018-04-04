@@ -42,9 +42,17 @@ namespace EduardoBotv2.Modules
         [Command("pubgvalids", RunMode = RunMode.Async)]
         [Summary("Get valid platform-region options")]
         [Remarks("")]
-        public async Task PUBGValidOptions()
+        public async Task PUBGValidOptionsCommand()
         {
             await _service.ShowValidOptions(Context);
+        }
+
+        [Command("telemtest", RunMode = RunMode.Async)]
+        [Summary("Testing telemetry data analysis for a match")]
+        [Remarks("")]
+        public async Task PUBGTelemTestCommand([Summary("The username of the player to get matches from")] string username, [Summary("The platform and region to search in")] string platformRegion)
+        {
+            await _service.GetTelemetry(Context, username, platformRegion);
         }
     }
 }

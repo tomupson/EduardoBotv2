@@ -71,6 +71,7 @@ namespace EduardoBotv2.Common.Data
 
         // PUBG API
         public static string PUBG_PLAYER_LOOKUP(string platform, string region, string username) => "https://api.playbattlegrounds.com/shards/" + platform + "-" + region + "/players?filter[playerNames]=" + username;
+        public static string PUBG_PLAYER_LOOKUP_WITH_ID(string platform, string region, string id) => "https://api.playbattlegrounds.com/shards/" + platform + "-" + region + "/players/" + id;
         public static string PUBG_MATCH_LOOKUP(string platform, string region, string matchId) => "https://api.playbattlegrounds.com/shards/" + platform + "-" + region + "/matches/" + matchId;
         public const string PUBG_API_STATUS = "https://api.playbattlegrounds.com/status";
     }
