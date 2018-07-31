@@ -1,13 +1,11 @@
-﻿using System.Collections.Generic;
-
-namespace EduardoBotv2.Common.Data.Models
+﻿namespace EduardoBotv2.Common.Data.Models
 {
     public class Settings
     {
         // General
         public string Token { get; set; }
         public ulong[] OwnerIds { get; set; }
-        public string MongoDBConnectionString { get; set; }
+        public string MongoDbConnectionString { get; set; }
         public string DatabaseName { get; set; }
 
         // Google

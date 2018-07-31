@@ -7,11 +7,11 @@ namespace EduardoBotv2.Modules
 {
     public class News : ModuleBase<EduardoContext>
     {
-        private readonly NewsService _service;
+        private readonly NewsService service;
 
         public News(NewsService service)
         {
-            this._service = service;
+            this.service = service;
         }
 
         [Command("news", RunMode = RunMode.Async)]
@@ -19,7 +19,7 @@ namespace EduardoBotv2.Modules
         [Remarks("bbc-news")]
         public async Task NewsCommand([Summary("The specified news source.")] string newsSource)
         {
-            await _service.GetNewsHeadlines(Context, newsSource);
+            await service.GetNewsHeadlines(Context, newsSource);
         }
 
         [Command("sources", RunMode = RunMode.Async)]
@@ -27,7 +27,7 @@ namespace EduardoBotv2.Modules
         [Remarks("")]
         public async Task SourcesCommand()
         {
-            await _service.ShowNewsSources(Context);
+            await service.ShowNewsSources(Context);
         }
     }
 }

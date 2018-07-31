@@ -8,11 +8,11 @@ namespace EduardoBotv2.Modules
 {
     public class Utility : ModuleBase<EduardoContext>
     {
-        private readonly UtilityService _service;
+        private readonly UtilityService service;
 
         public Utility(UtilityService service)
         {
-            this._service = service;
+            this.service = service;
         }
 
         [Command("clear", RunMode = RunMode.Async), Alias("cleanup", "clean")]
@@ -21,7 +21,7 @@ namespace EduardoBotv2.Modules
         [RequireUserPermission(ChannelPermission.ManageMessages), RequireBotPermission(GuildPermission.ManageMessages)]
         public async Task CleanCommand([Summary("The number of messages to delete")] uint count)
         {
-            await _service.CleanMessages(Context, count);
+            await service.CleanMessages(Context, count);
         }
 
         [Command("invite", RunMode = RunMode.Async)]
@@ -29,7 +29,7 @@ namespace EduardoBotv2.Modules
         [Remarks("")]
         public async Task InviteCommand()
         {
-            await _service.DisplayInvite(Context);
+            await service.DisplayInvite(Context);
         }
     }
 }

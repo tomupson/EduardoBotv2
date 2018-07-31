@@ -7,11 +7,11 @@ namespace EduardoBotv2.Modules
 {
     public class Audio : ModuleBase<EduardoContext>
     {
-        private readonly AudioService _service;
+        private readonly AudioService service;
 
         public Audio(AudioService service)
         {
-            _service = service;
+            this.service = service;
         }
 
         [Command("play", RunMode = RunMode.Async)]
@@ -21,11 +21,11 @@ namespace EduardoBotv2.Modules
         {
             if (url == null)
             {
-                await _service.StartQueue(Context);
+                await service.StartQueue(Context);
             }
             else
             {
-                await _service.PlaySong(Context, url);
+                await service.PlaySong(Context, url);
             }
         }
 
@@ -34,7 +34,7 @@ namespace EduardoBotv2.Modules
         [Remarks("")]
         public async Task StopCommand()
         {
-            await _service.Stop(Context);
+            await service.Stop(Context);
         }
         
         [Command("playing", RunMode = RunMode.Async)]
@@ -42,17 +42,17 @@ namespace EduardoBotv2.Modules
         [Remarks("")]
         public async Task PlayingCommand()
         {
-            await _service.ShowCurrentlyPlayingSong(Context);
+            await service.ShowCurrentlyPlayingSong(Context);
         }
 
         [Group("queue")]
         public class Queue : ModuleBase<EduardoContext>
         {
-            private readonly AudioService _service;
+            private readonly AudioService service;
 
             public Queue(AudioService service)
             {
-                this._service = service;
+                this.service = service;
             }
 
             [Command("play", RunMode = RunMode.Async), Name("queue play")]
@@ -60,7 +60,7 @@ namespace EduardoBotv2.Modules
             [Remarks("")]
             public async Task PlayCommand()
             {
-                await _service.StartQueue(Context);
+                await service.StartQueue(Context);
             }
 
             [Command("add", RunMode = RunMode.Async), Name("queue add")]
@@ -68,7 +68,7 @@ namespace EduardoBotv2.Modules
             [Remarks("pepe the frog meme")]
             public async Task AddCommand([Remainder, Summary("The URL or name of the song you want to play.")] string song)
             {
-                await _service.AddSongToQueue(Context, song);
+                await service.AddSongToQueue(Context, song);
             }
 
             [Command("remove", RunMode = RunMode.Async), Name("queue remove")]
@@ -77,7 +77,7 @@ namespace EduardoBotv2.Modules
             public async Task RemoveCommand([Remainder, Summary("The number of the song in the queue you want to remove.")] int queueItem)
             {
 
-                await _service.RemoveSongFromQueue(Context, queueItem);
+                await service.RemoveSongFromQueue(Context, queueItem);
             }
 
             [Command("clear", RunMode = RunMode.Async), Name("queue clear")]
@@ -85,7 +85,7 @@ namespace EduardoBotv2.Modules
             [Remarks("")]
             public async Task ClearCommand()
             {
-                await _service.ClearQueue();
+                await service.ClearQueue();
             }
 
             [Command(RunMode = RunMode.Async), Name("queue")]
@@ -93,7 +93,7 @@ namespace EduardoBotv2.Modules
             [Remarks("")]
             public async Task ViewCommand()
             {
-                await _service.ViewQueue(Context);
+                await service.ViewQueue(Context);
             }
 
             [Command("skip", RunMode = RunMode.Async), Name("queue skip")]
@@ -101,7 +101,7 @@ namespace EduardoBotv2.Modules
             [Remarks("")]
             public async Task SkipCommand()
             {
-                await _service.SkipQueueSong(Context);
+                await service.SkipQueueSong(Context);
             }
         }
     }

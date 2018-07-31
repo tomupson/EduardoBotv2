@@ -8,11 +8,11 @@ namespace EduardoBotv2.Modules
 {
     public class Fortnite : ModuleBase<EduardoContext>
     {
-        private readonly FortniteService _service;
+        private readonly FortniteService service;
 
         public Fortnite(FortniteService service)
         {
-            _service = service;
+            this.service = service;
         }
 
         [Command("fnstats", RunMode = RunMode.Async)]
@@ -20,7 +20,7 @@ namespace EduardoBotv2.Modules
         [Remarks("UppyMeister solo")]
         public async Task FortniteStatsCommand([Summary("The username of the player to get stats for.")] string username, [Summary("The gamemode you want to get stats for.")] GameMode gamemode)
         {
-            await _service.GetStats(Context, username, gamemode);
+            await service.GetStats(Context, username, gamemode);
         }
 
         [Command("fnnews", RunMode = RunMode.Async)]
@@ -28,7 +28,7 @@ namespace EduardoBotv2.Modules
         [Remarks("")]
         public async Task FortniteNewsCommand()
         {
-            await _service.GetNews(Context);
+            await service.GetNews(Context);
         }
 
         //[Command("fnstore", RunMode = RunMode.Async)]
@@ -44,7 +44,7 @@ namespace EduardoBotv2.Modules
         [Remarks("")]
         public async Task FortniteServerStatusCommand()
         {
-            await _service.GetServerStatus(Context);
+            await service.GetServerStatus(Context);
         }
         
         [Command("fnweekly", RunMode = RunMode.Async)]
@@ -52,7 +52,7 @@ namespace EduardoBotv2.Modules
         [Remarks("")]
         public async Task FortniteWeeklyStoreCommand()
         {
-            await _service.GetWeeklyStoreItems(Context);
+            await service.GetWeeklyStoreItems(Context);
         }
 
         [Command("fndaily", RunMode = RunMode.Async)]
@@ -60,7 +60,7 @@ namespace EduardoBotv2.Modules
         [Remarks("")]
         public async Task FortniteDailyStoreCommand()
         {
-            await _service.GetDailyStoreItems(Context);
+            await service.GetDailyStoreItems(Context);
         }
 
         [Command("fnbug", RunMode = RunMode.Async)]
@@ -68,7 +68,7 @@ namespace EduardoBotv2.Modules
         [Remarks("")]
         public async Task FortniteBugCommand()
         {
-            await _service.ReportBug(Context);
+            await service.ReportBug(Context);
         }
     }
 }

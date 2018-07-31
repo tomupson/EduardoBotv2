@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace EduardoBotv2.Common.Data
 {
@@ -11,8 +10,8 @@ namespace EduardoBotv2.Common.Data
 
         public const string YOUTUBE_LINK_REGEX = "(?:.+?)?(?:\\/v\\/|watch\\/|\\?v=|\\&v=|youtu\\.be\\/|\\/v=|^youtu\\.be\\/)([a-zA-Z0-9_-]{11})+";
 
-        public static readonly TimeSpan PAGINATION_TIMEOUT_TIME = new TimeSpan(0, 0, 15);
-        public static readonly List<string> NEWS_SOURCES = new List<string>()
+        public const int PAGINATION_TIMEOUT_SECONDS = 15;
+        public static readonly List<string> NEWS_SOURCES = new List<string>
         {
             "ars-technica", "associated-press", "bbc-news", "bbc-sport", "bloomberg", "breitbart-news", "business-insider", "business-insider-uk", "buzzfeed",
             "cnbc", "cnn", "daily-mail", "espn", "financial-times", "google-news", "ign", "independent", "mashable", "metro", "mirror", "mtv-news", "mtv-news-uk",

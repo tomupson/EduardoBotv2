@@ -11,36 +11,30 @@ namespace EduardoBotv2.Common.Utilities.Helpers
 {
     public static class GoogleHelper
     {
-        public static YouTubeService CreateYouTubeService(string apiKey)
+        public static YouTubeService CreateYouTubeService(string apiKey) => new YouTubeService(new BaseClientService.Initializer
         {
-            return new YouTubeService(new BaseClientService.Initializer()
-            {
-                ApiKey = apiKey,
-                ApplicationName = "EduardoBot"
-            });
-        }
+            ApiKey = apiKey,
+            ApplicationName = "EduardoBot"
+        });
 
-        public static UrlshortenerService CreateShortenerService(string apiKey)
+        public static UrlshortenerService CreateShortenerService(string apiKey) => new UrlshortenerService(new BaseClientService.Initializer
         {
-            return new UrlshortenerService(new BaseClientService.Initializer()
-            {
-                ApiKey = apiKey,
-                ApplicationName = "EduardoBot"
-            });
-        }
+            ApiKey = apiKey,
+            ApplicationName = "EduardoBot"
+        });
 
         public static async Task<SearchListResponse> SearchYouTubeAsync(string apiKey, string part, string searchQuery, int maxResults, YouTubeRequestType type)
         {
             return await Task.Run(() =>
             {
-                var service = CreateYouTubeService(apiKey);
+                YouTubeService service = CreateYouTubeService(apiKey);
 
-                var searchVideoRequest = service.Search.List(part);
+                SearchResource.ListRequest searchVideoRequest = service.Search.List(part);
                 searchVideoRequest.Q = searchQuery;
                 searchVideoRequest.MaxResults = maxResults;
                 searchVideoRequest.Type = Enum.GetName(typeof(YouTubeRequestType), type);
 
-                var response = searchVideoRequest.ExecuteAsync();
+                Task<SearchListResponse> response = searchVideoRequest.ExecuteAsync();
                 return response;
             });
         }
@@ -49,13 +43,13 @@ namespace EduardoBotv2.Common.Utilities.Helpers
         {
             return await Task.Run(() =>
             {
-                var service = CreateYouTubeService(apiKey);
+                YouTubeService service = CreateYouTubeService(apiKey);
 
-                var getVideoByIdRequest = service.Videos.List(part);
+                VideosResource.ListRequest getVideoByIdRequest = service.Videos.List(part);
                 getVideoByIdRequest.MaxResults = 1;
                 getVideoByIdRequest.Id = videoId;
 
-                var response = getVideoByIdRequest.ExecuteAsync();
+                Task<VideoListResponse> response = getVideoByIdRequest.ExecuteAsync();
                 return response;
             });
         }
@@ -64,11 +58,14 @@ namespace EduardoBotv2.Common.Utilities.Helpers
         {
             return Task.Run(() =>
             {
-                var service = CreateShortenerService(apiKey);
+                UrlshortenerService service = CreateShortenerService(apiKey);
 
-                var original = new Url();
-                original.LongUrl = longUrl;
-                var shorten = service.Url.Insert(original).Execute().Id;
+                var original = new Url
+                {
+                    LongUrl = longUrl
+                };
+
+                string shorten = service.Url.Insert(original).Execute().Id;
 
                 return shorten;
             });
@@ -78,9 +75,9 @@ namespace EduardoBotv2.Common.Utilities.Helpers
         {
             return Task.Run(() =>
             {
-                var service = CreateShortenerService(apiKey);
+                UrlshortenerService service = CreateShortenerService(apiKey);
 
-                var unshorten = service.Url.Get(shortUrl).Execute().LongUrl;
+                string unshorten = service.Url.Get(shortUrl).Execute().LongUrl;
 
                 return unshorten;
             });

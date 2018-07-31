@@ -10,45 +10,29 @@ namespace EduardoBotv2.Common.Utilities.Helpers
 {
     public static class ImgurHelper
     {
-        public static GalleryEndpoint CreateImgurClientAndEndpoint(string clientId, string clientSecret)
+        public static GalleryEndpoint CreateImgurClientAndEndpoint(string clientId, string clientSecret) => new GalleryEndpoint(new ImgurClient(clientId, clientSecret));
+
+        public static async Task<IGalleryItem> SearchImgur(string clientId, string clientSecret, string searchQuery) => await Task.Run(() =>
         {
-            var imgur =  new ImgurClient(clientId, clientSecret);
-            return new GalleryEndpoint(imgur);
-        }
+            GalleryEndpoint endpoint = CreateImgurClientAndEndpoint(clientId, clientSecret);
 
-        public static async Task<IGalleryItem> SearchImgur(string clientId, string clientSecret, string searchQuery)
+            List<IGalleryItem> gallery = string.IsNullOrWhiteSpace(searchQuery) ?
+                endpoint.GetRandomGalleryAsync().Result.ToList() :
+                endpoint.SearchGalleryAsync(searchQuery).Result.ToList();
+
+            IGalleryItem img = gallery.Any() ? gallery[new Random().Next(0, gallery.Count)] : null;
+
+            return img;
+        });
+
+        public static async Task<IGalleryItem> SearchImgurSubreddit(string clientId, string clientSecret, string subredditName) => await Task.Run(() =>
         {
-            return await Task.Run(() =>
-            {
-                var endpoint = CreateImgurClientAndEndpoint(clientId, clientSecret);
+            GalleryEndpoint endpoint = CreateImgurClientAndEndpoint(clientId, clientSecret);
+            List<IGalleryItem> gallery = endpoint.GetSubredditGalleryAsync(subredditName).Result.ToList();
 
-                List<IGalleryItem> gallery;
-                if (string.IsNullOrWhiteSpace(searchQuery))
-                {
-                    gallery = (endpoint.GetRandomGalleryAsync()).Result.ToList();
-                }
-                else
-                {
-                    gallery = (endpoint.SearchGalleryAsync(searchQuery)).Result.ToList();
-                }
+            IGalleryItem img = gallery.Any() ? gallery[new Random().Next(0, gallery.Count)] : null;
 
-                var img = gallery.Any() ? gallery[new Random().Next(0, gallery.Count)] : null;
-
-                return img;
-            });
-        }
-
-        public static async Task<IGalleryItem> SearchImgurSubreddit(string clientId, string clientSecret, string subredditName)
-        {
-            return await Task.Run(() =>
-            {
-                var endpoint = CreateImgurClientAndEndpoint(clientId, clientSecret);
-                var gallery = (endpoint.GetSubredditGalleryAsync(subredditName)).Result.ToList();
-
-                var img = gallery.Any() ? gallery[new Random().Next(0, gallery.Count)] : null;
-
-                return img;
-            });
-        }
+            return img;
+        });
     }
 }

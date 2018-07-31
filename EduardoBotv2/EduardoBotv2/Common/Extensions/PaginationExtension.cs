@@ -5,6 +5,7 @@ using EduardoBotv2.Common.Data.Models;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Discord.Rest;
 
 namespace EduardoBotv2.Common.Extensions
 {
@@ -21,12 +22,12 @@ namespace EduardoBotv2.Common.Extensions
             var ct = new CancellationTokenSource(pm.Timeout); // Cancellation token automatically activates after timeout.
             ct.Token.Register(() => tcs.TrySetResult(null)); // Once it has been cancelled (token activates), it will set tcs to null, which will trigger await tcs.Task.
 
-            var m = await c.Channel.SendMessageAsync("", false, pm.Embeds[pm.CurrentIndex]);
+            RestUserMessage m = await c.Channel.SendMessageAsync("", false, pm.Embeds[pm.CurrentIndex]);
             await m.AddPaginationReactionsAsync();
 
             c.Client.ReactionAdded += async (e, channel, reaction) =>
             {
-                var message = e.GetOrDownloadAsync().Result;
+                IUserMessage message = e.GetOrDownloadAsync().Result;
 
                 // If the id of the message matches the id of the message we made...
                 // ...and the id of the user is the same one as who posted the message.
@@ -40,7 +41,7 @@ namespace EduardoBotv2.Common.Extensions
 
             c.Client.ReactionRemoved += async (e, channel, reaction) =>
             {
-                var message = e.GetOrDownloadAsync().Result;
+                IUserMessage message = e.GetOrDownloadAsync().Result;
 
                 // If the id of the message matches the id of the message we made...
                 // ...and the id of the user is the same one as who posted the message.
@@ -52,10 +53,9 @@ namespace EduardoBotv2.Common.Extensions
                 await Task.CompletedTask;
             };
 
-            TimerCallback callback = async x =>
+            var timer = new Timer(async x =>
             {
-                var msg = x as IUserMessage;
-                if (!ct.IsCancellationRequested && pm.CurrentIndex != pm.PreviousIndex && msg != null)
+                if (!ct.IsCancellationRequested && pm.CurrentIndex != pm.PreviousIndex && x is IUserMessage msg)
                 {
                     await msg.ModifyAsync(n =>
                     {
@@ -64,9 +64,7 @@ namespace EduardoBotv2.Common.Extensions
 
                     pm.PreviousIndex = pm.CurrentIndex;
                 }
-            };
-
-            var timer = new Timer(callback, m, 500, 1000);
+            }, m, 500, 1000);
             await tcs.Task;
 
             switch(pm.TimeoutBehaviour)

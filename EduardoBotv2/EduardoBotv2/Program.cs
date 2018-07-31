@@ -11,19 +11,19 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-/// <summary>
-/// Eduardo Bot created by Thomas Upson.
-/// </summary>
+/*
+ * Eduardo Bot
+ * Created by Thomas Upson
+ */
 
 namespace EduardoBotv2
 {
     public class Program
     {
-        static void Main(string[] args)
-        => new Program().MainAsync().GetAwaiter().GetResult();
+        private static void Main() => new Program().MainAsync().GetAwaiter().GetResult();
 
-        private readonly DiscordSocketClient _client;
-        private readonly Settings _settings;
+        private readonly DiscordSocketClient client;
+        private readonly Settings settings;
 
         public Program()
         {
@@ -31,8 +31,7 @@ namespace EduardoBotv2
             {
                 using (StreamReader file = File.OpenText($@"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\EduardoBotConfig\settings.json"))
                 {
-                    JsonSerializer serializer = new JsonSerializer();
-                    _settings = (Settings)serializer.Deserialize(file, typeof(Settings));
+                    settings = (Settings) new JsonSerializer().Deserialize(file, typeof(Settings));
                 }
             }
             catch
@@ -44,27 +43,24 @@ namespace EduardoBotv2
                 Environment.Exit(0);
             }
 
-            _client = new DiscordSocketClient(new DiscordSocketConfig()
+            client = new DiscordSocketClient(new DiscordSocketConfig
             {
                 MessageCacheSize = 100,
                 AlwaysDownloadUsers = true,
                 LogLevel = LogSeverity.Info
             });
 
-            _client.Log += Logger.Log;
-
-            //_client.SetGameAsync("", "", ActivityType.Streaming); // Change this to change the bot's activity (playing / streaming / listening)
-            _client.SetStatusAsync(UserStatus.Online); // Change this to change status (DND, Away e.t.c)
+            client.Log += Logger.Log;
         }
 
         public async Task MainAsync()
         {
-            var services = InitializeServices();
+            IServiceProvider services = InitializeServices();
             await services.GetRequiredService<CommandHandler>().InitializeAsync(services);
 
             try
             {
-                await _client.LoginAsync(TokenType.Bot, _settings.Token);
+                await client.LoginAsync(TokenType.Bot, settings.Token);
             } catch (HttpException e)
             {
                 await Logger.Log(new LogMessage(LogSeverity.Critical, "Eduardo Bot", "Failed to log in: " + e.Message));
@@ -72,35 +68,34 @@ namespace EduardoBotv2
                 Environment.Exit(0);
             }
             
-            await _client.StartAsync();
+            await client.StartAsync();
+            await client.SetGameAsync($"Running on {client.Guilds.Count} server" + (client.Guilds.Count > 1 ? "s" : "")); // Change this to change the bot's activity (playing / streaming / listening)
+            await client.SetStatusAsync(UserStatus.DoNotDisturb); // Change this to change status (DND, Away e.t.c)
 
             await Task.Delay(-1);
         }
 
-        private IServiceProvider InitializeServices()
-        {
-            return new ServiceCollection()
-                // Base
-                .AddSingleton(_client)
-                .AddSingleton<CommandService>()
-                .AddSingleton<CommandHandler>()
-                // Services
-                .AddSingleton(new AudioService())
-                .AddSingleton(new FinanceService())
-                .AddSingleton(new FortniteService())
-                .AddSingleton(new GamesService())
-                .AddSingleton(new GeneralService())
-                .AddSingleton(new ImgurService())
-                .AddSingleton(new ModerationService())
-                .AddSingleton(new MoneyService())
-                .AddSingleton(new NewsService())
-                .AddSingleton(new PUBGService())
-                .AddSingleton(new ShortenService())
-                .AddSingleton(new UserService())
-                .AddSingleton(new UtilityService())
-                .AddSingleton(new YouTubeModuleService())
-                .AddSingleton(_settings)
-                .BuildServiceProvider();
-        }
+        private IServiceProvider InitializeServices() => new ServiceCollection()
+            // Base
+            .AddSingleton(client)
+            .AddSingleton<CommandService>()
+            .AddSingleton<CommandHandler>()
+            // Services
+            .AddSingleton(new AudioService())
+            .AddSingleton(new FinanceService())
+            .AddSingleton(new FortniteService())
+            .AddSingleton(new GamesService())
+            .AddSingleton(new GeneralService())
+            .AddSingleton(new ImgurService())
+            .AddSingleton(new ModerationService())
+            .AddSingleton(new MoneyService())
+            .AddSingleton(new NewsService())
+            .AddSingleton(new PUBGService())
+            .AddSingleton(new ShortenService())
+            .AddSingleton(new UserService())
+            .AddSingleton(new UtilityService())
+            .AddSingleton(new YouTubeModuleService())
+            .AddSingleton(settings)
+            .BuildServiceProvider();
     }
 }

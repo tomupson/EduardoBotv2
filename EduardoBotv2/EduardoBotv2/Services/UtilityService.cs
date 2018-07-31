@@ -1,7 +1,9 @@
-﻿using Discord;
+﻿using System.Collections.Generic;
+using Discord;
 using EduardoBotv2.Common.Data;
 using EduardoBotv2.Common.Extensions;
 using System.Threading.Tasks;
+using Discord.Rest;
 
 namespace EduardoBotv2.Services
 {
@@ -10,15 +12,13 @@ namespace EduardoBotv2.Services
         public async Task CleanMessages(EduardoContext c, uint count)
         {
             if (count <= 0) return;
-            else
-            {
-                var messagesToDelete = await c.Channel.GetMessagesAsync((int)count + 1).FlattenAsync();
-                await (c.Channel as ITextChannel).DeleteMessagesAsync(messagesToDelete);
-                string plural = count > 1 ? "s" : "";
-                var finishedMessage = await c.Channel.SendMessageAsync($"Successfully cleared {count} message{plural} :ok_hand:");
-                await Task.Delay(3000);
-                await finishedMessage.DeleteAsync();
-            }
+
+            IEnumerable<IMessage> messagesToDelete = await c.Channel.GetMessagesAsync((int)count + 1).FlattenAsync();
+            await ((ITextChannel) c.Channel).DeleteMessagesAsync(messagesToDelete);
+            string plural = count > 1 ? "s" : "";
+            RestUserMessage finishedMessage = await c.Channel.SendMessageAsync($"Successfully cleared {count} message{plural} :ok_hand:");
+            await Task.Delay(3000);
+            await finishedMessage.DeleteAsync();
         }
 
         public async Task DisplayInvite(EduardoContext c)

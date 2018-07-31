@@ -14,6 +14,6 @@ namespace EduardoBotv2.Common.Data.Models
         public string ThumbnailUrl { get; set; }
         public IGuildUser RequestedBy { get; set; }
         public DateTimeOffset? StartTime { get; set; }
-        public TimeSpan TimePassed => StartTime.HasValue ? (DateTimeOffset.Now - StartTime.Value) : TimeSpan.FromSeconds(0);
+        public TimeSpan TimePassed => StartTime.HasValue ? DateTimeOffset.Now - StartTime.Value : TimeSpan.FromSeconds(0);
     }
 }

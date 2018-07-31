@@ -2,8 +2,8 @@
 {
     public enum YouTubeRequestType
     {
-        channel,
-        playlist,
-        video
+        Channel,
+        Playlist,
+        Video
     }
 }

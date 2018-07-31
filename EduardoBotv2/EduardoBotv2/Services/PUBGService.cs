@@ -19,36 +19,34 @@ namespace EduardoBotv2.Services
     {
         public async Task GetPlayer(EduardoContext c, string username, string platformRegionString)
         {
-            PUBGPlatformRegion platformRegion;
-
-            if (Enum.TryParse(platformRegionString.Replace("-", "_"), out platformRegion))
+            if (Enum.TryParse(platformRegionString.Replace("-", "_"), out PUBGPlatformRegion platformRegion))
             {
-                if (username != string.Empty && username != null)
+                if (!string.IsNullOrEmpty(username))
                 {
                     string name = Enum.GetName(typeof(PUBGPlatformRegion), platformRegion);
                     string platform = name.Split("_")[0];
                     string region = name.Split("_")[1];
                     JObject playerJson = await GetPlayerFromApi(c, username, platform, region);
-                    EmbedBuilder builder = new EmbedBuilder()
+                    var builder = new EmbedBuilder
                     {
                         Color = Color.Orange,
                         Description = "You can view your recent matches by using the `$pubgmatches` command",
-                        Fields = new List<EmbedFieldBuilder>()
+                        Fields = new List<EmbedFieldBuilder>
                         {
-                            new EmbedFieldBuilder()
+                            new EmbedFieldBuilder
                             {
                                 IsInline = true,
                                 Name = "Account ID",
                                 Value = playerJson["data"][0]["attributes"]["id"]
                             },
-                            new EmbedFieldBuilder()
+                            new EmbedFieldBuilder
                             {
                                 IsInline = true,
                                 Name = "Last Updated",
                                 Value = playerJson["data"][0]["attributes"]["updatedAt"]
                             }
                         },
-                        Footer = new EmbedFooterBuilder()
+                        Footer = new EmbedFooterBuilder
                         {
                             IconUrl = "https://steemit-production-imageproxy-thumbnail.s3.amazonaws.com/U5dt5ZoFC4oMbrTPSSvVHVfyGSakHWV_1680x8400",
                             Text = $"Player Profile for {playerJson["data"][0]["attributes"]["name"]}"
@@ -66,11 +64,9 @@ namespace EduardoBotv2.Services
 
         public async Task GetMatches(EduardoContext c, string username, string platformRegionString)
         {
-            PUBGPlatformRegion platformRegion;
-
-            if (Enum.TryParse(platformRegionString.Replace("-", "_"), out platformRegion))
+            if (Enum.TryParse(platformRegionString.Replace("-", "_"), out PUBGPlatformRegion platformRegion))
             {
-                if (username != string.Empty && username != null)
+                if (!string.IsNullOrEmpty(username))
                 {
                     string name = Enum.GetName(typeof(PUBGPlatformRegion), platformRegion);
                     string platform = name.Split("_")[0];
@@ -88,17 +84,16 @@ namespace EduardoBotv2.Services
                             JObject matchJson = await GetMatchFromApi(c, match["id"].ToString(), platform, region);
                             TimeSpan t = TimeSpan.FromSeconds((int)matchJson["data"]["attributes"]["duration"]);
                             List<JToken> participants = matchJson["included"].ToObject<JArray>().Where(x => x["type"].ToString() == "participant").ToList();
-                            JToken me = participants.Where(x => x["attributes"]["stats"]["playerId"].ToString() == lookupJson["data"][0]["id"].ToString()).FirstOrDefault();
-                            JToken winner = participants.Where(x => (int)x["attributes"]["stats"]["winPlace"] == 1).FirstOrDefault();
-                            string winnerShard = winner["attributes"]["shardId"].ToString();
+                            JToken me = participants.FirstOrDefault(x => x["attributes"]["stats"]["playerId"].ToString() == lookupJson["data"][0]["id"].ToString());
+                            JToken winner = participants.FirstOrDefault(x => (int)x["attributes"]["stats"]["winPlace"] == 1);
+                            string winnerShard = winner?["attributes"]["shardId"].ToString();
                             DateTime startDate = DateTime.Parse(matchJson["data"]["attributes"]["createdAt"].ToString(), null, System.Globalization.DateTimeStyles.RoundtripKind);
                             //JArray telemetryData = await GetTelemetryDataFromMatch(matchJson);
-                            TimeSpan timeSurvived = TimeSpan.FromSeconds((int)me["attributes"]["stats"]["timeSurvived"]);
+                            TimeSpan timeSurvived = TimeSpan.FromSeconds((int)me?["attributes"]["stats"]["timeSurvived"]);
                             string deathReason = string.Empty;
-                            switch (me["attributes"]["stats"]["deathType"].ToString())
+                            switch (me?["attributes"]["stats"]["deathType"].ToString())
                             {
                                 default:
-                                case "byplayer":
                                     deathReason = "Player";
                                     break;
                                 case "suicide":
@@ -108,112 +103,111 @@ namespace EduardoBotv2.Services
                                     break;
                             }
 
-                            EmbedBuilder builder = new EmbedBuilder()
+                            var builder = new EmbedBuilder
                             {
                                 Color = Color.Orange,
-                                Fields = new List<EmbedFieldBuilder>()
+                                Fields = new List<EmbedFieldBuilder>
                                 {
-                                    new EmbedFieldBuilder()
+                                    new EmbedFieldBuilder
                                     {
                                         IsInline = true,
                                         Name = "Started",
                                         Value = startDate
                                     },
-                                    new EmbedFieldBuilder()
+                                    new EmbedFieldBuilder
                                     {
                                         IsInline = true,
                                         Name = "Duration",
                                         Value = string.Format("{0:D2}m {1:D2}s", t.Minutes, t.Seconds)
                                     },
-                                    new EmbedFieldBuilder()
+                                    new EmbedFieldBuilder
                                     {
                                         IsInline = true,
                                         Name = "Player Count",
                                         Value = matchJson["data"]["relationships"]["rosters"]["data"].ToObject<JArray>().Count
                                     },
-                                    new EmbedFieldBuilder()
+                                    new EmbedFieldBuilder
                                     {
                                         IsInline = true,
                                         Name = "Placement",
-                                        Value = $"#{me["attributes"]["stats"]["winPlace"].ToString()}"
+                                        Value = $"#{me?["attributes"]["stats"]["winPlace"]}"
                                     },
-                                    new EmbedFieldBuilder()
+                                    new EmbedFieldBuilder
                                     {
                                         IsInline = true,
                                         Name = "Death Reason",
                                         Value = deathReason
                                     },
-                                    new EmbedFieldBuilder()
+                                    new EmbedFieldBuilder
                                     {
                                         IsInline = true,
                                         Name = "Kills",
-                                        Value = me["attributes"]["stats"]["kills"]
+                                        Value = me?["attributes"]["stats"]["kills"]
                                     },
-                                    new EmbedFieldBuilder()
+                                    new EmbedFieldBuilder
                                     {
                                         IsInline = true,
                                         Name = "Damage Dealt",
-                                        Value = Math.Round((decimal)me["attributes"]["stats"]["damageDealt"], 2)
+                                        Value = Math.Round((decimal)me?["attributes"]["stats"]["damageDealt"], 2)
                                     },
-                                    new EmbedFieldBuilder()
+                                    new EmbedFieldBuilder
                                     {
                                         IsInline = true,
                                         Name = "Headshot %",
-                                        Value = ((float)me["attributes"]["stats"]["headshotKills"] / (float)me["attributes"]["stats"]["kills"]) * 100
+                                        Value = (float)me?["attributes"]["stats"]["headshotKills"] / (float)me?["attributes"]["stats"]["kills"] * 100
                                     },
-                                    new EmbedFieldBuilder()
+                                    new EmbedFieldBuilder
                                     {
                                         IsInline = true,
                                         Name = "Time Survived",
                                         Value = string.Format("{0:D2}m {1:D2}s", timeSurvived.Minutes, timeSurvived.Seconds)
                                     },
-                                    new EmbedFieldBuilder()
+                                    new EmbedFieldBuilder
                                     {
                                         IsInline = true,
                                         Name = "Distance Travelled",
-                                        Value = Math.Round((float)me["attributes"]["stats"]["rideDistance"] + (float)me["attributes"]["stats"]["walkDistance"], 2)
+                                        Value = Math.Round((float)me?["attributes"]["stats"]["rideDistance"] + (float)me?["attributes"]["stats"]["walkDistance"], 2)
                                     },
-                                    new EmbedFieldBuilder()
+                                    new EmbedFieldBuilder
                                     {
                                         IsInline = true,
                                         Name = "DBNOs",
-                                        Value = me["attributes"]["stats"]["DBNOs"]
+                                        Value = me?["attributes"]["stats"]["DBNOs"]
                                     },
-                                    new EmbedFieldBuilder()
+                                    new EmbedFieldBuilder
                                     {
                                         IsInline = true,
                                         Name = "Heals Used",
-                                        Value = me["attributes"]["stats"]["heals"]
+                                        Value = me?["attributes"]["stats"]["heals"]
                                     },
-                                    new EmbedFieldBuilder()
+                                    new EmbedFieldBuilder
                                     {
                                         IsInline = true,
                                         Name = "Boosts Used",
-                                        Value = me["attributes"]["stats"]["boosts"]
+                                        Value = me?["attributes"]["stats"]["boosts"]
                                     }
                                 },
-                                Footer = new EmbedFooterBuilder()
+                                Footer = new EmbedFooterBuilder
                                 {
                                     IconUrl = "https://steemit-production-imageproxy-thumbnail.s3.amazonaws.com/U5dt5ZoFC4oMbrTPSSvVHVfyGSakHWV_1680x8400",
-                                    Text = $"Match Data for {me["attributes"]["stats"]["name"]} for match {match["id"].ToString()}"
+                                    Text = $"Match Data for {me?["attributes"]["stats"]["name"]} for match {match["id"]}"
                                 },
                                 Title = matchJson["data"]["attributes"]["gameMode"].ToString().Replace("-", " ").ToUpper()
                             };
                             
-                            if (deathReason == string.Empty)
-                                builder.Fields.Remove(builder.Fields.Where(x => x.Name == "Death Reason").FirstOrDefault());
+                            if (deathReason == string.Empty) builder.Fields.Remove(builder.Fields.FirstOrDefault(x => x.Name == "Death Reason"));
 
                             pageEmbeds.Add(builder.Build());
                         } else
                         {
-                            await c.Channel.SendMessageAsync($"Type of match is {match["type"].ToString()}??");
+                            await c.Channel.SendMessageAsync($"Type of match is {match["type"]}??");
                         }
                     }
 
-                    await c.SendPaginatedMessageAsync(new PaginatedMessage()
+                    await c.SendPaginatedMessageAsync(new PaginatedMessage
                     {
                         Embeds = pageEmbeds,
-                        Timeout = Config.PAGINATION_TIMEOUT_TIME,
+                        Timeout = TimeSpan.FromSeconds(Config.PAGINATION_TIMEOUT_SECONDS),
                         TimeoutBehaviour = TimeoutBehaviour.Default
                     });
                 }
@@ -222,9 +216,7 @@ namespace EduardoBotv2.Services
 
         public async Task GetMatch(EduardoContext c, string matchId, string platformRegionString)
         {
-            PUBGPlatformRegion platformRegion;
-
-            if (Enum.TryParse(platformRegionString.Replace("-", "_"), out platformRegion))
+            if (Enum.TryParse(platformRegionString.Replace("-", "_"), out PUBGPlatformRegion platformRegion))
             {
                 if (!string.IsNullOrEmpty(matchId))
                 {
@@ -238,9 +230,7 @@ namespace EduardoBotv2.Services
 
         public async Task GetTelemetry(EduardoContext c, string username, string platformRegionString)
         {
-            PUBGPlatformRegion platformRegion;
-
-            if (Enum.TryParse(platformRegionString.Replace("-", "_"), out platformRegion))
+            if (Enum.TryParse(platformRegionString.Replace("-", "_"), out PUBGPlatformRegion platformRegion))
             {
                 if (!string.IsNullOrEmpty(username))
                 {
@@ -251,12 +241,12 @@ namespace EduardoBotv2.Services
                     string matchId = lookupJson["data"][0]["relationships"]["matches"]["data"][0]["id"].ToString();
                     JObject matchJson = await GetMatchFromApi(c, matchId, platform, region);
                     JArray telemetry = await GetTelemetryDataFromMatch(matchJson);
-                    foreach (JObject obj in telemetry)
+                    foreach (JToken jToken in telemetry)
                     {
+                        var obj = (JObject) jToken;
                         string logEvent = obj["_T"].ToString();
-                        TelemetryEvents evnt;
 
-                        if (Enum.TryParse(logEvent, out evnt))
+                        if (Enum.TryParse(logEvent, out TelemetryEvents evnt))
                         {
                             switch (evnt)
                             {
@@ -270,7 +260,6 @@ namespace EduardoBotv2.Services
                                             Console.WriteLine($"REDZONE killed {obj["victim"]["name"]}");
                                             break;
                                         default:
-                                        case "Damage_Gun":
                                             Console.WriteLine($"{obj["killer"]["name"]} killed {obj["victim"]["name"]}");
                                             break;
                                     }
@@ -278,13 +267,12 @@ namespace EduardoBotv2.Services
                                 case TelemetryEvents.LogCarePackageSpawn:
                                     List<string> items = new List<string>();
                                     JArray itemJson = JArray.Parse(obj["itemPackage"]["items"].ToString());
-                                    foreach (JObject item in itemJson)
+                                    foreach (JToken jToken1 in itemJson)
                                     {
+                                        var item = (JObject) jToken1;
                                         items.Add($"{item["itemId"]} x {item["stackCount"]}");
                                     }
                                     Console.WriteLine("Care Package Spawned with: " + string.Join(", ", items));
-                                    break;
-                                default:
                                     break;
                             }
                         }
@@ -299,17 +287,17 @@ namespace EduardoBotv2.Services
             await c.Channel.SendMessageAsync($"Valid options for platform-region are:\n{string.Join(", ", values)}");
         }
 
-        private async Task<JObject> GetPlayerFromApi(EduardoContext c, string username, string platform, string region)
+        private static async Task<JObject> GetPlayerFromApi(EduardoContext c, string username, string platform, string region)
         {
             try
             {
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Config.PUBG_PLAYER_LOOKUP(platform, region, username));
+                var request = new HttpRequestMessage(HttpMethod.Get, Config.PUBG_PLAYER_LOOKUP(platform, region, username));
                 request.Headers.Add("Authorization", "bearer " + c.EduardoSettings.PUBGApiKey);
                 request.Headers.Add("Accept", "application/vnd.api+json");
                 HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();
                 return JObject.Parse(responseString);
-            } catch (IOException e)
+            } catch (Exception e)
             {
                 await Logger.Log(new LogMessage(LogSeverity.Critical, "EduardoBot", $"Error fetching PUBG Player from API.\n{e}"));
                 return null;
@@ -320,46 +308,46 @@ namespace EduardoBotv2.Services
         {
             try
             {
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Config.PUBG_PLAYER_LOOKUP_WITH_ID(platform, region, id));
+                var request = new HttpRequestMessage(HttpMethod.Get, Config.PUBG_PLAYER_LOOKUP_WITH_ID(platform, region, id));
                 request.Headers.Add("Authorization", "bearer " + c.EduardoSettings.PUBGApiKey);
                 request.Headers.Add("Accept", "application/vnd.api+json");
                 HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();
                 return JObject.Parse(responseString);
-            } catch (IOException e)
+            } catch (Exception e)
             {
                 await Logger.Log(new LogMessage(LogSeverity.Critical, "EduardoBot", $"Error fetching PUBG player from API.\n{e}"));
                 return null;
             }
         }
 
-        private async Task<JObject> GetMatchFromApi(EduardoContext c, string matchId, string platform, string region)
+        private static async Task<JObject> GetMatchFromApi(EduardoContext c, string matchId, string platform, string region)
         {
             try
             {
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Config.PUBG_MATCH_LOOKUP(platform, region, matchId));
+                var request = new HttpRequestMessage(HttpMethod.Get, Config.PUBG_MATCH_LOOKUP(platform, region, matchId));
                 request.Headers.Add("Authorization", "bearer " + c.EduardoSettings.PUBGApiKey);
                 request.Headers.Add("Accept", "application/vnd.api+json");
                 HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();
                 return JObject.Parse(responseString);
-            } catch (IOException e)
+            } catch (Exception e)
             {
                 await Logger.Log(new LogMessage(LogSeverity.Critical, "EduardoBot", $"Error fetching PUBG match from API.\n{e}"));
                 return null;
             }
         }
 
-        private async Task<JArray> GetTelemetryDataFromMatch(JObject matchJson)
+        private static async Task<JArray> GetTelemetryDataFromMatch(JObject matchJson)
         {
-            string telemetryURL = matchJson["included"].ToObject<JArray>().Where(x => x["type"].ToString() == "asset" && x["id"].ToString() == matchJson["data"]["relationships"]["assets"]["data"][0]["id"].ToString()).FirstOrDefault()["attributes"]["URL"].ToString();
+            string telemetryUrl = matchJson["included"].ToObject<JArray>().FirstOrDefault(x => x["type"].ToString() == "asset" && x["id"].ToString() == matchJson["data"]["relationships"]["assets"]["data"][0]["id"].ToString())?["attributes"]["URL"].ToString();
             try
             {
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, telemetryURL);
+                var request = new HttpRequestMessage(HttpMethod.Get, telemetryUrl);
                 HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();
                 return JArray.Parse(responseString);
-            } catch (IOException e)
+            } catch (Exception e)
             {
                 await Logger.Log(new LogMessage(LogSeverity.Critical, "EduardoBot", $"Error fetching PUBG Telemetry Data for match.\n{e}"));
                 return null;

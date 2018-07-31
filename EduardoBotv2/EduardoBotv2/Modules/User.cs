@@ -8,11 +8,11 @@ namespace EduardoBotv2.Modules
 {
     public class User : ModuleBase<EduardoContext>
     {
-        private readonly UserService _service;
+        private readonly UserService service;
 
         public User(UserService service)
         {
-            this._service = service;
+            this.service = service;
         }
 
         [Command("info", RunMode = RunMode.Async), Alias("userinfo", "user")]
@@ -20,7 +20,7 @@ namespace EduardoBotv2.Modules
         [Remarks("Eduardo")]
         public async Task UserInfoCommand([Summary("User to get information on.")] IGuildUser user = null)
         {
-            await _service.DisplayUserInfo(Context, user);
+            await service.DisplayUserInfo(Context, user);
         }
 
         //[Command("checkinvis"), Alias("checkinvisible")]
@@ -36,7 +36,7 @@ namespace EduardoBotv2.Modules
         [Remarks("Eduardo")]
         public async Task AvatarCommand([Summary("The user who's avatar you want to fetch (defaults to yourself)")] IUser user = null)
         {
-            await _service.GetAvatar(Context, user);
+            await service.GetAvatar(Context, user);
         }
     }
 }

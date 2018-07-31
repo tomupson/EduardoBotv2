@@ -11,48 +11,46 @@ namespace EduardoBotv2.Services
 {
     public class CommandHandler
     {
-        private readonly DiscordSocketClient _client;
-        private readonly CommandService _commandService;
-        private readonly Settings _settings;
-
-        private IServiceProvider _serviceProvider;
+        private readonly DiscordSocketClient client;
+        private readonly CommandService commandService;
+        private readonly Settings settings;
+        private IServiceProvider serviceProvider;
 
         public CommandHandler(DiscordSocketClient client, CommandService commandService, IServiceProvider provider, Settings settings)
         {
-            _settings = settings;
-            _client = client;
-            _commandService = commandService;
-            _commandService.Log += Logger.Log;
-            _serviceProvider = provider;
+            this.settings = settings;
+            this.client = client;
+            this.commandService = commandService;
+            this.commandService.Log += Logger.Log;
+            serviceProvider = provider;
 
-            _client.MessageReceived += OnMessageReceviedAsync;
+            this.client.MessageReceived += OnMessageReceviedAsync;
             //_client.UserJoined += OnUserJoinedAsync;
         }
 
         public async Task InitializeAsync(IServiceProvider provider)
         {
-            _serviceProvider = provider;
-            await _commandService.AddModulesAsync(Assembly.GetEntryAssembly());
+            serviceProvider = provider;
+            await commandService.AddModulesAsync(Assembly.GetEntryAssembly());
         }
 
         private async Task OnMessageReceviedAsync(SocketMessage sm)
         {
-            SocketUserMessage msg = sm as SocketUserMessage;
-            if (msg == null) return;
+            if (!(sm is SocketUserMessage msg)) return;
 
-            var context = new EduardoContext(_client, msg, _serviceProvider, _settings);
+            var context = new EduardoContext(client, msg, serviceProvider, settings);
 
             int argPos = 0;
 
-            if (msg.HasStringPrefix(Config.DEFAULT_PREFIX, ref argPos) || msg.HasMentionPrefix(_client.CurrentUser, ref argPos))
+            if (msg.HasStringPrefix(Config.DEFAULT_PREFIX, ref argPos) || msg.HasMentionPrefix(client.CurrentUser, ref argPos))
             {
-                var result = await _commandService.ExecuteAsync(context, argPos, _serviceProvider);
+                IResult result = await commandService.ExecuteAsync(context, argPos, serviceProvider);
 
                 if (!result.IsSuccess && result.Error != CommandError.UnknownCommand)
                 {
                     if (result.Error == CommandError.BadArgCount)
                     {
-                        await context.Channel.SendMessageAsync($"**Incorrect command usage. Use `$help <command>` to show usage**");
+                        await context.Channel.SendMessageAsync("**Incorrect command usage. Use `$help <command>` to show usage**");
                     } else
                     {
                         await context.Channel.SendMessageAsync(result.ErrorReason);

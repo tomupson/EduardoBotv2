@@ -20,36 +20,36 @@ namespace EduardoBotv2.Services
                 return;
             }
 
-            var request = WebRequest.Create(new Uri($"https://newsapi.org/v1/articles?source={source}&sortBy=top&apiKey={c.EduardoSettings.NewsApiKey}"));
+            WebRequest request = WebRequest.Create(new Uri($"https://newsapi.org/v1/articles?source={source}&sortBy=top&apiKey={c.EduardoSettings.NewsApiKey}"));
             WebResponse response = await request.GetResponseAsync();
 
             string json;
 
-            using (var sr = new StreamReader(response.GetResponseStream()))
+            using (var sr = new StreamReader(response.GetResponseStream() ?? throw new Exception()))
             {
                 json = sr.ReadToEnd();
             }
 
             JObject jResult = JObject.Parse(json);
 
-            JArray jHeadlines = (JArray)jResult["articles"];
+            var jHeadlines = (JArray)jResult["articles"];
             List<EmbedFieldBuilder> headlines = new List<EmbedFieldBuilder>();
 
-            var maxHeadlines = Math.Min(Config.MAX_HEADLINES, jHeadlines.Count - 1);
-            for (var i = 0; i < maxHeadlines; i++)
+            int maxHeadlines = Math.Min(Config.MAX_HEADLINES, jHeadlines.Count - 1);
+            for (int i = 0; i < maxHeadlines; i++)
             {
-                var shorten = await GoogleHelper.ShortenUrlAsync(c.EduardoSettings.GoogleShortenerApiKey, jHeadlines[i]["url"].ToString());
+                string shorten = await GoogleHelper.ShortenUrlAsync(c.EduardoSettings.GoogleShortenerApiKey, jHeadlines[i]["url"].ToString());
 
-                headlines.Add(new EmbedFieldBuilder()
+                headlines.Add(new EmbedFieldBuilder
                 {
                     Name = jHeadlines[i]["title"].ToString(),
-                    Value = $"{jHeadlines[i]["description"].ToString()}\n({shorten})"
+                    Value = $"{jHeadlines[i]["description"]}\n({shorten})"
                 });
             }
 
-            EmbedBuilder builder = new EmbedBuilder()
+            var builder = new EmbedBuilder
             {
-                Author = new EmbedAuthorBuilder()
+                Author = new EmbedAuthorBuilder
                 {
                     IconUrl = @"http://shmector.com/_ph/18/412122157.png",
                     Name = $"Latest News from {source.Replace('-', ' ').ToUpper()}"
@@ -57,7 +57,7 @@ namespace EduardoBotv2.Services
                 Color = Color.Blue,
                 ThumbnailUrl = jResult["articles"][0]["urlToImage"].ToString(),
                 Fields = headlines,
-                Footer = new EmbedFooterBuilder()
+                Footer = new EmbedFooterBuilder
                 {
                     Text = "News via newsapi.org",
                     IconUrl = @"https://pbs.twimg.com/profile_images/815237522641092609/6IeO3WLV.jpg"

@@ -7,13 +7,13 @@ namespace EduardoBotv2.Modules
 {
     public class General : ModuleBase<EduardoContext>
     {
-        private readonly GeneralService _service;
-        private readonly CommandService _commandService;
+        private readonly GeneralService service;
+        private readonly CommandService commandService;
 
         public General(GeneralService service, CommandService commandService)
         {
-            this._service = service;
-            this._commandService = commandService;
+            this.service = service;
+            this.commandService = commandService;
         }
 
         [Command("echo", RunMode = RunMode.Async), Alias("talk")]
@@ -21,7 +21,7 @@ namespace EduardoBotv2.Modules
         [Remarks("I am a bot!")]
         public async Task EchoCommand([Remainder, Summary("The text to echo")] string echo)
         {
-            await _service.EchoText(Context, echo);
+            await service.EchoText(Context, echo);
         }
 
         [Command("help", RunMode = RunMode.Async), Alias("command", "cmd")]
@@ -29,7 +29,7 @@ namespace EduardoBotv2.Modules
         [Remarks("money donate")]
         public async Task HelpCommand([Remainder] string commandOrModule = null)
         {
-            await _service.DisplayHelp(_commandService, Context, commandOrModule);
+            await service.DisplayHelp(commandService, Context, commandOrModule);
         }
 
         [Command("ping", RunMode = RunMode.Async), Alias("p")]
@@ -37,7 +37,7 @@ namespace EduardoBotv2.Modules
         [Remarks("")]
         public async Task PingCommand()
         {
-            await _service.Ping(Context);
+            await service.Ping(Context);
         }
 
         [Command("choose", RunMode = RunMode.Async)]
@@ -45,7 +45,7 @@ namespace EduardoBotv2.Modules
         [Remarks("superman batman")]
         public async Task ChooseCommand(params string[] words)
         {
-            await _service.Choose(Context, words);
+            await service.Choose(Context, words);
         }
 
         [Command("lmgtfy", RunMode = RunMode.Async)]
@@ -53,7 +53,7 @@ namespace EduardoBotv2.Modules
         [Remarks("How do I use Eduardo Bot.")]
         public async Task LetMeGoogleThatForYouCommand([Remainder, Summary("What you're searching for.")] string searchQuery) // xd the name
         {
-            await _service.GoogleForYou(Context, searchQuery);
+            await service.GoogleForYou(Context, searchQuery);
         }
 
         [Command("urban", RunMode = RunMode.Async)]
@@ -61,7 +61,7 @@ namespace EduardoBotv2.Modules
         [Remarks("Eduardo")]
         public async Task UrbanCommand([Remainder, Summary("Words you want to look up on Urban Dictionary.")] string searchQuery)
         {
-            await _service.SearchUrbanDictionary(Context, searchQuery);
+            await service.SearchUrbanDictionary(Context, searchQuery);
         }
 
         [Command("robome", RunMode = RunMode.Async)]
@@ -69,7 +69,7 @@ namespace EduardoBotv2.Modules
         [Remarks("Eduardo")]
         public async Task RoboMeCommand([Remainder, Summary("Your name.")] string name)
         {
-            await _service.RoboMe(Context, name);
+            await service.RoboMe(Context, name);
         }
     }
 }

@@ -9,11 +9,11 @@ namespace EduardoBotv2.Modules
     [Group("money"), Alias("bal", "balance")]
     public class Money : ModuleBase<EduardoContext>
     {
-        private readonly MoneyService _service;
+        private readonly MoneyService service;
 
         public Money(MoneyService service)
         {
-            this._service = service;
+            this.service = service;
         }
 
         [Command(RunMode = RunMode.Async), Name("money")]
@@ -21,7 +21,7 @@ namespace EduardoBotv2.Modules
         [Remarks("UppyMeister();")]
         public async Task ShowCommand([Summary("The user to get the balance of.")] IGuildUser user = null)
         {
-            await _service.ShowMoney(Context, user);
+            await service.ShowMoney(Context, user);
         }
 
         [Command("set", RunMode = RunMode.Async), Name("money set")]
@@ -30,7 +30,7 @@ namespace EduardoBotv2.Modules
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task SetCommand([Summary("The target user")] IGuildUser user, [Summary("The balance to set.")] int amount)
         {
-            await _service.SetMoney(Context, user, amount);
+            await service.SetMoney(Context, user, amount);
         }
 
         [Command("donate", RunMode = RunMode.Async), Name("money donate"), Alias("append", "give")]
@@ -38,7 +38,7 @@ namespace EduardoBotv2.Modules
         [Remarks("UppyMeister(); 1443")]
         public async Task GiveCommand([Summary("The target user")] IGuildUser user, [Summary("The amount to append")] int amount)
         {
-            await _service.DonateMoney(Context, user, amount);
+            await service.DonateMoney(Context, user, amount);
         }
     }
 }

@@ -2,6 +2,7 @@
 using EduardoBotv2.Common.Data;
 using EduardoBotv2.Common.Utilities.Helpers;
 using System.Threading.Tasks;
+using Imgur.API.Models;
 
 namespace EduardoBotv2.Services
 {
@@ -9,16 +10,18 @@ namespace EduardoBotv2.Services
     {
         public async Task SearchImgur(EduardoContext c, string searchQuery = null)
         {
-            var img = await ImgurHelper.SearchImgur(c.EduardoSettings.ImgurClientId, c.EduardoSettings.ImgurClientSecret, searchQuery);
+            IGalleryItem img = await ImgurHelper.SearchImgur(c.EduardoSettings.ImgurClientId, c.EduardoSettings.ImgurClientSecret, searchQuery);
 
             if (img != null)
             {
-                if (img is GalleryAlbum)
+                switch (img)
                 {
-                    await c.Channel.SendMessageAsync(((GalleryAlbum)img).Link);
-                } else if (img is GalleryImage)
-                {
-                    await c.Channel.SendMessageAsync(((GalleryImage)img).Link);
+                    case GalleryAlbum album:
+                        await c.Channel.SendMessageAsync(album.Link);
+                        break;
+                    case GalleryImage _:
+                        await c.Channel.SendMessageAsync(((GalleryImage)img).Link);
+                        break;
                 }
             } else
             {
@@ -28,16 +31,18 @@ namespace EduardoBotv2.Services
 
         public async Task FetchSubredditImage(EduardoContext c, string subredditName)
         {
-            var img = await ImgurHelper.SearchImgurSubreddit(c.EduardoSettings.ImgurClientId, c.EduardoSettings.ImgurClientSecret, subredditName);
+            IGalleryItem img = await ImgurHelper.SearchImgurSubreddit(c.EduardoSettings.ImgurClientId, c.EduardoSettings.ImgurClientSecret, subredditName);
 
             if (img != null)
             {
-                if (img is GalleryAlbum)
+                switch (img)
                 {
-                    await c.Channel.SendMessageAsync(((GalleryAlbum)img).Link);
-                } else if (img is GalleryImage)
-                {
-                    await c.Channel.SendMessageAsync(((GalleryImage)img).Link);
+                    case GalleryAlbum _:
+                        await c.Channel.SendMessageAsync(((GalleryAlbum)img).Link);
+                        break;
+                    case GalleryImage _:
+                        await c.Channel.SendMessageAsync(((GalleryImage)img).Link);
+                        break;
                 }
             } else
             {

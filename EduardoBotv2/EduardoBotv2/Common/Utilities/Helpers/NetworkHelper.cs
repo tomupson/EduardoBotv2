@@ -1,5 +1,5 @@
-﻿using Discord;
-using System.IO;
+﻿using System;
+using Discord;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -15,9 +15,9 @@ namespace EduardoBotv2.Common.Utilities.Helpers
             {
                 return await httpClient.SendAsync(request);
             }
-            catch (IOException e)
+            catch (Exception e)
             {
-                await Logger.Log(new LogMessage(LogSeverity.Critical, "Eduardo Bot", $"Error sending request.\n{e}"));
+                await Logger.Log(new LogMessage(LogSeverity.Critical, "EduardoBot", $"Error sending request.\n{e}"));
                 return null;
             }
         }

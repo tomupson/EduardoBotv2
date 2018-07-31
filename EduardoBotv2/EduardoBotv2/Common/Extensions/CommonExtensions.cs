@@ -9,7 +9,7 @@ namespace EduardoBotv2.Common.Extensions
         public static string GetUsage(this CommandInfo cmd)
         {
             string usage = string.Empty;
-            foreach (var param in cmd.Parameters)
+            foreach (ParameterInfo param in cmd.Parameters)
             {
                 string before = "<";
                 string after = ">";
@@ -33,9 +33,6 @@ namespace EduardoBotv2.Common.Extensions
             return usage;
         }
 
-        public static string ToDurationString(this TimeSpan ts)
-        {
-            return $"{(Math.Truncate(ts.TotalMinutes).ToString("00"))}:{(ts.Seconds.ToString("00"))}";
-        }
+        public static string ToDurationString(this TimeSpan ts) => $"{Math.Truncate(ts.TotalMinutes):00}:{ts.Seconds:00}";
     }
 }

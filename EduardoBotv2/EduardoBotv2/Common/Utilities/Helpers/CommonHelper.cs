@@ -26,11 +26,11 @@ namespace EduardoBotv2.Common.Utilities.Helpers
 
         public static async Task SetInterval(Action action, TimeSpan timeout)
         {
-            await Task.Delay(timeout).ConfigureAwait(false);
-
-            action();
-
-            await SetInterval(action, timeout);
+            while (true)
+            {
+                await Task.Delay(timeout).ConfigureAwait(false);
+                action();
+            }
         }
     }
 }

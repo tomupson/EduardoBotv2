@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System;
+using Discord;
 using EduardoBotv2.Common.Data;
 using EduardoBotv2.Common.Data.Enums;
 using EduardoBotv2.Common.Extensions;
@@ -6,6 +7,8 @@ using EduardoBotv2.Common.Data.Models;
 using EduardoBotv2.Common.Utilities.Helpers;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
+using Google.Apis.YouTube.v3.Data;
 
 namespace EduardoBotv2.Services
 {
@@ -15,31 +18,27 @@ namespace EduardoBotv2.Services
         {
             if (searchQuery != null)
             {
-                var searchVideosResponse = await GoogleHelper.SearchYouTubeAsync(c.EduardoSettings.GoogleYouTubeApiKey, "snippet", searchQuery, 5, YouTubeRequestType.video);
+                SearchListResponse searchVideosResponse = await GoogleHelper.SearchYouTubeAsync(c.EduardoSettings.GoogleYouTubeApiKey, "snippet", searchQuery, 5, YouTubeRequestType.Video);
                 
-                List<Embed> pageEmbeds = new List<Embed>();
-                for (var i = 0; i < searchVideosResponse.Items.Count; i++)
+                List<Embed> pageEmbeds = searchVideosResponse.Items.Select((t, i) => new EmbedBuilder
                 {
-                    pageEmbeds.Add(new EmbedBuilder()
+                    Color = Color.Red,
+                    Title = t.Snippet.Title,
+                    Description = t.Snippet.Description,
+                    ThumbnailUrl = t.Snippet.Thumbnails.Default__.Url,
+
+                    Footer = new EmbedFooterBuilder
                     {
-                        Color = Color.Red,
-                        Title = searchVideosResponse.Items[i].Snippet.Title,
-                        Description = searchVideosResponse.Items[i].Snippet.Description,
-                        ThumbnailUrl = searchVideosResponse.Items[i].Snippet.Thumbnails.Default__.Url,
+                        IconUrl = @"https://seeklogo.com/images/Y/youtube-icon-logo-521820CDD7-seeklogo.com.png",
+                        Text = $"Page {i + 1}"
+                    },
+                    Url = $"http://youtu.be/{t.Id.VideoId}"
+                }.Build()).ToList();
 
-                        Footer = new EmbedFooterBuilder()
-                        {
-                            IconUrl = @"https://seeklogo.com/images/Y/youtube-icon-logo-521820CDD7-seeklogo.com.png",
-                            Text = $"Page {i + 1}"
-                        },
-                        Url = $"http://youtu.be/{searchVideosResponse.Items[i].Id.VideoId}"
-                    }.Build());
-                }
-
-                await c.SendPaginatedMessageAsync(new PaginatedMessage()
+                await c.SendPaginatedMessageAsync(new PaginatedMessage
                 {
                     Embeds = pageEmbeds,
-                    Timeout = Config.PAGINATION_TIMEOUT_TIME,
+                    Timeout = TimeSpan.FromSeconds(Config.PAGINATION_TIMEOUT_SECONDS),
                     TimeoutBehaviour = TimeoutBehaviour.Delete
                 });
             }

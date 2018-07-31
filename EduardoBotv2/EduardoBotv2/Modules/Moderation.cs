@@ -8,11 +8,11 @@ namespace EduardoBotv2.Modules
 {
     public class Moderation : ModuleBase<EduardoContext>
     {
-        private readonly ModerationService _service;
+        private readonly ModerationService service;
 
         public Moderation(ModerationService service)
         {
-            this._service = service;
+            this.service = service;
         }
 
         [Command("ban", RunMode = RunMode.Async), Alias("banish", "hammer")]
@@ -21,7 +21,7 @@ namespace EduardoBotv2.Modules
         [RequireUserPermission(GuildPermission.BanMembers), RequireBotPermission(GuildPermission.BanMembers)]
         public async Task BanCommand([Summary("User to ban.")] IGuildUser user, [Remainder] string reason = null)
         {
-            await _service.BanUser(Context, user, reason);
+            await service.BanUser(Context, user, reason);
         }
 
         [Command("kick", RunMode = RunMode.Async)]
@@ -30,7 +30,7 @@ namespace EduardoBotv2.Modules
         [RequireUserPermission(GuildPermission.KickMembers), RequireBotPermission(GuildPermission.KickMembers)]
         public async Task KickCommand([Summary("User to kick.")] IGuildUser user, [Remainder] string reason = null)
         {
-            await _service.KickUser(Context, user, reason);
+            await service.KickUser(Context, user, reason);
         }
     }
 }

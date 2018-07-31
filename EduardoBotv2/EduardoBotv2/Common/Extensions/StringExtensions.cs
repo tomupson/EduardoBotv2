@@ -4,10 +4,7 @@ namespace EduardoBotv2.Common.Extensions
 {
     public static class StringExtensions
     {
-        public static string Boldify(this object obj)
-        {
-            return $"**{obj.ToString().Replace("*", string.Empty).Replace("_", " ").Replace("~", string.Empty).Replace("`", string.Empty)}**";
-        }
+        public static string Boldify(this object obj) => $"**{obj.ToString().Replace("*", string.Empty).Replace("_", " ").Replace("~", string.Empty).Replace("`", string.Empty)}**";
 
         public static string UpperFirstChar(this string s)
         {

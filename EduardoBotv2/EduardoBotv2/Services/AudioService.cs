@@ -14,18 +14,21 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Text.RegularExpressions;
+using Discord.Rest;
+using Google.Apis.YouTube.v3.Data;
 
 namespace EduardoBotv2.Services
 {
     public class AudioService
     {
-        private readonly ConcurrentDictionary<ulong, IAudioClient> _connectedChannels = new ConcurrentDictionary<ulong, IAudioClient>();
-        private readonly List<Song> _queue = new List<Song>();
+        private readonly ConcurrentDictionary<ulong, IAudioClient> connectedChannels = new ConcurrentDictionary<ulong, IAudioClient>();
+        private readonly List<Song> queue = new List<Song>();
         private static Song currentSong;
 
-        private static bool queueRunning = false;
-        private static bool songPlaying = false;
+        private static bool queueRunning;
+        private static bool songPlaying;
 
         public async Task AddSongToQueue(EduardoContext c, string input)
         {
@@ -33,7 +36,7 @@ namespace EduardoBotv2.Services
 
             if (requestedSong != null)
             {
-                _queue.Add(requestedSong);
+                queue.Add(requestedSong);
                 await c.Channel.SendMessageAsync($"Added **{requestedSong.Title}** to the queue.");
             } else
             {
@@ -43,9 +46,9 @@ namespace EduardoBotv2.Services
 
         public async Task RemoveSongFromQueue(EduardoContext c, int queueIndex)
         {
-            if (queueIndex < 1 || queueIndex > _queue.Count) return;
+            if (queueIndex < 1 || queueIndex > queue.Count) return;
 
-            Song requestedSong = _queue[queueIndex-1];
+            Song requestedSong = queue[queueIndex-1];
 
             if (queueIndex == 1 && queueRunning)
             {
@@ -53,35 +56,35 @@ namespace EduardoBotv2.Services
                 return;
             }
 
-            _queue.Remove(requestedSong);
+            queue.Remove(requestedSong);
             await c.Channel.SendMessageAsync($"Removed **{requestedSong.Title}** from the queue.");
         }
 
-        private EmbedBuilder BuildPlayingSongEmbed()
+        private static EmbedBuilder BuildPlayingSongEmbed()
         {
             string desc = currentSong.Description.Length < Config.MAX_DESCRIPTION_LENGTH ? currentSong.Description : currentSong.Description.Substring(0, Config.MAX_DESCRIPTION_LENGTH);
-            return new EmbedBuilder()
+            return new EmbedBuilder
             {
                 Title = currentSong.Title,
                 Color = Color.Red,
                 Url = currentSong.Url,
-                Fields = new List<EmbedFieldBuilder>()
+                Fields = new List<EmbedFieldBuilder>
                 {
-                    new EmbedFieldBuilder()
+                    new EmbedFieldBuilder
                     {
                         Name = "Video Description",
                         Value = desc
                     },
-                    new EmbedFieldBuilder()
+                    new EmbedFieldBuilder
                     {
                         Name = "Requested by",
                         Value = currentSong.RequestedBy.Boldify()
                     }
                 },
-                Footer = new EmbedFooterBuilder()
+                Footer = new EmbedFooterBuilder
                 {
                     IconUrl = @"https://i.imgur.com/Fsaf4OW.png",
-                    Text = $"{currentSong.TimePassed.ToDurationString()} / {currentSong.Duration.Value.ToDurationString()}"
+                    Text = $"{currentSong.TimePassed.ToDurationString()} / {currentSong.Duration?.ToDurationString()}"
                 },
                 ThumbnailUrl = currentSong.ThumbnailUrl
             };
@@ -100,7 +103,7 @@ namespace EduardoBotv2.Services
             }
         }
 
-        private async Task ShowCurrentlyPlaying(EduardoContext c)
+        private static async Task ShowCurrentlyPlaying(EduardoContext c)
         {
             EmbedBuilder builder = BuildPlayingSongEmbed();
             await c.Channel.SendMessageAsync("**Now Playing:**", false, builder.Build());
@@ -110,14 +113,13 @@ namespace EduardoBotv2.Services
         {
             await ShowCurrentlyPlaying(c);
 
-            IAudioClient client;
-            if (_connectedChannels.TryGetValue(c.Guild.Id, out client))
+            if (connectedChannels.TryGetValue(c.Guild.Id, out IAudioClient client))
             {
                 await Logger.Log(new LogMessage(LogSeverity.Debug, "Eduardo Bot", $"Starting playback of {song.Title} in {c.Guild.Name}"));
 
-                var output = CreateStream(song.StreamUrl).StandardOutput.BaseStream;
+                Stream output = CreateStream(song.StreamUrl).StandardOutput.BaseStream;
 
-                var stream = client.CreatePCMStream(AudioApplication.Mixed);
+                AudioOutStream stream = client.CreatePCMStream(AudioApplication.Mixed);
                 await output.CopyToAsync(stream);
                 await stream.FlushAsync().ConfigureAwait(false);
             }
@@ -125,7 +127,7 @@ namespace EduardoBotv2.Services
 
         public async Task ClearQueue()
         {
-            _queue.Clear();
+            queue.Clear();
             await Task.CompletedTask;
         }
 
@@ -162,7 +164,7 @@ namespace EduardoBotv2.Services
 
         public async Task StartQueue(EduardoContext c)
         {
-            if (_queue.Count == 0)
+            if (queue.Count == 0)
             {
                 await c.Channel.SendMessageAsync("**There are no songs in the queue! Use `$queue add <song>` to add items to the queue!**");
                 return;
@@ -176,42 +178,38 @@ namespace EduardoBotv2.Services
 
             if (queueRunning)
             {
-                await c.Channel.SendMessageAsync($"**Queue already running! Use `$stop` to stop the queue.**");
+                await c.Channel.SendMessageAsync("**Queue already running! Use `$stop` to stop the queue.**");
                 return;
-            } else
-            {
-                queueRunning = true;
-                await JoinAudio(c);
-                await PlayQueue(c);
             }
+
+            queueRunning = true;
+            await JoinAudio(c);
+            await PlayQueue(c);
         }
 
         public async Task PlayQueue(EduardoContext c)
         {
-            currentSong = _queue[0];
-            await SendAudioAsync(c, _queue[0]);
-            _queue.RemoveAt(0);
-
-            if (_queue.Count > 0)
+            while (queue.Count > 0)
             {
+                currentSong = queue[0];
+                await SendAudioAsync(c, queue[0]);
+                queue.RemoveAt(0);
                 await PlayQueue(c);
             }
-            else
-            {
-                queueRunning = false;
-                currentSong = null;
-                await LeaveAudio(c);
-            }
+
+            queueRunning = false;
+            currentSong = null;
+            await LeaveAudio(c);
         }
 
         public async Task ViewQueue(EduardoContext c)
         {
-            if (_queue.Count > 0)
+            if (queue.Count > 0)
             {
                 string queueInfo = "**Queue:**";
-                for (int i = 0; i < _queue.Count; i++)
+                for (int i = 0; i < queue.Count; i++)
                 {
-                    queueInfo += $"\n{i + 1}. **{_queue[i].Title}**";
+                    queueInfo += $"\n{i + 1}. **{queue[i].Title}**";
                     if (i == 0 && queueRunning) queueInfo += " => **[CURRENTLY PLAYING]**";
                 }
                 await c.Channel.SendMessageAsync(queueInfo);
@@ -229,11 +227,11 @@ namespace EduardoBotv2.Services
                 return;
             }
 
-            var skipMsg = await c.Channel.SendMessageAsync("**Skipping Song...**");
-            _queue.RemoveAt(0);
+            RestUserMessage skipMsg = await c.Channel.SendMessageAsync("**Skipping Song...**");
+            queue.RemoveAt(0);
             await skipMsg.DeleteAsync();
             await LeaveAudio(c);
-            if (_queue.Count > 0)
+            if (queue.Count > 0)
             {
                 await JoinAudio(c);
                 await PlayQueue(c);
@@ -250,15 +248,15 @@ namespace EduardoBotv2.Services
 
         private async Task JoinAudio(EduardoContext c)
         {
-            IVoiceChannel target = (c.User as IVoiceState).VoiceChannel;
+            IVoiceChannel target = (c.User as IVoiceState)?.VoiceChannel;
             IAudioClient client;
 
-            if (_connectedChannels.TryGetValue(c.Guild.Id, out client)) return;
-            if (target.Guild.Id != c.Guild.Id) return;
+            if (connectedChannels.TryGetValue(c.Guild.Id, out client)) return;
+            if (target?.Guild.Id != c.Guild.Id) return;
 
-            var audioClient = await target.ConnectAsync();
+            IAudioClient audioClient = await target.ConnectAsync();
 
-            if (_connectedChannels.TryAdd(c.Guild.Id, audioClient))
+            if (connectedChannels.TryAdd(c.Guild.Id, audioClient))
             {
                 await Logger.Log(new LogMessage(LogSeverity.Info, "Eduardo Bot", $"Connected to voice channel on {c.Guild.Name}"));
             } else
@@ -269,54 +267,48 @@ namespace EduardoBotv2.Services
 
         private async Task LeaveAudio(EduardoContext c)
         {
-            IAudioClient client;
-            if (_connectedChannels.TryRemove(c.Guild.Id, out client))
+            if (connectedChannels.TryRemove(c.Guild.Id, out IAudioClient client))
             {
                 await client.StopAsync();
                 await Logger.Log(new LogMessage(LogSeverity.Info, "Eduardo Bot", $"Disconnected from voice channel on {c.Guild.Name}"));
             }
         }
 
-        private Process CreateStream(string url)
+        private static Process CreateStream(string url) => Process.Start(new ProcessStartInfo
         {
-            return Process.Start(new ProcessStartInfo()
-            {
-                FileName = "ffmpeg.exe",
-                Arguments = $"-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -err_detect ignore_err -i {url} -vol 75 -f s16le -ar 48000 -vn -ac 2 pipe:1 -loglevel panic",
-                UseShellExecute = false,
-                RedirectStandardOutput = true
-            });
-        }
+            FileName = "ffmpeg.exe",
+            Arguments = $"-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -err_detect ignore_err -i {url} -vol 75 -f s16le -ar 48000 -vn -ac 2 pipe:1 -loglevel panic",
+            UseShellExecute = false,
+            RedirectStandardOutput = true
+        });
 
-        private async Task<Song> GetVideoInfo(EduardoContext c, string input)
+        private static async Task<Song> GetVideoInfo(EduardoContext c, string input)
         {
-            Song outputSong = null;
-
             string videoId = string.Empty;
 
-            List<string> validAuthorities = new List<string>(){ "youtube.com", "www.youtube.com", "youtu.be", "www.youtu.be" };
-
-            if (validAuthorities.Any(s => input.Contains(s)))
+            List<string> validAuthorities = new List<string>
             {
-                Regex regexExtractId = new Regex(Config.YOUTUBE_LINK_REGEX, RegexOptions.Compiled);
-                Uri uri = new Uri(input);
-                try
+                "youtube.com", "www.youtube.com", "youtu.be", "www.youtu.be"
+            };
+
+            if (validAuthorities.Any(input.Contains))
+            {
+                var regexExtractId = new Regex(Config.YOUTUBE_LINK_REGEX, RegexOptions.Compiled);
+                var uri = new Uri(input);
+
+                string authority = new UriBuilder(uri).Uri.Authority.ToLower();
+                if (validAuthorities.Contains(authority))
                 {
-                    string authority = new UriBuilder(uri).Uri.Authority.ToLower();
-                    if (validAuthorities.Contains(authority))
+                    Match regRes = regexExtractId.Match(uri.ToString());
+                    if (regRes.Success)
                     {
-                        var regRes = regexExtractId.Match(uri.ToString());
-                        if (regRes.Success)
-                        {
-                            videoId = regRes.Groups[1].Value;
-                        }
+                        videoId = regRes.Groups[1].Value;
                     }
                 }
-                catch { }
 
             } else
             {
-                var searchVideoResponse = await GoogleHelper.SearchYouTubeAsync(c.EduardoSettings.GoogleYouTubeApiKey, "snippet", input, 1, YouTubeRequestType.video);
+                SearchListResponse searchVideoResponse = await GoogleHelper.SearchYouTubeAsync(c.EduardoSettings.GoogleYouTubeApiKey, "snippet", input, 1, YouTubeRequestType.Video);
 
                 if (searchVideoResponse.Items.Count > 0)
                 {
@@ -325,11 +317,11 @@ namespace EduardoBotv2.Services
                 else return null;
             }
 
-            var getVideoByIdResponse = await GoogleHelper.GetVideoFromYouTubeAsync(c.EduardoSettings.GoogleYouTubeApiKey, "snippet,contentDetails", videoId, 1);
+            VideoListResponse getVideoByIdResponse = await GoogleHelper.GetVideoFromYouTubeAsync(c.EduardoSettings.GoogleYouTubeApiKey, "snippet,contentDetails", videoId, 1);
 
             if (getVideoByIdResponse.Items.Count == 0) return null;
 
-            outputSong = new Song()
+            var outputSong = new Song
             {
                 Title = getVideoByIdResponse.Items[0].Snippet.Title,
                 Duration = XmlConvert.ToTimeSpan(getVideoByIdResponse.Items[0].ContentDetails.Duration),
@@ -344,32 +336,25 @@ namespace EduardoBotv2.Services
             return outputSong;
         }
 
-        private string GetStreamUrl(string url)
+        private static string GetStreamUrl(string url)
         {
-            Process youtubedl;
-
-            ProcessStartInfo youtubedlGetStreamUrl = new ProcessStartInfo()
+            var youtubeDl = new Process
             {
-                FileName = "youtube-dl",
-                Arguments = $"-url {url} -p \"\" -s -J -i -q --no-warnings --geo-bypass --no-check-certificate --no-call-home",
-                UseShellExecute = false,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "youtube-dl",
+                    Arguments = $"-url {url} -p \"\" -s -J -i -q --no-warnings --geo-bypass --no-check-certificate --no-call-home",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    CreateNoWindow = true
+                }
             };
-
-            youtubedl = Process.Start(youtubedlGetStreamUrl);
-            
-            var output = youtubedl.StandardOutput.ReadToEnd();
-            var songJson = JObject.Parse(output);
+            string output = youtubeDl.StandardOutput.ReadToEnd();
+            JObject songJson = JObject.Parse(output);
 
             dynamic entryJson = songJson;
             string streamUrl = entryJson.url ?? entryJson.requested_formats[1]?.url;
-            if (string.IsNullOrEmpty(streamUrl))
-            {
-                return string.Empty;
-            }
-
-            return streamUrl;
+            return streamUrl ?? "";
         }
     }
 }

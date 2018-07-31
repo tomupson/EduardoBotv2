@@ -7,10 +7,10 @@ namespace EduardoBotv2.Modules
 {
     public class Shorten : ModuleBase<EduardoContext>
     {
-        private readonly ShortenService _service;
+        private readonly ShortenService service;
         public Shorten(ShortenService service)
         {
-            this._service = service;
+            this.service = service;
         }
 
         [Command("shorten", RunMode = RunMode.Async)]
@@ -18,7 +18,7 @@ namespace EduardoBotv2.Modules
         [Remarks("http://www.404errorpages.com/")]
         public async Task ShortenCommand(string url)
         {
-            await _service.Shorten(Context, url);
+            await service.Shorten(Context, url);
         }
 
         [Command("shortenyt", RunMode = RunMode.Async), Alias("shortenyoutube")]
@@ -26,7 +26,7 @@ namespace EduardoBotv2.Modules
         [Remarks("https://www.youtube.com/watch?v=dQw4w9WgXcQ")]
         public async Task YouTubeCommand(string url)
         {
-            await _service.ShortenYouTube(Context, url);
+            await service.ShortenYouTube(Context, url);
         }
 
         [Command("unshorten", RunMode = RunMode.Async), Alias("us")]
@@ -34,7 +34,7 @@ namespace EduardoBotv2.Modules
         [Remarks("https://goo.gl/MY6gDD")]
         public async Task UnshortenCommand(string url)
         {
-            await _service.Unshorten(Context, url);
+            await service.Unshorten(Context, url);
         }
     }
 }

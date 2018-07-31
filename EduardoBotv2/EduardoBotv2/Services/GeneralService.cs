@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Commands;
-using Newtonsoft.Json.Linq;
 using EduardoBotv2.Common.Data;
 using EduardoBotv2.Common.Extensions;
 using EduardoBotv2.Common.Data.Models;
@@ -10,6 +9,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Discord.Rest;
+using Discord.WebSocket;
 using Newtonsoft.Json;
 
 namespace EduardoBotv2.Services
@@ -21,7 +22,7 @@ namespace EduardoBotv2.Services
             await c.Channel.SendMessageAsync(string.Format("{0} {1}", c.User.Mention, echo));
         }
 
-        public async Task DisplayHelp(CommandService _service, EduardoContext c, string commandOrModule = null)
+        public async Task DisplayHelp(CommandService service, EduardoContext c, string commandOrModule = null)
         {
             if (commandOrModule != null)
             {
@@ -31,40 +32,30 @@ namespace EduardoBotv2.Services
                     commandOrModule = commandOrModule.Remove(0, Config.DEFAULT_PREFIX.Length);
                 }
 
-                foreach (var module in _service.Modules)
+                foreach (ModuleInfo module in service.Modules)
                 {
                     if (module.Name.ToLower() == commandOrModule || module.Aliases.Any(x => x.ToLower() == commandOrModule))
                     {
-                        var longestInModule = 0;
-                        foreach (var cmd in module.Commands)
-                        {
-                            if (cmd.Aliases.First().Length > longestInModule)
-                            {
-                                longestInModule = cmd.Aliases.First().Length;
-                            }
-                        }
+                        int longestInModule = module.Commands.Select(cmd => cmd.Aliases.First().Length).Concat(new[] { 0 }).Max();
 
-                        var moduleInfo = $"**{module.Name} Commands **: ```asciidoc\n";
-                        foreach (var cmd in module.Commands)
-                        {
-                            moduleInfo += $"{Config.DEFAULT_PREFIX}{cmd.Aliases.First()}{new string(' ', (longestInModule + 1) - cmd.Aliases.First().Length)} :: {cmd.Summary}\n";
-                        }
+                        string moduleInfo = $"**{module.Name} Commands **: ```asciidoc\n";
+                        moduleInfo = module.Commands.Aggregate(moduleInfo, (current, cmd) => current + $"{Config.DEFAULT_PREFIX}{cmd.Aliases.First()}{new string(' ', longestInModule + 1 - cmd.Aliases.First().Length)} :: {cmd.Summary}\n");
                         moduleInfo += "\nUse the $help command for more information on any of these commands.```";
                         await c.Channel.SendMessageAsync(moduleInfo);
                         return;
                     }
 
-                    var command = module.Commands.FirstOrDefault(x => x.Aliases.Any(y => y.ToLower() == commandOrModule));
+                    CommandInfo command = module.Commands.FirstOrDefault(x => x.Aliases.Any(y => y.ToLower() == commandOrModule));
                     if (command != default(CommandInfo))
                     {
-                        List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>()
+                        List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>
                         {
-                            new EmbedFieldBuilder()
+                            new EmbedFieldBuilder
                             {
                                 Name = "Description",
                                 Value = command.Summary
                             },
-                            new EmbedFieldBuilder()
+                            new EmbedFieldBuilder
                             {
                                 Name = "Usage",
                                 Value = $"`{Config.DEFAULT_PREFIX}{commandOrModule}{command.GetUsage()}`"
@@ -73,16 +64,16 @@ namespace EduardoBotv2.Services
 
                         if (command.Parameters.Count > 0)
                         {
-                            fields.Add(new EmbedFieldBuilder()
+                            fields.Add(new EmbedFieldBuilder
                             {
                                 Name = "Example",
                                 Value = $"`{Config.DEFAULT_PREFIX}{commandOrModule} {command.Remarks}`"
                             });
                         }
 
-                        EmbedBuilder builder = new EmbedBuilder()
+                        var builder = new EmbedBuilder
                         {
-                            Author = new EmbedAuthorBuilder()
+                            Author = new EmbedAuthorBuilder
                             {
                                 IconUrl = c.Client.CurrentUser.GetAvatarUrl(),
                                 Name = $"Command Summary for \"{commandOrModule}\""
@@ -103,19 +94,16 @@ namespace EduardoBotv2.Services
             }
             else
             {
-                var userDm = await c.User.GetOrCreateDMChannelAsync();
+                IDMChannel userDm = await c.User.GetOrCreateDMChannelAsync();
 
                 string modules = string.Empty;
                 string modulesAndCommands = string.Empty;
 
-                foreach (var module in _service.Modules)
+                foreach (ModuleInfo module in service.Modules)
                 {
                     modules += $"{module.Name}, ";
                     modulesAndCommands += $"\n{module.Name.UpperFirstChar().Boldify()}\n";
-                    foreach (var command in module.Commands)
-                    {
-                        modulesAndCommands += $"${command.Name} :: {command.Summary}\n";
-                    }
+                    modulesAndCommands = module.Commands.Aggregate(modulesAndCommands, (current, command) => current + $"${command.Name} :: {command.Summary}\n");
                 }
 
                 await userDm.SendMessageAsync($"\nEduardo is a multi-purpose Discord Bot. This command can be used the view the usage of a specific command.\nHere are the commands you can use:\n {modulesAndCommands}\n\nUse `$help <command>` to view the usage of any command!");
@@ -126,29 +114,29 @@ namespace EduardoBotv2.Services
 
         public async Task Ping(EduardoContext c)
         {
-            var ping = c.Message;
-            var pong = await c.Channel.SendMessageAsync("", false, new EmbedBuilder()
+            SocketUserMessage ping = c.Message;
+            RestUserMessage pong = await c.Channel.SendMessageAsync("", false, new EmbedBuilder
             {
                 Title = "Measuring Latency...",
                 Color = Color.DarkRed
             }.Build());
 
-            var delta = pong.CreatedAt - ping.CreatedAt;
-            var diffMs = delta.TotalSeconds * 1000;
+            TimeSpan delta = pong.CreatedAt - ping.CreatedAt;
+            double diffMs = delta.TotalSeconds * 1000;
 
             await pong.ModifyAsync(n =>
             {
-                n.Embed = new EmbedBuilder()
+                n.Embed = new EmbedBuilder
                 {
                     Color = Color.DarkRed,
-                    Fields = new List<EmbedFieldBuilder>()
+                    Fields = new List<EmbedFieldBuilder>
                     {
-                        new EmbedFieldBuilder()
+                        new EmbedFieldBuilder
                         {
                             Name = "Round Trip",
                             Value = $"{diffMs} ms"
                         },
-                        new EmbedFieldBuilder()
+                        new EmbedFieldBuilder
                         {
                             Name = "Web Socket Latency",
                             Value = $"{c.Client.Latency} ms"
@@ -171,7 +159,7 @@ namespace EduardoBotv2.Services
 
         public async Task SearchUrbanDictionary(EduardoContext c, string searchQuery)
         {
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"http://api.urbandictionary.com/v0/define?term={searchQuery.Replace(' ', '+')}");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"http://api.urbandictionary.com/v0/define?term={searchQuery.Replace(' ', '+')}");
             HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
             if (!response.IsSuccessStatusCode)
             {
@@ -180,7 +168,7 @@ namespace EduardoBotv2.Services
             }
 
             string result = await response.Content.ReadAsStringAsync();
-            Urban data = JsonConvert.DeserializeObject<Urban>(result);
+            var data = JsonConvert.DeserializeObject<Urban>(result);
             if (!data.List.Any())
             {
                 await c.Channel.SendMessageAsync($"**Couldn't find anything related to {searchQuery}**");
@@ -188,21 +176,21 @@ namespace EduardoBotv2.Services
             }
 
             List termInfo = data.List[new Random().Next(0, data.List.Count)];
-            EmbedBuilder builder = new EmbedBuilder()
+            var builder = new EmbedBuilder
             {
                 Color = Color.Gold,
-                Footer = new EmbedFooterBuilder()
+                Footer = new EmbedFooterBuilder
                 {
-                    Text = $"Related Terms: {string.Join(", ", data.Tags)}" ?? "No related terms."
+                    Text = $"Related Terms: {string.Join(", ", data.Tags) ?? "No related terms."}"
                 },
-                Fields = new List<EmbedFieldBuilder>()
+                Fields = new List<EmbedFieldBuilder>
                 {
-                    new EmbedFieldBuilder()
+                    new EmbedFieldBuilder
                     {
                         Name = $"Definition of {termInfo.Word}",
                         Value = termInfo.Definition
                     },
-                    new EmbedFieldBuilder()
+                    new EmbedFieldBuilder
                     {
                         Name = "Example",
                         Value = termInfo.Example
