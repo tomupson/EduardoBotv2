@@ -96,12 +96,10 @@ namespace EduardoBotv2.Services
             {
                 IDMChannel userDm = await c.User.GetOrCreateDMChannelAsync();
 
-                string modules = string.Empty;
                 string modulesAndCommands = string.Empty;
 
                 foreach (ModuleInfo module in service.Modules)
                 {
-                    modules += $"{module.Name}, ";
                     modulesAndCommands += $"\n{module.Name.UpperFirstChar().Boldify()}\n";
                     modulesAndCommands = module.Commands.Aggregate(modulesAndCommands, (current, command) => current + $"${command.Name} :: {command.Summary}\n");
                 }

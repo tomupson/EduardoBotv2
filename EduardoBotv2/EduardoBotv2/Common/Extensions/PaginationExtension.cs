@@ -18,7 +18,7 @@ namespace EduardoBotv2.Common.Extensions
                 throw new ArgumentException("No pages provided");
             }
 
-            TaskCompletionSource<string> tcs = new TaskCompletionSource<string>();
+            var tcs = new TaskCompletionSource<string>();
             var ct = new CancellationTokenSource(pm.Timeout); // Cancellation token automatically activates after timeout.
             ct.Token.Register(() => tcs.TrySetResult(null)); // Once it has been cancelled (token activates), it will set tcs to null, which will trigger await tcs.Task.
 

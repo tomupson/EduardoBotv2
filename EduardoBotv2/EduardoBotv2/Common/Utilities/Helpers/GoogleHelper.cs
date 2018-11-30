@@ -32,7 +32,7 @@ namespace EduardoBotv2.Common.Utilities.Helpers
                 SearchResource.ListRequest searchVideoRequest = service.Search.List(part);
                 searchVideoRequest.Q = searchQuery;
                 searchVideoRequest.MaxResults = maxResults;
-                searchVideoRequest.Type = Enum.GetName(typeof(YouTubeRequestType), type);
+                searchVideoRequest.Type = Enum.GetName(typeof(YouTubeRequestType), type).ToLower();
 
                 Task<SearchListResponse> response = searchVideoRequest.ExecuteAsync();
                 return response;

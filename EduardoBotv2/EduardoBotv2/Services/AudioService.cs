@@ -343,12 +343,14 @@ namespace EduardoBotv2.Services
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "youtube-dl",
-                    Arguments = $"-url {url} -p \"\" -s -J -i -q --no-warnings --geo-bypass --no-check-certificate --no-call-home",
+                    Arguments = $@"-url {url} -p "" -s -J -i -q --no-warnings --geo-bypass --no-check-certificate --no-call-home",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
-                    CreateNoWindow = true
+                    CreateNoWindow = true,
+                    WorkingDirectory = Environment.CurrentDirectory
                 }
             };
+            youtubeDl.Start();
             string output = youtubeDl.StandardOutput.ReadToEnd();
             JObject songJson = JObject.Parse(output);
 
