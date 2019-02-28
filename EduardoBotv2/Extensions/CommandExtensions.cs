@@ -1,10 +1,9 @@
 ﻿using Discord;
 using Discord.Commands;
-using System;
 
-namespace EduardoBotv2.Common.Extensions
+namespace EduardoBotv2.Extensions
 {
-    public static class CommonExtensions
+    public static class CommandExtensions
     {
         public static string GetUsage(this CommandInfo cmd)
         {
@@ -32,7 +31,5 @@ namespace EduardoBotv2.Common.Extensions
             }
             return usage;
         }
-
-        public static string ToDurationString(this TimeSpan ts) => $"{Math.Truncate(ts.TotalMinutes):00}:{ts.Seconds:00}";
     }
 }

@@ -1,12 +1,13 @@
 ﻿using Discord;
 using Newtonsoft.Json.Linq;
-using EduardoBotv2.Common.Data;
-using EduardoBotv2.Common.Utilities.Helpers;
 using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using EduardoBotv2.Data;
+using EduardoBotv2.Helpers;
+using EduardoBotv2.Models;
 
 namespace EduardoBotv2.Services
 {
@@ -14,7 +15,7 @@ namespace EduardoBotv2.Services
     {
         public async Task GetNewsHeadlines(EduardoContext c, string source)
         {
-            if (!Config.NEWS_SOURCES.Contains(source))
+            if (!Constants.NEWS_SOURCES.Contains(source))
             {
                 await c.Channel.SendMessageAsync($"**{source} is not a valid. Type `sources` to view available news sources**");
                 return;
@@ -35,7 +36,7 @@ namespace EduardoBotv2.Services
             var jHeadlines = (JArray)jResult["articles"];
             List<EmbedFieldBuilder> headlines = new List<EmbedFieldBuilder>();
 
-            int maxHeadlines = Math.Min(Config.MAX_HEADLINES, jHeadlines.Count - 1);
+            int maxHeadlines = Math.Min(Constants.MAX_HEADLINES, jHeadlines.Count - 1);
             for (int i = 0; i < maxHeadlines; i++)
             {
                 string shorten = await GoogleHelper.ShortenUrlAsync(c.EduardoSettings.GoogleShortenerApiKey, jHeadlines[i]["url"].ToString());
@@ -69,7 +70,7 @@ namespace EduardoBotv2.Services
 
         public async Task ShowNewsSources(EduardoContext c)
         {
-            await c.Channel.SendMessageAsync($"**Available sources for the news command are:**\n{string.Join(", ", Config.NEWS_SOURCES)}");
+            await c.Channel.SendMessageAsync($"**Available sources for the news command are:**\n{string.Join(", ", Constants.NEWS_SOURCES)}");
         }
     }
 }

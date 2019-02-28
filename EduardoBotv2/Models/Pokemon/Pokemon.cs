@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace EduardoBotv2.Common.Data.Models
+namespace EduardoBotv2.Models.Pokemon
 {
     public class Pokemon
     {

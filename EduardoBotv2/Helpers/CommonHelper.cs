@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace EduardoBotv2.Common.Utilities.Helpers
+namespace EduardoBotv2.Helpers
 {
     public static class CommonHelper
     {

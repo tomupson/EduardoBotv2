@@ -1,13 +1,13 @@
 ﻿using System;
 using Discord;
-using EduardoBotv2.Common.Data;
-using EduardoBotv2.Common.Data.Enums;
-using EduardoBotv2.Common.Extensions;
-using EduardoBotv2.Common.Data.Models;
-using EduardoBotv2.Common.Utilities.Helpers;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using EduardoBotv2.Data;
+using EduardoBotv2.Extensions;
+using EduardoBotv2.Helpers;
+using EduardoBotv2.Models;
+using EduardoBotv2.Models.Enums;
 using Google.Apis.YouTube.v3.Data;
 
 namespace EduardoBotv2.Services
@@ -38,7 +38,7 @@ namespace EduardoBotv2.Services
                 await c.SendPaginatedMessageAsync(new PaginatedMessage
                 {
                     Embeds = pageEmbeds,
-                    Timeout = TimeSpan.FromSeconds(Config.PAGINATION_TIMEOUT_SECONDS),
+                    Timeout = TimeSpan.FromSeconds(Constants.PAGINATION_TIMEOUT_SECONDS),
                     TimeoutBehaviour = TimeoutBehaviour.Delete
                 });
             }

@@ -1,7 +1,7 @@
-﻿using Discord;
-using System;
+﻿using System;
+using Discord;
 
-namespace EduardoBotv2.Common.Data.Models
+namespace EduardoBotv2.Models
 {
     public class Song
     {

@@ -1,12 +1,6 @@
 ﻿using Discord;
 using Discord.Audio;
 using Newtonsoft.Json.Linq;
-using EduardoBotv2.Common.Data;
-using EduardoBotv2.Common.Utilities;
-using EduardoBotv2.Common.Data.Enums;
-using EduardoBotv2.Common.Extensions;
-using EduardoBotv2.Common.Data.Models;
-using EduardoBotv2.Common.Utilities.Helpers;
 using System;
 using System.Xml;
 using System.Linq;
@@ -17,6 +11,11 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Text.RegularExpressions;
 using Discord.Rest;
+using EduardoBotv2.Data;
+using EduardoBotv2.Extensions;
+using EduardoBotv2.Helpers;
+using EduardoBotv2.Models;
+using EduardoBotv2.Models.Enums;
 using Google.Apis.YouTube.v3.Data;
 
 namespace EduardoBotv2.Services
@@ -62,7 +61,7 @@ namespace EduardoBotv2.Services
 
         private static EmbedBuilder BuildPlayingSongEmbed()
         {
-            string desc = currentSong.Description.Length < Config.MAX_DESCRIPTION_LENGTH ? currentSong.Description : currentSong.Description.Substring(0, Config.MAX_DESCRIPTION_LENGTH);
+            string desc = currentSong.Description.Length < Constants.MAX_DESCRIPTION_LENGTH ? currentSong.Description : currentSong.Description.Substring(0, Constants.MAX_DESCRIPTION_LENGTH);
             return new EmbedBuilder
             {
                 Title = currentSong.Title,
@@ -293,7 +292,7 @@ namespace EduardoBotv2.Services
 
             if (validAuthorities.Any(input.Contains))
             {
-                var regexExtractId = new Regex(Config.YOUTUBE_LINK_REGEX, RegexOptions.Compiled);
+                var regexExtractId = new Regex(Constants.YOUTUBE_LINK_REGEX, RegexOptions.Compiled);
                 var uri = new Uri(input);
 
                 string authority = new UriBuilder(uri).Uri.Authority.ToLower();

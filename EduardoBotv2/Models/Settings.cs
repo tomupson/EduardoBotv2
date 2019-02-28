@@ -1,4 +1,4 @@
-﻿namespace EduardoBotv2.Common.Data.Models
+﻿namespace EduardoBotv2.Models
 {
     public class Settings
     {

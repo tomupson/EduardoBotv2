@@ -5,11 +5,11 @@ using Discord.WebSocket;
 using Newtonsoft.Json;
 using Microsoft.Extensions.DependencyInjection;
 using EduardoBotv2.Services;
-using EduardoBotv2.Common.Utilities;
-using EduardoBotv2.Common.Data.Models;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using EduardoBotv2.Helpers;
+using EduardoBotv2.Models;
 
 /*
  * Eduardo Bot

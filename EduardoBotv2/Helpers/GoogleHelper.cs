@@ -1,13 +1,13 @@
-﻿using Google.Apis.Services;
-using Google.Apis.YouTube.v3;
-using Google.Apis.YouTube.v3.Data;
+﻿using System;
+using System.Threading.Tasks;
+using EduardoBotv2.Models.Enums;
+using Google.Apis.Services;
 using Google.Apis.Urlshortener.v1;
 using Google.Apis.Urlshortener.v1.Data;
-using EduardoBotv2.Common.Data.Enums;
-using System;
-using System.Threading.Tasks;
+using Google.Apis.YouTube.v3;
+using Google.Apis.YouTube.v3.Data;
 
-namespace EduardoBotv2.Common.Utilities.Helpers
+namespace EduardoBotv2.Helpers
 {
     public static class GoogleHelper
     {

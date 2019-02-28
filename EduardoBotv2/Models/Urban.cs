@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
-namespace EduardoBotv2.Common.Data.Models
+namespace EduardoBotv2.Models
 {
     public class List
     {

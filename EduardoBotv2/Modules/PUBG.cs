@@ -1,7 +1,7 @@
 ﻿using Discord.Commands;
-using EduardoBotv2.Common.Data;
 using EduardoBotv2.Services;
 using System.Threading.Tasks;
+using EduardoBotv2.Models;
 
 namespace EduardoBotv2.Modules
 {

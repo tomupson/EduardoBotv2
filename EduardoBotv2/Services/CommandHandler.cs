@@ -1,11 +1,11 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
-using EduardoBotv2.Common.Data;
-using EduardoBotv2.Common.Utilities;
-using EduardoBotv2.Common.Data.Models;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using EduardoBotv2.Data;
+using EduardoBotv2.Helpers;
+using EduardoBotv2.Models;
 
 namespace EduardoBotv2.Services
 {
@@ -42,7 +42,7 @@ namespace EduardoBotv2.Services
 
             int argPos = 0;
 
-            if (msg.HasStringPrefix(Config.DEFAULT_PREFIX, ref argPos) || msg.HasMentionPrefix(client.CurrentUser, ref argPos))
+            if (msg.HasStringPrefix(Constants.DEFAULT_PREFIX, ref argPos) || msg.HasMentionPrefix(client.CurrentUser, ref argPos))
             {
                 IResult result = await commandService.ExecuteAsync(context, argPos, serviceProvider);
 

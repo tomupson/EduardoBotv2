@@ -1,15 +1,14 @@
-﻿using Discord;
-using EduardoBotv2.Common.Data;
-using EduardoBotv2.Common.Data.Enums;
-using EduardoBotv2.Common.Data.Models;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Rest;
+using EduardoBotv2.Models;
+using EduardoBotv2.Models.Enums;
 
-namespace EduardoBotv2.Common.Extensions
+namespace EduardoBotv2.Extensions
 {
-    public static class PaginationExtension
+    public static class PaginationExtensions
     {
         public static async Task SendPaginatedMessageAsync(this EduardoContext c, PaginatedMessage pm)
         {

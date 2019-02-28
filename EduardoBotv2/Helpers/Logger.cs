@@ -1,8 +1,8 @@
-﻿using Discord;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Discord;
 
-namespace EduardoBotv2.Common.Utilities
+namespace EduardoBotv2.Helpers
 {
     public static class Logger
     {

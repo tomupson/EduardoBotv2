@@ -1,7 +1,7 @@
 ﻿using Imgur.API.Models.Impl;
-using EduardoBotv2.Common.Data;
-using EduardoBotv2.Common.Utilities.Helpers;
 using System.Threading.Tasks;
+using EduardoBotv2.Helpers;
+using EduardoBotv2.Models;
 using Imgur.API.Models;
 
 namespace EduardoBotv2.Services

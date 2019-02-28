@@ -1,9 +1,9 @@
 ﻿using System;
-using Discord;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Discord;
 
-namespace EduardoBotv2.Common.Utilities.Helpers
+namespace EduardoBotv2.Helpers
 {
     public static class NetworkHelper
     {

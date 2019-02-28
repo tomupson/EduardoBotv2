@@ -1,7 +1,7 @@
 ﻿using Discord;
-using EduardoBotv2.Common.Data;
-using EduardoBotv2.Common.Extensions;
 using System.Threading.Tasks;
+using EduardoBotv2.Extensions;
+using EduardoBotv2.Models;
 
 namespace EduardoBotv2.Services
 {

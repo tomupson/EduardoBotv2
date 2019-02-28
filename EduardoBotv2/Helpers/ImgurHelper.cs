@@ -1,12 +1,12 @@
-﻿using Imgur.API.Models;
-using Imgur.API.Endpoints.Impl;
-using Imgur.API.Authentication.Impl;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
+using Imgur.API.Authentication.Impl;
+using Imgur.API.Endpoints.Impl;
+using Imgur.API.Models;
 
-namespace EduardoBotv2.Common.Utilities.Helpers
+namespace EduardoBotv2.Helpers
 {
     public static class ImgurHelper
     {

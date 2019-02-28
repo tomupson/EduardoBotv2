@@ -1,5 +1,5 @@
-﻿using EduardoBotv2.Common.Data;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using EduardoBotv2.Models;
 
 namespace EduardoBotv2.Services
 {

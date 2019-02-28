@@ -1,9 +1,5 @@
 ﻿using Discord;
 using Discord.Commands;
-using EduardoBotv2.Common.Data;
-using EduardoBotv2.Common.Extensions;
-using EduardoBotv2.Common.Data.Models;
-using EduardoBotv2.Common.Utilities.Helpers;
 using System;
 using System.Linq;
 using System.Net.Http;
@@ -11,6 +7,10 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Discord.Rest;
 using Discord.WebSocket;
+using EduardoBotv2.Data;
+using EduardoBotv2.Extensions;
+using EduardoBotv2.Helpers;
+using EduardoBotv2.Models;
 using Newtonsoft.Json;
 
 namespace EduardoBotv2.Services
@@ -27,9 +27,9 @@ namespace EduardoBotv2.Services
             if (commandOrModule != null)
             {
                 commandOrModule = commandOrModule.ToLower();
-                if (commandOrModule.StartsWith(Config.DEFAULT_PREFIX))
+                if (commandOrModule.StartsWith(Constants.DEFAULT_PREFIX))
                 {
-                    commandOrModule = commandOrModule.Remove(0, Config.DEFAULT_PREFIX.Length);
+                    commandOrModule = commandOrModule.Remove(0, Constants.DEFAULT_PREFIX.Length);
                 }
 
                 foreach (ModuleInfo module in service.Modules)
@@ -39,7 +39,7 @@ namespace EduardoBotv2.Services
                         int longestInModule = module.Commands.Select(cmd => cmd.Aliases.First().Length).Concat(new[] { 0 }).Max();
 
                         string moduleInfo = $"**{module.Name} Commands **: ```asciidoc\n";
-                        moduleInfo = module.Commands.Aggregate(moduleInfo, (current, cmd) => current + $"{Config.DEFAULT_PREFIX}{cmd.Aliases.First()}{new string(' ', longestInModule + 1 - cmd.Aliases.First().Length)} :: {cmd.Summary}\n");
+                        moduleInfo = module.Commands.Aggregate(moduleInfo, (current, cmd) => current + $"{Constants.DEFAULT_PREFIX}{cmd.Aliases.First()}{new string(' ', longestInModule + 1 - cmd.Aliases.First().Length)} :: {cmd.Summary}\n");
                         moduleInfo += "\nUse the $help command for more information on any of these commands.```";
                         await c.Channel.SendMessageAsync(moduleInfo);
                         return;
@@ -58,7 +58,7 @@ namespace EduardoBotv2.Services
                             new EmbedFieldBuilder
                             {
                                 Name = "Usage",
-                                Value = $"`{Config.DEFAULT_PREFIX}{commandOrModule}{command.GetUsage()}`"
+                                Value = $"`{Constants.DEFAULT_PREFIX}{commandOrModule}{command.GetUsage()}`"
                             }
                         };
 
@@ -67,7 +67,7 @@ namespace EduardoBotv2.Services
                             fields.Add(new EmbedFieldBuilder
                             {
                                 Name = "Example",
-                                Value = $"`{Config.DEFAULT_PREFIX}{commandOrModule} {command.Remarks}`"
+                                Value = $"`{Constants.DEFAULT_PREFIX}{commandOrModule} {command.Remarks}`"
                             });
                         }
 

@@ -1,11 +1,11 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using EduardoBotv2.Common.Data;
-using EduardoBotv2.Common.Utilities.Helpers;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using EduardoBotv2.Helpers;
+using EduardoBotv2.Models;
 
 namespace EduardoBotv2.Services
 {

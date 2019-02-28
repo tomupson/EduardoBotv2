@@ -1,10 +1,11 @@
-﻿using EduardoBotv2.Common.Data;
-using EduardoBotv2.Common.Utilities.Helpers;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using EduardoBotv2.Data;
+using EduardoBotv2.Helpers;
+using EduardoBotv2.Models;
 
 namespace EduardoBotv2.Services
 {
@@ -31,7 +32,7 @@ namespace EduardoBotv2.Services
 
             if (validAuthorities.Any(url.Contains))
             {
-                var regexExtractId = new Regex(Config.YOUTUBE_LINK_REGEX, RegexOptions.Compiled);
+                var regexExtractId = new Regex(Constants.YOUTUBE_LINK_REGEX, RegexOptions.Compiled);
                 var uri = new Uri(url);
                 try
                 {

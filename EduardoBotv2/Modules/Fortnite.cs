@@ -1,8 +1,8 @@
 ﻿using Discord.Commands;
 using EduardoBotv2.Services;
-using EduardoBotv2.Common.Data;
-using EduardoBotv2.Common.Data.Enums;
 using System.Threading.Tasks;
+using EduardoBotv2.Models;
+using EduardoBotv2.Models.Enums;
 
 namespace EduardoBotv2.Modules
 {

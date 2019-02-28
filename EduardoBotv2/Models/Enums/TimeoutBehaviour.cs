@@ -1,4 +1,4 @@
-﻿namespace EduardoBotv2.Common.Data.Enums
+﻿namespace EduardoBotv2.Models.Enums
 {
     public enum TimeoutBehaviour
     {

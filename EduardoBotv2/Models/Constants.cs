@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace EduardoBotv2.Common.Data
+namespace EduardoBotv2.Data
 {
-    public static class Config
+    public static class Constants
     {
         public const string DEFAULT_PREFIX = "$";
         public const int MIN_CHAR_LENGTH = 7;
