@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
-using EduardoBotv2.Data;
 using EduardoBotv2.Extensions;
 using EduardoBotv2.Helpers;
 using EduardoBotv2.Models;
@@ -35,7 +34,7 @@ namespace EduardoBotv2.Services
             {
                 if (expiresAt != string.Empty)
                 {
-                    var actualDate = new DateTime();
+                    DateTime actualDate = new DateTime();
                     if (DateTime.TryParseExact(expiresAt, "dd/MM/yyyy HH:mm:ss", null, System.Globalization.DateTimeStyles.None, out DateTime expireDate))
                     {
                         expireDate -= TimeSpan.FromMilliseconds(15);
@@ -43,7 +42,7 @@ namespace EduardoBotv2.Services
 
                     if (expireDate < actualDate)
                     {
-                        var request = new HttpRequestMessage(HttpMethod.Post, Constants.FORTNITE_OAUTH_TOKEN)
+                        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, Constants.FORTNITE_OAUTH_TOKEN)
                         {
                             Content = new FormUrlEncodedContent(new Dictionary<string, string>
                             {
@@ -63,7 +62,7 @@ namespace EduardoBotv2.Services
         private async Task Login(Settings settings)
         {
             Console.WriteLine("Logging in...");
-            var oauthTokenRequest = new HttpRequestMessage(HttpMethod.Post, Constants.FORTNITE_OAUTH_TOKEN)
+            HttpRequestMessage oauthTokenRequest = new HttpRequestMessage(HttpMethod.Post, Constants.FORTNITE_OAUTH_TOKEN)
             {
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
@@ -73,21 +72,21 @@ namespace EduardoBotv2.Services
                     { "includePerms", "true" }
                 })
             };
-            oauthTokenRequest.Headers.Add("Authorization", "basic " + Constants.LAUNCHER_TOKEN);
+            oauthTokenRequest.Headers.Add("Authorization", "basic " + Constants.FORTNITE_LAUNCHER_TOKEN);
             HttpResponseMessage oauthTokenResponse = await NetworkHelper.MakeRequest(oauthTokenRequest);
             string oauthTokenResponseString = await oauthTokenResponse.Content.ReadAsStringAsync();
             JObject oauthTokenJson = JObject.Parse(oauthTokenResponseString);
             accessToken = oauthTokenJson["access_token"].ToString();
             accountId = oauthTokenJson["account_id"].ToString();
 
-            var oauthExchangeRequest = new HttpRequestMessage(HttpMethod.Get, Constants.FORTNITE_OAUTH_EXCHANGE);
+            HttpRequestMessage oauthExchangeRequest = new HttpRequestMessage(HttpMethod.Get, Constants.FORTNITE_OAUTH_EXCHANGE);
             oauthExchangeRequest.Headers.Add("Authorization", "bearer " + accessToken);
             HttpResponseMessage oauthExchangeResponse = await NetworkHelper.MakeRequest(oauthExchangeRequest);
             string oauthExchangeResponseString = await oauthExchangeResponse.Content.ReadAsStringAsync();
             JObject oauthExchangeJson = JObject.Parse(oauthExchangeResponseString);
             code = oauthExchangeJson["code"].ToString();
 
-            var finalRequest = new HttpRequestMessage(HttpMethod.Post, Constants.FORTNITE_OAUTH_TOKEN)
+            HttpRequestMessage finalRequest = new HttpRequestMessage(HttpMethod.Post, Constants.FORTNITE_OAUTH_TOKEN)
             {
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
@@ -111,14 +110,14 @@ namespace EduardoBotv2.Services
 
         private async Task<JObject> Lookup(string username)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, Constants.FORTNITE_PLAYER_LOOKUP(username));
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Constants.FORTNITE_PLAYER_LOOKUP(username));
             request.Headers.Add("Authorization", "bearer " + accessToken);
             HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
             string responseString = await response.Content.ReadAsStringAsync();
             return JObject.Parse(responseString);
         }
 
-        public async Task GetStats(EduardoContext c, string username, GameMode gamemode)
+        public async Task GetStats(EduardoContext c, string username, Gamemode gamemode)
         {
             if (!loggedIn)
             {
@@ -142,13 +141,13 @@ namespace EduardoBotv2.Services
                         second = "Top 10s";
                         third = "Top 25s";
                         break;
-                    case GameMode.Duo:
+                    case Gamemode.Duo:
                         indices = new List<int> { 2, 16, 14, 0, 21, 15, 20, 13 };
                         title = "Duo";
                         second = "Top 5s";
                         third = "Top 12s";
                         break;
-                    case GameMode.Squad:
+                    case Gamemode.Squad:
                         indices = new List<int> { 12, 18, 6, 1, 9, 23, 3, 22 };
                         title = "Squad";
                         second = "Top 3s";
@@ -158,7 +157,7 @@ namespace EduardoBotv2.Services
 
                 if (statsJson != null)
                 {
-                    var builder = new EmbedBuilder
+                    EmbedBuilder builder = new EmbedBuilder
                     {
                         Author = new EmbedAuthorBuilder
                         {
@@ -260,7 +259,7 @@ namespace EduardoBotv2.Services
 
         public async Task GetWeeklyStoreItems(EduardoContext c)
         {
-            var web = new HtmlWeb();
+            HtmlWeb web = new HtmlWeb();
             HtmlDocument document = web.Load("https://stormshield.one/pvp/sales");
             HtmlNodeCollection saleItems = document.DocumentNode.SelectNodes("//div[contains(@class, 'sale__items')]");
 
@@ -294,7 +293,7 @@ namespace EduardoBotv2.Services
 
         public async Task GetDailyStoreItems(EduardoContext c)
         {
-            var web = new HtmlWeb();
+            HtmlWeb web = new HtmlWeb();
             HtmlDocument document = web.Load("https://stormshield.one/pvp/sales");
             HtmlNodeCollection saleItems = document.DocumentNode.SelectNodes("//div[contains(@class, 'sale__items')]");
 
@@ -408,7 +407,7 @@ namespace EduardoBotv2.Services
 
         public async Task ReportBug(EduardoContext c)
         {
-            var builder = new EmbedBuilder
+            EmbedBuilder builder = new EmbedBuilder
             {
                 Color = Color.Purple,
                 Description = "How do I submit a bug report for Fortnite?",
@@ -439,7 +438,7 @@ namespace EduardoBotv2.Services
             try
             {
                 JObject lookupDataJson = await Lookup(username);
-                var request = new HttpRequestMessage(HttpMethod.Get, Constants.FORTNITE_STATS_BR(lookupDataJson["id"].ToString()));
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Constants.FORTNITE_STATS_BR(lookupDataJson["id"].ToString()));
                 request.Headers.Add("Authorization", "bearer " + accessToken);
                 HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();
@@ -456,7 +455,7 @@ namespace EduardoBotv2.Services
         {
             try
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, Constants.FORTNITE_STORE);
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Constants.FORTNITE_STORE);
                 request.Headers.Add("Authorization", "bearer " + accessToken);
                 request.Headers.Add("X-EpicGames-Language", "en");
                 HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
@@ -474,7 +473,7 @@ namespace EduardoBotv2.Services
         {
             try
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, Constants.FORTNITE_NEWS);
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Constants.FORTNITE_NEWS);
                 request.Headers.Add("Authorization", "bearer " + accessToken);
                 HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();
@@ -491,7 +490,7 @@ namespace EduardoBotv2.Services
         {
             try
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, Constants.FORTNITE_SERVER_STATUS);
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Constants.FORTNITE_SERVER_STATUS);
                 request.Headers.Add("Authorization", "bearer " + accessToken);
                 HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();

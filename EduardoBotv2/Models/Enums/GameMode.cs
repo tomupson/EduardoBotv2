@@ -1,6 +1,6 @@
 ﻿namespace EduardoBotv2.Models.Enums
 {
-    public enum GameMode
+    public enum Gamemode
     {
         Solo,
         Duo,

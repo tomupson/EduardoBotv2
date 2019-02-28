@@ -5,7 +5,6 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using EduardoBotv2.Data;
 using EduardoBotv2.Helpers;
 using EduardoBotv2.Models;
 
@@ -26,14 +25,14 @@ namespace EduardoBotv2.Services
 
             string json;
 
-            using (var sr = new StreamReader(response.GetResponseStream() ?? throw new Exception()))
+            using (StreamReader sr = new StreamReader(response.GetResponseStream() ?? throw new Exception()))
             {
                 json = sr.ReadToEnd();
             }
 
             JObject jResult = JObject.Parse(json);
 
-            var jHeadlines = (JArray)jResult["articles"];
+            JArray jHeadlines = (JArray)jResult["articles"];
             List<EmbedFieldBuilder> headlines = new List<EmbedFieldBuilder>();
 
             int maxHeadlines = Math.Min(Constants.MAX_HEADLINES, jHeadlines.Count - 1);
@@ -48,7 +47,7 @@ namespace EduardoBotv2.Services
                 });
             }
 
-            var builder = new EmbedBuilder
+            EmbedBuilder builder = new EmbedBuilder
             {
                 Author = new EmbedAuthorBuilder
                 {

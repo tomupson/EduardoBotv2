@@ -17,8 +17,8 @@ namespace EduardoBotv2.Extensions
                 throw new ArgumentException("No pages provided");
             }
 
-            var tcs = new TaskCompletionSource<string>();
-            var ct = new CancellationTokenSource(pm.Timeout); // Cancellation token automatically activates after timeout.
+            TaskCompletionSource<string> tcs = new TaskCompletionSource<string>();
+            CancellationTokenSource ct = new CancellationTokenSource(pm.Timeout); // Cancellation token automatically activates after timeout.
             ct.Token.Register(() => tcs.TrySetResult(null)); // Once it has been cancelled (token activates), it will set tcs to null, which will trigger await tcs.Task.
 
             RestUserMessage m = await c.Channel.SendMessageAsync("", false, pm.Embeds[pm.CurrentIndex]);
@@ -52,7 +52,7 @@ namespace EduardoBotv2.Extensions
                 await Task.CompletedTask;
             };
 
-            var timer = new Timer(async x =>
+            Timer timer = new Timer(async x =>
             {
                 if (!ct.IsCancellationRequested && pm.CurrentIndex != pm.PreviousIndex && x is IUserMessage msg)
                 {
@@ -64,6 +64,7 @@ namespace EduardoBotv2.Extensions
                     pm.PreviousIndex = pm.CurrentIndex;
                 }
             }, m, 500, 1000);
+
             await tcs.Task;
 
             switch(pm.TimeoutBehaviour)

@@ -60,7 +60,7 @@ namespace EduardoBotv2.Helpers
             {
                 UrlshortenerService service = CreateShortenerService(apiKey);
 
-                var original = new Url
+                Url original = new Url
                 {
                     LongUrl = longUrl
                 };

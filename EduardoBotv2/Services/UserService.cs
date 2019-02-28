@@ -39,7 +39,7 @@ namespace EduardoBotv2.Services
 
             string roleInfo = string.Join(", ", targetGuildUser?.Roles.Where(x => !x.IsEveryone));
 
-            var builder = new EmbedBuilder
+            EmbedBuilder builder = new EmbedBuilder
             {
                 Color = Color.Orange,
                 ThumbnailUrl = targetSocketUser?.GetAvatarUrl(),

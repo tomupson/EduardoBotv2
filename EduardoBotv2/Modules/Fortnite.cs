@@ -18,7 +18,7 @@ namespace EduardoBotv2.Modules
         [Command("fnstats", RunMode = RunMode.Async)]
         [Summary("Get Fortnite Battle Royale stats for a player.")]
         [Remarks("UppyMeister solo")]
-        public async Task FortniteStatsCommand([Summary("The username of the player to get stats for.")] string username, [Summary("The gamemode you want to get stats for.")] GameMode gamemode)
+        public async Task FortniteStatsCommand([Summary("The username of the player to get stats for.")] string username, [Summary("The gamemode you want to get stats for.")] Gamemode gamemode)
         {
             await service.GetStats(Context, username, gamemode);
         }

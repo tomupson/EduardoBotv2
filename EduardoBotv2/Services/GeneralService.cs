@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Discord.Rest;
 using Discord.WebSocket;
-using EduardoBotv2.Data;
 using EduardoBotv2.Extensions;
 using EduardoBotv2.Helpers;
 using EduardoBotv2.Models;
@@ -19,7 +18,7 @@ namespace EduardoBotv2.Services
     {
         public async Task EchoText(EduardoContext c, string echo)
         {
-            await c.Channel.SendMessageAsync(string.Format("{0} {1}", c.User.Mention, echo));
+            await c.Channel.SendMessageAsync($"{c.User.Mention} {echo}");
         }
 
         public async Task DisplayHelp(CommandService service, EduardoContext c, string commandOrModule = null)
@@ -71,7 +70,7 @@ namespace EduardoBotv2.Services
                             });
                         }
 
-                        var builder = new EmbedBuilder
+                        EmbedBuilder builder = new EmbedBuilder
                         {
                             Author = new EmbedAuthorBuilder
                             {
@@ -106,7 +105,7 @@ namespace EduardoBotv2.Services
 
                 await userDm.SendMessageAsync($"\nEduardo is a multi-purpose Discord Bot. This command can be used the view the usage of a specific command.\nHere are the commands you can use:\n {modulesAndCommands}\n\nUse `$help <command>` to view the usage of any command!");
 
-                await c.Channel.SendMessageAsync(string.Format("{0}, {1}", c.User.Mention, "You have been DMed with all the command information!"));
+                await c.Channel.SendMessageAsync($"{c.User.Mention} - you have been DMed with all the command information!");
             }
         }
 
@@ -157,7 +156,7 @@ namespace EduardoBotv2.Services
 
         public async Task SearchUrbanDictionary(EduardoContext c, string searchQuery)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"http://api.urbandictionary.com/v0/define?term={searchQuery.Replace(' ', '+')}");
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"http://api.urbandictionary.com/v0/define?term={searchQuery.Replace(' ', '+')}");
             HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
             if (!response.IsSuccessStatusCode)
             {
@@ -166,7 +165,7 @@ namespace EduardoBotv2.Services
             }
 
             string result = await response.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<Urban>(result);
+            Urban data = JsonConvert.DeserializeObject<Urban>(result);
             if (!data.List.Any())
             {
                 await c.Channel.SendMessageAsync($"**Couldn't find anything related to {searchQuery}**");
@@ -174,7 +173,7 @@ namespace EduardoBotv2.Services
             }
 
             List termInfo = data.List[new Random().Next(0, data.List.Count)];
-            var builder = new EmbedBuilder
+            EmbedBuilder builder = new EmbedBuilder
             {
                 Color = Color.Gold,
                 Footer = new EmbedFooterBuilder

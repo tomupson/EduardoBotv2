@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using EduardoBotv2.Data;
 using EduardoBotv2.Extensions;
 using EduardoBotv2.Helpers;
 using EduardoBotv2.Models;
@@ -26,7 +25,7 @@ namespace EduardoBotv2.Services
                     string platform = name.Split("_")[0];
                     string region = name.Split("_")[1];
                     JObject playerJson = await GetPlayerFromApi(c, username, platform, region);
-                    var builder = new EmbedBuilder
+                    EmbedBuilder builder = new EmbedBuilder
                     {
                         Color = Color.Orange,
                         Description = "You can view your recent matches by using the `$pubgmatches` command",
@@ -102,7 +101,7 @@ namespace EduardoBotv2.Services
                                     break;
                             }
 
-                            var builder = new EmbedBuilder
+                            EmbedBuilder builder = new EmbedBuilder
                             {
                                 Color = Color.Orange,
                                 Fields = new List<EmbedFieldBuilder>
@@ -117,7 +116,7 @@ namespace EduardoBotv2.Services
                                     {
                                         IsInline = true,
                                         Name = "Duration",
-                                        Value = string.Format("{0:D2}m {1:D2}s", t.Minutes, t.Seconds)
+                                        Value = $"{t.Minutes:D2}m {t.Seconds:D2}s"
                                     },
                                     new EmbedFieldBuilder
                                     {
@@ -159,7 +158,7 @@ namespace EduardoBotv2.Services
                                     {
                                         IsInline = true,
                                         Name = "Time Survived",
-                                        Value = string.Format("{0:D2}m {1:D2}s", timeSurvived.Minutes, timeSurvived.Seconds)
+                                        Value = $"{timeSurvived.Minutes:D2}m {timeSurvived.Seconds:D2}s"
                                     },
                                     new EmbedFieldBuilder
                                     {
@@ -242,7 +241,7 @@ namespace EduardoBotv2.Services
                     JArray telemetry = await GetTelemetryDataFromMatch(matchJson);
                     foreach (JToken jToken in telemetry)
                     {
-                        var obj = (JObject) jToken;
+                        JObject obj = (JObject) jToken;
                         string logEvent = obj["_T"].ToString();
 
                         if (Enum.TryParse(logEvent, out TelemetryEvents evnt))
@@ -268,7 +267,7 @@ namespace EduardoBotv2.Services
                                     JArray itemJson = JArray.Parse(obj["itemPackage"]["items"].ToString());
                                     foreach (JToken jToken1 in itemJson)
                                     {
-                                        var item = (JObject) jToken1;
+                                        JObject item = (JObject) jToken1;
                                         items.Add($"{item["itemId"]} x {item["stackCount"]}");
                                     }
                                     Console.WriteLine("Care Package Spawned with: " + string.Join(", ", items));
@@ -290,7 +289,7 @@ namespace EduardoBotv2.Services
         {
             try
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, Constants.PUBG_PLAYER_LOOKUP(platform, region, username));
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Constants.PUBG_PLAYER_LOOKUP(platform, region, username));
                 request.Headers.Add("Authorization", "bearer " + c.EduardoSettings.PUBGApiKey);
                 request.Headers.Add("Accept", "application/vnd.api+json");
                 HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
@@ -307,7 +306,7 @@ namespace EduardoBotv2.Services
         {
             try
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, Constants.PUBG_PLAYER_LOOKUP_WITH_ID(platform, region, id));
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Constants.PUBG_PLAYER_LOOKUP_WITH_ID(platform, region, id));
                 request.Headers.Add("Authorization", "bearer " + c.EduardoSettings.PUBGApiKey);
                 request.Headers.Add("Accept", "application/vnd.api+json");
                 HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
@@ -324,7 +323,7 @@ namespace EduardoBotv2.Services
         {
             try
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, Constants.PUBG_MATCH_LOOKUP(platform, region, matchId));
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Constants.PUBG_MATCH_LOOKUP(platform, region, matchId));
                 request.Headers.Add("Authorization", "bearer " + c.EduardoSettings.PUBGApiKey);
                 request.Headers.Add("Accept", "application/vnd.api+json");
                 HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
@@ -342,7 +341,7 @@ namespace EduardoBotv2.Services
             string telemetryUrl = matchJson["included"].ToObject<JArray>().FirstOrDefault(x => x["type"].ToString() == "asset" && x["id"].ToString() == matchJson["data"]["relationships"]["assets"]["data"][0]["id"].ToString())?["attributes"]["URL"].ToString();
             try
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, telemetryUrl);
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, telemetryUrl);
                 HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();
                 return JArray.Parse(responseString);

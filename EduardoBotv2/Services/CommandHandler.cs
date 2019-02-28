@@ -3,7 +3,6 @@ using Discord.WebSocket;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using EduardoBotv2.Data;
 using EduardoBotv2.Helpers;
 using EduardoBotv2.Models;
 
@@ -38,7 +37,7 @@ namespace EduardoBotv2.Services
         {
             if (!(sm is SocketUserMessage msg)) return;
 
-            var context = new EduardoContext(client, msg, serviceProvider, settings);
+            EduardoContext context = new EduardoContext(client, msg, serviceProvider, settings);
 
             int argPos = 0;
 

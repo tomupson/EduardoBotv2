@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace EduardoBotv2.Data
+namespace EduardoBotv2.Models
 {
     public static class Constants
     {

@@ -19,8 +19,8 @@ namespace EduardoBotv2.Services
                     case GalleryAlbum album:
                         await c.Channel.SendMessageAsync(album.Link);
                         break;
-                    case GalleryImage _:
-                        await c.Channel.SendMessageAsync(((GalleryImage)img).Link);
+                    case GalleryImage image:
+                        await c.Channel.SendMessageAsync(image.Link);
                         break;
                 }
             } else
@@ -37,11 +37,11 @@ namespace EduardoBotv2.Services
             {
                 switch (img)
                 {
-                    case GalleryAlbum _:
-                        await c.Channel.SendMessageAsync(((GalleryAlbum)img).Link);
+                    case GalleryAlbum album:
+                        await c.Channel.SendMessageAsync(album.Link);
                         break;
-                    case GalleryImage _:
-                        await c.Channel.SendMessageAsync(((GalleryImage)img).Link);
+                    case GalleryImage image:
+                        await c.Channel.SendMessageAsync(image.Link);
                         break;
                 }
             } else

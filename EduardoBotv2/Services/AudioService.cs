@@ -11,7 +11,6 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Text.RegularExpressions;
 using Discord.Rest;
-using EduardoBotv2.Data;
 using EduardoBotv2.Extensions;
 using EduardoBotv2.Helpers;
 using EduardoBotv2.Models;
@@ -292,8 +291,8 @@ namespace EduardoBotv2.Services
 
             if (validAuthorities.Any(input.Contains))
             {
-                var regexExtractId = new Regex(Constants.YOUTUBE_LINK_REGEX, RegexOptions.Compiled);
-                var uri = new Uri(input);
+                Regex regexExtractId = new Regex(Constants.YOUTUBE_LINK_REGEX, RegexOptions.Compiled);
+                Uri uri = new Uri(input);
 
                 string authority = new UriBuilder(uri).Uri.Authority.ToLower();
                 if (validAuthorities.Contains(authority))
@@ -320,7 +319,7 @@ namespace EduardoBotv2.Services
 
             if (getVideoByIdResponse.Items.Count == 0) return null;
 
-            var outputSong = new Song
+            Song outputSong = new Song
             {
                 Title = getVideoByIdResponse.Items[0].Snippet.Title,
                 Duration = XmlConvert.ToTimeSpan(getVideoByIdResponse.Items[0].ContentDetails.Duration),
@@ -337,7 +336,7 @@ namespace EduardoBotv2.Services
 
         private static string GetStreamUrl(string url)
         {
-            var youtubeDl = new Process
+            Process youtubeDl = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {

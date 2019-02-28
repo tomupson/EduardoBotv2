@@ -24,9 +24,8 @@ namespace EduardoBotv2.Extensions
             return new string(characters);
         }
 
-        public static bool Like(this string toSearch, string toFind)
-        {
-            return new Regex(@"\A" + new Regex(@"\.|\$|\^|\{|\[|\(|\||\)|\*|\+|\?|\\").Replace(toFind, ch => @"\" + ch).Replace('_', '.').Replace("%", ".*") + @"\z", RegexOptions.Singleline).IsMatch(toSearch);
-        }
+        public static bool Like(this string toSearch, string toFind) => new Regex(@"\A" + new Regex(@"\.|\$|\^|\{|\[|\(|\||\)|\*|\+|\?|\\")
+            .Replace(toFind, ch => @"\" + ch).Replace('_', '.')
+            .Replace("%", ".*") + @"\z", RegexOptions.Singleline).IsMatch(toSearch);
     }
 }

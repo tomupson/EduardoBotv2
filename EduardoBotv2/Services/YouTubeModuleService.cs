@@ -3,7 +3,6 @@ using Discord;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
-using EduardoBotv2.Data;
 using EduardoBotv2.Extensions;
 using EduardoBotv2.Helpers;
 using EduardoBotv2.Models;

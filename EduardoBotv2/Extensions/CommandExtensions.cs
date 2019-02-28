@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System.Text;
+using Discord;
 using Discord.Commands;
 
 namespace EduardoBotv2.Extensions
@@ -7,7 +8,7 @@ namespace EduardoBotv2.Extensions
     {
         public static string GetUsage(this CommandInfo cmd)
         {
-            string usage = string.Empty;
+            StringBuilder sb = new StringBuilder();
             foreach (ParameterInfo param in cmd.Parameters)
             {
                 string before = "<";
@@ -17,6 +18,7 @@ namespace EduardoBotv2.Extensions
                     before = "[";
                     after = "]";
                 }
+
                 if (param.Type == typeof(IRole) || param.Type == typeof(IGuildUser))
                 {
                     before += "@";
@@ -27,9 +29,10 @@ namespace EduardoBotv2.Extensions
                     before += "#";
                 }
 
-                usage += $" {before}{param.Name}{after}";
+                sb.Append($" {before}{param.Name}{after}");
             }
-            return usage;
+
+            return sb.ToString();
         }
     }
 }

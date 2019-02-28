@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using EduardoBotv2.Data;
 using EduardoBotv2.Helpers;
 using EduardoBotv2.Models;
 
@@ -32,8 +31,8 @@ namespace EduardoBotv2.Services
 
             if (validAuthorities.Any(url.Contains))
             {
-                var regexExtractId = new Regex(Constants.YOUTUBE_LINK_REGEX, RegexOptions.Compiled);
-                var uri = new Uri(url);
+                Regex regexExtractId = new Regex(Constants.YOUTUBE_LINK_REGEX, RegexOptions.Compiled);
+                Uri uri = new Uri(url);
                 try
                 {
                     string authority = new UriBuilder(uri).Uri.Authority.ToLower();

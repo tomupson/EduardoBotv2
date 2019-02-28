@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using EduardoBotv2.Data;
 using EduardoBotv2.Extensions;
 using EduardoBotv2.Helpers;
 using EduardoBotv2.Models;
@@ -49,12 +48,12 @@ namespace EduardoBotv2.Services
                 {
                     Dictionary<Pokemon, int> pokemonPage = _pokemonInventory.Skip(i).Take(Math.Max(_pokemonInventory.Count / 4 - (i + 1), Constants.MAX_POKEMON_PER_PAGE)).ToDictionary(x => x.Key, x => x.Value);
                     List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>();
-                    foreach (KeyValuePair<Pokemon, int> poke in pokemonPage)
+                    foreach ((Pokemon pokemon, int amount) in pokemonPage)
                     {
                         fields.Add(new EmbedFieldBuilder
                         {
-                            Name = $"{poke.Key.Name.UpperFirstChar()} (x{poke.Value})",
-                            Value = poke.Key.Sprites.FrontDefaultSpriteUrl
+                            Name = $"{pokemon.Name.UpperFirstChar()} (x{amount})",
+                            Value = pokemon.Sprites.FrontDefaultSpriteUrl
                         });
                     }
 
@@ -103,7 +102,7 @@ namespace EduardoBotv2.Services
 
         private static async Task<Pokemon> GetPokemonFromApi(int roll)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"http://pokeapi.co/api/v2/pokemon/{roll}");
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"http://pokeapi.co/api/v2/pokemon/{roll}");
             HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
             string result = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<Pokemon>(result);
