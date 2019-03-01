@@ -1,0 +1,60 @@
+﻿using System;
+using System.Reflection;
+using System.Threading.Tasks;
+using Discord.Commands;
+using Discord.WebSocket;
+using EduardoBotv2.Core.Helpers;
+using EduardoBotv2.Core.Models;
+
+namespace EduardoBotv2.Core.Services
+{
+    public class CommandHandler
+    {
+        private readonly DiscordSocketClient client;
+        private readonly CommandService commandService;
+        private readonly Credentials settings;
+        private IServiceProvider serviceProvider;
+
+        public CommandHandler(DiscordSocketClient client, CommandService commandService, IServiceProvider provider, Credentials settings)
+        {
+            this.settings = settings;
+            this.client = client;
+            this.commandService = commandService;
+            this.commandService.Log += Logger.Log;
+            serviceProvider = provider;
+
+            this.client.MessageReceived += OnMessageReceviedAsync;
+        }
+
+        public async Task InitializeAsync(IServiceProvider provider)
+        {
+            serviceProvider = provider;
+            await commandService.AddModulesAsync(Assembly.GetEntryAssembly(), serviceProvider);
+        }
+
+        private async Task OnMessageReceviedAsync(SocketMessage sm)
+        {
+            if (!(sm is SocketUserMessage msg)) return;
+
+            EduardoContext context = new EduardoContext(client, msg, serviceProvider, settings);
+
+            int argPos = 0;
+
+            if (msg.HasStringPrefix(Constants.DEFAULT_PREFIX, ref argPos) || msg.HasMentionPrefix(client.CurrentUser, ref argPos))
+            {
+                IResult result = await commandService.ExecuteAsync(context, argPos, serviceProvider);
+
+                if (!result.IsSuccess && result.Error != CommandError.UnknownCommand)
+                {
+                    if (result.Error == CommandError.BadArgCount)
+                    {
+                        await context.Channel.SendMessageAsync("**Incorrect command usage. Use `$help <command>` to show usage**");
+                    } else
+                    {
+                        await context.Channel.SendMessageAsync(result.ErrorReason);
+                    }
+                }
+            }
+        }
+    }
+}
