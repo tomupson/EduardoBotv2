@@ -20,7 +20,7 @@ namespace EduardoBotv2.Core.Services
                 return;
             }
 
-            WebRequest request = WebRequest.Create(new Uri($"https://newsapi.org/v1/articles?source={source}&sortBy=top&apiKey={c.EduardoSettings.NewsApiKey}"));
+            WebRequest request = WebRequest.Create(new Uri($"https://newsapi.org/v1/articles?source={source}&sortBy=top&apiKey={c.EduardoCredentials.NewsApiKey}"));
             WebResponse response = await request.GetResponseAsync();
 
             string json;
@@ -38,7 +38,7 @@ namespace EduardoBotv2.Core.Services
             int maxHeadlines = Math.Min(Constants.MAX_HEADLINES, jHeadlines.Count - 1);
             for (int i = 0; i < maxHeadlines; i++)
             {
-                string shorten = await GoogleHelper.ShortenUrlAsync(c.EduardoSettings.GoogleShortenerApiKey, jHeadlines[i]["url"].ToString());
+                string shorten = await GoogleHelper.ShortenUrlAsync(c.EduardoCredentials.GoogleShortenerApiKey, jHeadlines[i]["url"].ToString());
 
                 headlines.Add(new EmbedFieldBuilder
                 {

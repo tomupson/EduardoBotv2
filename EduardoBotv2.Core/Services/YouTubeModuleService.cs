@@ -17,7 +17,7 @@ namespace EduardoBotv2.Core.Services
         {
             if (searchQuery != null)
             {
-                SearchListResponse searchVideosResponse = await GoogleHelper.SearchYouTubeAsync(c.EduardoSettings.GoogleYouTubeApiKey, "snippet", searchQuery, 5, YouTubeRequestType.Video);
+                SearchListResponse searchVideosResponse = await GoogleHelper.SearchYouTubeAsync(c.EduardoCredentials.GoogleYouTubeApiKey, "snippet", searchQuery, 5, YouTubeRequestType.Video);
                 
                 List<Embed> pageEmbeds = searchVideosResponse.Items.Select((t, i) => new EmbedBuilder
                 {

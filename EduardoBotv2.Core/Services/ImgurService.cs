@@ -10,7 +10,7 @@ namespace EduardoBotv2.Core.Services
     {
         public async Task SearchImgur(EduardoContext c, string searchQuery = null)
         {
-            IGalleryItem img = await ImgurHelper.SearchImgur(c.EduardoSettings.ImgurClientId, c.EduardoSettings.ImgurClientSecret, searchQuery);
+            IGalleryItem img = await ImgurHelper.SearchImgur(c.EduardoCredentials.ImgurClientId, c.EduardoCredentials.ImgurClientSecret, searchQuery);
 
             if (img != null)
             {
@@ -31,7 +31,7 @@ namespace EduardoBotv2.Core.Services
 
         public async Task FetchSubredditImage(EduardoContext c, string subredditName)
         {
-            IGalleryItem img = await ImgurHelper.SearchImgurSubreddit(c.EduardoSettings.ImgurClientId, c.EduardoSettings.ImgurClientSecret, subredditName);
+            IGalleryItem img = await ImgurHelper.SearchImgurSubreddit(c.EduardoCredentials.ImgurClientId, c.EduardoCredentials.ImgurClientSecret, subredditName);
 
             if (img != null)
             {

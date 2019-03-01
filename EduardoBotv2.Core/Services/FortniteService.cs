@@ -121,7 +121,7 @@ namespace EduardoBotv2.Core.Services
         {
             if (!loggedIn)
             {
-                await Login(c.EduardoSettings);
+                await Login(c.EduardoCredentials);
             }
 
             if (username != string.Empty)
@@ -328,7 +328,7 @@ namespace EduardoBotv2.Core.Services
         {
             if (!loggedIn)
             {
-                await Login(c.EduardoSettings);
+                await Login(c.EduardoCredentials);
             }
 
             JObject storeItemsJson = await GetStoreItemsFromApi();
@@ -343,7 +343,7 @@ namespace EduardoBotv2.Core.Services
         {
             if (!loggedIn)
             {
-                await Login(c.EduardoSettings);
+                await Login(c.EduardoCredentials);
             }
 
             JObject newsJson = await GetNewsFromApi();
@@ -387,7 +387,7 @@ namespace EduardoBotv2.Core.Services
         {
             if (!loggedIn)
             {
-                await Login(c.EduardoSettings);
+                await Login(c.EduardoCredentials);
 
                 JArray statusJson = await GetServerStatusFromApi();
                 Console.WriteLine(statusJson);

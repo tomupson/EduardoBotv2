@@ -27,15 +27,16 @@ namespace EduardoBotv2.Core.Helpers
         {
             return await Task.Run(() =>
             {
-                YouTubeService service = CreateYouTubeService(apiKey);
+                using (YouTubeService service = CreateYouTubeService(apiKey))
+                {
+                    SearchResource.ListRequest searchVideoRequest = service.Search.List(part);
+                    searchVideoRequest.Q = searchQuery;
+                    searchVideoRequest.MaxResults = maxResults;
+                    searchVideoRequest.Type = Enum.GetName(typeof(YouTubeRequestType), type).ToLower();
 
-                SearchResource.ListRequest searchVideoRequest = service.Search.List(part);
-                searchVideoRequest.Q = searchQuery;
-                searchVideoRequest.MaxResults = maxResults;
-                searchVideoRequest.Type = Enum.GetName(typeof(YouTubeRequestType), type).ToLower();
-
-                Task<SearchListResponse> response = searchVideoRequest.ExecuteAsync();
-                return response;
+                    Task<SearchListResponse> response = searchVideoRequest.ExecuteAsync();
+                    return response;
+                }
             });
         }
 
@@ -43,14 +44,15 @@ namespace EduardoBotv2.Core.Helpers
         {
             return await Task.Run(() =>
             {
-                YouTubeService service = CreateYouTubeService(apiKey);
+                using (YouTubeService service = CreateYouTubeService(apiKey))
+                {
+                    VideosResource.ListRequest getVideoByIdRequest = service.Videos.List(part);
+                    getVideoByIdRequest.MaxResults = 1;
+                    getVideoByIdRequest.Id = videoId;
 
-                VideosResource.ListRequest getVideoByIdRequest = service.Videos.List(part);
-                getVideoByIdRequest.MaxResults = 1;
-                getVideoByIdRequest.Id = videoId;
-
-                Task<VideoListResponse> response = getVideoByIdRequest.ExecuteAsync();
-                return response;
+                    Task<VideoListResponse> response = getVideoByIdRequest.ExecuteAsync();
+                    return response;
+                }
             });
         }
 

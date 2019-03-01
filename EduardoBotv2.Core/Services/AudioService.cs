@@ -2,14 +2,13 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Discord;
 using Discord.Audio;
-using Discord.Rest;
 using EduardoBotv2.Core.Extensions;
 using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Models;
@@ -23,337 +22,327 @@ namespace EduardoBotv2.Core.Services
     {
         private readonly ConcurrentDictionary<ulong, IAudioClient> connectedChannels = new ConcurrentDictionary<ulong, IAudioClient>();
         private readonly List<Song> queue = new List<Song>();
-        private static Song currentSong;
+        private CancellationTokenSource queueCts;
+        private CancellationTokenSource audioCts;
 
-        private static bool queueRunning;
-        private static bool songPlaying;
-
-        public async Task AddSongToQueue(EduardoContext c, string input)
+        public async Task PlaySong(EduardoContext context, string input)
         {
-            Song requestedSong = await GetVideoInfo(c, input);
+            Song song = await GetVideoInfo(context, input);
+
+            if (song != null)
+            {
+                audioCts?.Cancel();
+                queueCts?.Cancel();
+                queue.Insert(0, song);
+                await StartQueue(context);
+            }
+            else
+            {
+                await context.Channel.SendMessageAsync($"Could not find video like \"{input}\"");
+            }
+        }
+
+        public async Task StartQueue(EduardoContext context)
+        {
+            queueCts = new CancellationTokenSource();
+            if (queue.Count == 0)
+            {
+                await context.Channel.SendMessageAsync($"There are no songs in the queue! Use `{Constants.CMD_PREFIX}queue add <song>` to add items to the queue");
+                return;
+            }
+
+            await JoinAudio(context);
+
+            if (connectedChannels.TryGetValue(context.Guild.Id, out IAudioClient client))
+            {
+                using (AudioOutStream stream = client.CreatePCMStream(AudioApplication.Music))
+                {
+                    while (queue.Count > 0 && !queueCts.IsCancellationRequested)
+                    {
+                        await SendAudioAsync(context, queue[0], stream);
+                        queue.RemoveAt(0);
+                    }
+                }
+            }
+
+            await LeaveAudio(context.Guild);
+        }
+
+        public void Stop()
+        {
+            queueCts?.Cancel();
+            audioCts?.Cancel();
+        }
+
+        public async Task AddSongToQueue(EduardoContext context, string input)
+        {
+            Song requestedSong = await GetVideoInfo(context, input);
 
             if (requestedSong != null)
             {
                 queue.Add(requestedSong);
-                await c.Channel.SendMessageAsync($"Added **{requestedSong.Title}** to the queue.");
-            } else
+                await context.Channel.SendMessageAsync($"Addeed **{requestedSong.Title}** to the queue");
+            }
+            else
             {
-                await c.Channel.SendMessageAsync($"**Could not find video like '{input}'**");
+                await context.Channel.SendMessageAsync($"Could not find video like \"{input}");
             }
         }
 
-        public async Task RemoveSongFromQueue(EduardoContext c, int queueIndex)
+        public async Task RemoveSongFromQueue(EduardoContext context, int queueNum)
         {
-            if (queueIndex < 1 || queueIndex > queue.Count) return;
+            if (queueNum < 1 || queueNum > queue.Count) return;
 
-            Song requestedSong = queue[queueIndex-1];
-
-            if (queueIndex == 1 && queueRunning)
+            if (queueNum == 1)
             {
-                await c.Channel.SendMessageAsync("**Cannot remove the current song in the queue! Use `$queue skip` to move onto the next song.**");
-                return;
+                await Skip(context);
             }
+
+            Song requestedSong = queue[queueNum - 1];
+
+            // Skip current song if queue is running and queueNum == 1?
 
             queue.Remove(requestedSong);
-            await c.Channel.SendMessageAsync($"Removed **{requestedSong.Title}** from the queue.");
+            await context.Channel.SendMessageAsync($"Removed {requestedSong.Title.Boldify()} from the queue");
         }
 
-        private static EmbedBuilder BuildPlayingSongEmbed()
+        public async Task Skip(EduardoContext context)
         {
-            string desc = currentSong.Description.Length < Constants.MAX_DESCRIPTION_LENGTH ? currentSong.Description : currentSong.Description.Substring(0, Constants.MAX_DESCRIPTION_LENGTH);
-            return new EmbedBuilder
+            if (queue.Count > 0)
             {
-                Title = currentSong.Title,
-                Color = Color.Red,
-                Url = currentSong.Url,
-                Fields = new List<EmbedFieldBuilder>
-                {
-                    new EmbedFieldBuilder
-                    {
-                        Name = "Video Description",
-                        Value = desc
-                    },
-                    new EmbedFieldBuilder
-                    {
-                        Name = "Requested by",
-                        Value = currentSong.RequestedBy.Boldify()
-                    }
-                },
-                Footer = new EmbedFooterBuilder
-                {
-                    IconUrl = @"https://i.imgur.com/Fsaf4OW.png",
-                    Text = $"{currentSong.TimePassed.ToDurationString()} / {currentSong.Duration?.ToDurationString()}"
-                },
-                ThumbnailUrl = currentSong.ThumbnailUrl
-            };
-        }
-
-        public async Task ShowCurrentlyPlayingSong(EduardoContext c)
-        {
-            if (currentSong != null)
-            {
-                EmbedBuilder builder = BuildPlayingSongEmbed();
-                await c.Channel.SendMessageAsync("**Currently Playing:**", false, builder.Build());
-
-            } else
-            {
-                await c.Channel.SendMessageAsync("**There is no song currently playing.**");
+                IUserMessage skipMessage = await context.Channel.SendMessageAsync("Skipping song...");
+                audioCts?.Cancel();
+                await skipMessage.DeleteAsync();
             }
         }
 
-        private static async Task ShowCurrentlyPlaying(EduardoContext c)
+        public async Task ShowCurrentSong(EduardoContext context)
         {
-            EmbedBuilder builder = BuildPlayingSongEmbed();
-            await c.Channel.SendMessageAsync("**Now Playing:**", false, builder.Build());
-        }
-
-        private async Task SendAudioAsync(EduardoContext c, Song song)
-        {
-            await ShowCurrentlyPlaying(c);
-
-            if (connectedChannels.TryGetValue(c.Guild.Id, out IAudioClient client))
+            if (queue.Count > 0 && !(audioCts.IsCancellationRequested || queueCts.IsCancellationRequested))
             {
-                await Logger.Log(new LogMessage(LogSeverity.Debug, "Eduardo", $"Starting playback of {song.Title} in {c.Guild.Name}"));
-
-                Stream output = CreateStream(song.StreamUrl).StandardOutput.BaseStream;
-
-                AudioOutStream stream = client.CreatePCMStream(AudioApplication.Mixed);
-                await output.CopyToAsync(stream);
-                await stream.FlushAsync().ConfigureAwait(false);
+                await context.Channel.SendMessageAsync("Currently playing:", false, BuildSongEmbed(queue[0]));
+            }
+            else
+            {
+                await context.Channel.SendMessageAsync("There is no song playing");
             }
         }
 
-        public async Task ClearQueue()
+        public void ClearQueue()
         {
             queue.Clear();
-            await Task.CompletedTask;
         }
 
-        public async Task PlaySong(EduardoContext c, string input)
-        {
-            if (songPlaying)
-            {
-                await LeaveAudio(c);
-                songPlaying = false;
-                await PlaySong(c, input);
-            }
-
-            if (queueRunning)
-            {
-                await c.Channel.SendMessageAsync("**Cannot play song while queue is running! Use `$stop` to stop the queue.**");
-                return;
-            }
-
-            songPlaying = true;
-            Song song = await GetVideoInfo(c, input);
-            if (song != null)
-            {
-                currentSong = song;
-                await JoinAudio(c);
-                await SendAudioAsync(c, song);
-                songPlaying = false;
-                currentSong = null;
-                await LeaveAudio(c);
-            } else
-            {
-                await c.Channel.SendMessageAsync($"**Could not find video like '{input}'**");
-            }
-        }
-
-        public async Task StartQueue(EduardoContext c)
-        {
-            if (queue.Count == 0)
-            {
-                await c.Channel.SendMessageAsync("**There are no songs in the queue! Use `$queue add <song>` to add items to the queue!**");
-                return;
-            }
-
-            if (songPlaying)
-            {
-                await c.Channel.SendMessageAsync("**Cannot play queue while song is playing! Use `$stop` to stop the song.**");
-                return;
-            }
-
-            if (queueRunning)
-            {
-                await c.Channel.SendMessageAsync("**Queue already running! Use `$stop` to stop the queue.**");
-                return;
-            }
-
-            queueRunning = true;
-            await JoinAudio(c);
-            await PlayQueue(c);
-        }
-
-        public async Task PlayQueue(EduardoContext c)
-        {
-            while (queue.Count > 0)
-            {
-                currentSong = queue[0];
-                await SendAudioAsync(c, queue[0]);
-                queue.RemoveAt(0);
-                await PlayQueue(c);
-            }
-
-            queueRunning = false;
-            currentSong = null;
-            await LeaveAudio(c);
-        }
-
-        public async Task ViewQueue(EduardoContext c)
+        public async Task ViewQueue(EduardoContext context)
         {
             if (queue.Count > 0)
             {
-                string queueInfo = "**Queue:**";
+                string queueInfo = "Queue:";
                 for (int i = 0; i < queue.Count; i++)
                 {
-                    queueInfo += $"\n{i + 1}. **{queue[i].Title}**";
-                    if (i == 0 && queueRunning) queueInfo += " => **[CURRENTLY PLAYING]**";
+                    queueInfo += $"\n{i + 1}. {queue[i].Title}";
                 }
-                await c.Channel.SendMessageAsync(queueInfo);
-            } else
+
+                await context.Channel.SendMessageAsync(queueInfo);
+            }
+            else
             {
-                await c.Channel.SendMessageAsync("**There are no songs in the queue! Use `$queue add <song>` to add songs to the queue.**");
+                await context.Channel.SendMessageAsync($"There are no songs in the queue! Use {$"`{Constants.CMD_PREFIX}queue add <song>`".Boldify()} to add a song to the queue");
             }
         }
 
-        public async Task SkipQueueSong(EduardoContext c)
+        private async Task JoinAudio(EduardoContext context)
         {
-            if (songPlaying)
+            // Get connected voice channel of requesting user
+            IVoiceChannel target = (context.User as IVoiceState)?.VoiceChannel;
+
+            // Don't join audio if not correct guild.
+            if (target?.Guild.Id != context.Guild.Id) return;
+
+            // Leave current audio channel on guild (if any)
+            if (connectedChannels.ContainsKey(context.Guild.Id))
             {
-                await c.Channel.SendMessageAsync("**A song is already playing! Use `$stop` to stop the song.**");
-                return;
+                await LeaveAudio(context.Guild);
             }
 
-            RestUserMessage skipMsg = await c.Channel.SendMessageAsync("**Skipping Song...**");
-            queue.RemoveAt(0);
-            await skipMsg.DeleteAsync();
-            await LeaveAudio(c);
-            if (queue.Count > 0)
-            {
-                await JoinAudio(c);
-                await PlayQueue(c);
-            }
-        }
-
-        public async Task Stop(EduardoContext c)
-        {
-            queueRunning = false;
-            songPlaying = false;
-            currentSong = null;
-            await LeaveAudio(c);
-        }
-
-        private async Task JoinAudio(EduardoContext c)
-        {
-            IVoiceChannel target = (c.User as IVoiceState)?.VoiceChannel;
-
-            if (connectedChannels.TryGetValue(c.Guild.Id, out IAudioClient client)) return;
-            if (target?.Guild.Id != c.Guild.Id) return;
-
+            // Connect to new audio channel
             IAudioClient audioClient = await target.ConnectAsync();
 
-            if (connectedChannels.TryAdd(c.Guild.Id, audioClient))
+            // Register connection in connected channels
+            if (connectedChannels.TryAdd(context.Guild.Id, audioClient))
             {
-                await Logger.Log(new LogMessage(LogSeverity.Info, "Eduardo", $"Connected to voice channel on {c.Guild.Name}"));
-            } else
+                await Logger.Log(new LogMessage(LogSeverity.Info, "EduardoRemastered", $"Connected to voice channel on {context.Guild.Name}"));
+            }
+            else
             {
-                await Logger.Log(new LogMessage(LogSeverity.Error, "Eduardo", $"Failed to join a voice channel on {c.Guild.Name}"));
+                await Logger.Log(new LogMessage(LogSeverity.Error, "EduardoRemastered", $"Failed to join voice channel on {context.Guild.Name}"));
             }
         }
 
-        private async Task LeaveAudio(EduardoContext c)
+        private async Task LeaveAudio(IGuild guild)
         {
-            if (connectedChannels.TryRemove(c.Guild.Id, out IAudioClient client))
+            // Unregister from connected channels
+            if (connectedChannels.TryRemove(guild.Id, out IAudioClient client))
             {
+                // Disconnect from connected channel
                 await client.StopAsync();
-                await Logger.Log(new LogMessage(LogSeverity.Info, "Eduardo", $"Disconnected from voice channel on {c.Guild.Name}"));
+
+                await Logger.Log(new LogMessage(LogSeverity.Debug, "EduardoRemastered", $"Disconncted from voice in {guild.Name}"));
+            }
+        }
+
+        private async Task SendAudioAsync(EduardoContext context, Song song, AudioOutStream discordStream)
+        {
+            audioCts = new CancellationTokenSource();
+
+            await ShowCurrentSong(context);
+
+            await Logger.Log(new LogMessage(LogSeverity.Debug, "EduardoRemastered", $"Starting playback of {song.Title} in {context.Guild.Name}"));
+
+            using (Process ffmpegProcess = CreateStream(song.StreamUrl))
+            {
+                try
+                {
+                    var buffer = new byte[81920];
+                    int bytesRead;
+
+                    while (!audioCts.IsCancellationRequested && (bytesRead = await ffmpegProcess.StandardOutput.BaseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                    {
+                        await discordStream.WriteAsync(buffer, 0, bytesRead, audioCts.Token);
+                    }
+
+                    //await ffmpegProcess.StandardOutput.BaseStream.CopyToAsync(discordStream, audioCts.Token);
+                }
+                catch (Exception ex)
+                {
+                    if (ex is OperationCanceledException ocEx && !ocEx.CancellationToken.IsCancellationRequested) throw;
+                }
+                finally
+                {
+                    await discordStream.FlushAsync();
+                }
             }
         }
 
         private static Process CreateStream(string url) => Process.Start(new ProcessStartInfo
         {
             FileName = "ffmpeg.exe",
-            Arguments = $"-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -err_detect ignore_err -i {url} -vol 75 -f s16le -ar 48000 -vn -ac 2 pipe:1 -loglevel panic",
+            Arguments = $"-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -err_detect ignore_err -i {url} -vol 100 -f s16le -ar 48000 -vn -ac 2 pipe:1 -loglevel panic",
             UseShellExecute = false,
-            RedirectStandardOutput = true
+            RedirectStandardOutput = true,
+            CreateNoWindow = true,
+            WorkingDirectory = Environment.CurrentDirectory
         });
 
-        private static async Task<Song> GetVideoInfo(EduardoContext c, string input)
+        private static async Task<Song> GetVideoInfo(EduardoContext context, string input)
         {
-            string videoId = string.Empty;
+            string videoId = "";
 
-            List<string> validAuthorities = new List<string>
+            var validAuthorities = new List<string> {"youtube.com", "www.youtube.com", "youtu.be", "www.youtu.be"};
+
+            // Check if user input is any form of youtube url
+            if (validAuthorities.Any(input.ToLower().Contains))
             {
-                "youtube.com", "www.youtube.com", "youtu.be", "www.youtu.be"
-            };
+                var uri = new Uri(input);
 
-            if (validAuthorities.Any(input.Contains))
-            {
-                Regex regexExtractId = new Regex(Constants.YOUTUBE_LINK_REGEX, RegexOptions.Compiled);
-                Uri uri = new Uri(input);
-
-                string authority = new UriBuilder(uri).Uri.Authority.ToLower();
-                if (validAuthorities.Contains(authority))
+                if (validAuthorities.Contains(uri.Authority.ToLower()))
                 {
-                    Match regRes = regexExtractId.Match(uri.ToString());
-                    if (regRes.Success)
+                    // If so, get the video id query parameter using regex
+                    var idExtractionRegex = new Regex(Constants.YOUTUBE_LINK_REGEX, RegexOptions.Compiled);
+                    Match idMatch = idExtractionRegex.Match(uri.ToString());
+                    if (idMatch.Success)
                     {
-                        videoId = regRes.Groups[1].Value;
+                        videoId = idMatch.Groups[1].Value;
                     }
                 }
-
-            } else
+            }
+            else
             {
-                SearchListResponse searchVideoResponse = await GoogleHelper.SearchYouTubeAsync(c.EduardoSettings.GoogleYouTubeApiKey, "snippet", input, 1, YouTubeRequestType.Video);
+                // Otherwise, search youtube for the user input and get the video id that way
+                SearchListResponse response = await GoogleHelper.SearchYouTubeAsync(context.EduardoCredentials.GoogleYouTubeApiKey, "snippet", input, 1, YouTubeRequestType.Video);
 
-                if (searchVideoResponse.Items.Count > 0)
+                if (response.Items.Count > 0)
                 {
-                    videoId = searchVideoResponse.Items[0].Id.VideoId;
+                    videoId = response.Items[0].Id.VideoId;
                 }
-                else return null;
+                else
+                {
+                    return null;
+                }
             }
 
-            VideoListResponse getVideoByIdResponse = await GoogleHelper.GetVideoFromYouTubeAsync(c.EduardoSettings.GoogleYouTubeApiKey, "snippet,contentDetails", videoId, 1);
+            // Get the video by the previously determined id
+            VideoListResponse getVideoResponse = await GoogleHelper.GetVideoFromYouTubeAsync(context.EduardoCredentials.GoogleYouTubeApiKey, "snippet,contentDetails", videoId, 1);
 
-            if (getVideoByIdResponse.Items.Count == 0) return null;
+            if (getVideoResponse.Items.Count == 0) return null;
 
-            Song outputSong = new Song
+            string youtubeUrl = $"http://youtu.be/{videoId}";
+
+            return new Song
             {
-                Title = getVideoByIdResponse.Items[0].Snippet.Title,
-                Duration = XmlConvert.ToTimeSpan(getVideoByIdResponse.Items[0].ContentDetails.Duration),
+                Title = getVideoResponse.Items[0].Snippet.Title,
+                Duration = XmlConvert.ToTimeSpan(getVideoResponse.Items[0].ContentDetails.Duration),
                 VideoId = videoId,
-                Url = $"http://youtu.be/{videoId}",
-                StreamUrl = GetStreamUrl($"http://youtu.be/{videoId}"),
-                RequestedBy = c.User as IGuildUser,
-                Description = getVideoByIdResponse.Items[0].Snippet.Description,
-                ThumbnailUrl = getVideoByIdResponse.Items[0].Snippet.Thumbnails.Default__.Url
+                Url = youtubeUrl,
+                StreamUrl = GetStreamUrl(youtubeUrl),
+                RequestedBy = context.User as IGuildUser,
+                Description = getVideoResponse.Items[0].Snippet.Description,
+                ThumbnailUrl = getVideoResponse.Items[0].Snippet.Thumbnails.Default__.Url
             };
-
-            return outputSong;
         }
 
         private static string GetStreamUrl(string url)
         {
-            Process youtubeDl = new Process
+            // Use youtube-dl to get the url of the video stream, from the youtube url
+            var youtubeDl = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "youtube-dl",
-                    Arguments = $@"-url {url} -p "" -s -J -i -q --no-warnings --geo-bypass --no-check-certificate --no-call-home",
+                    Arguments = $"-j --geo-bypass --no-call-home {url}",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     CreateNoWindow = true,
                     WorkingDirectory = Environment.CurrentDirectory
                 }
             };
-            youtubeDl.Start();
-            string output = youtubeDl.StandardOutput.ReadToEnd();
-            JObject songJson = JObject.Parse(output);
 
-            dynamic entryJson = songJson;
-            string streamUrl = entryJson.url ?? entryJson.requested_formats[1]?.url;
-            return streamUrl ?? "";
+            youtubeDl.Start();
+
+            string output = youtubeDl.StandardOutput.ReadToEnd();
+            dynamic songJson = JObject.Parse(output);
+            return songJson.url ?? songJson.requested_formats[1]?.url ?? "";
+        }
+
+        private Embed BuildSongEmbed(Song song)
+        {
+            return new EmbedBuilder
+            {
+                Title = song.Title,
+                Color = Color.Red,
+                Url = song.Url,
+                Fields = new List<EmbedFieldBuilder>
+                {
+                    new EmbedFieldBuilder
+                    {
+                        Name = "Video Description",
+                        Value = !string.IsNullOrEmpty(song.Description) ? song.Description.Length < Constants.MAX_DESCRIPTION_LENGTH ?
+                            song.Description :
+                            song.Description.Substring(0, Constants.MAX_DESCRIPTION_LENGTH) : "-"
+                    },
+                    new EmbedFieldBuilder
+                    {
+                        Name = "Requested by",
+                        Value = song.RequestedBy.Boldify()
+                    }
+                },
+                Footer = new EmbedFooterBuilder
+                {
+                    IconUrl = @"https://i.imgur.com/Fsaf4OW.png",
+                    Text = $"{song.TimePassed.ToDurationString()} / {song.Duration?.ToDurationString()}"
+                },
+                ThumbnailUrl = song.ThumbnailUrl
+            }.Build();
         }
     }
 }

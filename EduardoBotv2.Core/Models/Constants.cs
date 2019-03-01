@@ -4,7 +4,7 @@ namespace EduardoBotv2.Core.Models
 {
     public static class Constants
     {
-        public const string DEFAULT_PREFIX = "$";
+        public const string CMD_PREFIX = "$";
         public const int MIN_CHAR_LENGTH = 7;
         public const int MAX_DESCRIPTION_LENGTH = 250;
 

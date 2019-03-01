@@ -26,9 +26,9 @@ namespace EduardoBotv2.Core.Services
             if (commandOrModule != null)
             {
                 commandOrModule = commandOrModule.ToLower();
-                if (commandOrModule.StartsWith(Constants.DEFAULT_PREFIX))
+                if (commandOrModule.StartsWith(Constants.CMD_PREFIX))
                 {
-                    commandOrModule = commandOrModule.Remove(0, Constants.DEFAULT_PREFIX.Length);
+                    commandOrModule = commandOrModule.Remove(0, Constants.CMD_PREFIX.Length);
                 }
 
                 foreach (ModuleInfo module in service.Modules)
@@ -38,7 +38,7 @@ namespace EduardoBotv2.Core.Services
                         int longestInModule = module.Commands.Select(cmd => cmd.Aliases.First().Length).Concat(new[] { 0 }).Max();
 
                         string moduleInfo = $"**{module.Name} Commands **: ```asciidoc\n";
-                        moduleInfo = module.Commands.Aggregate(moduleInfo, (current, cmd) => current + $"{Constants.DEFAULT_PREFIX}{cmd.Aliases.First()}{new string(' ', longestInModule + 1 - cmd.Aliases.First().Length)} :: {cmd.Summary}\n");
+                        moduleInfo = module.Commands.Aggregate(moduleInfo, (current, cmd) => current + $"{Constants.CMD_PREFIX}{cmd.Aliases.First()}{new string(' ', longestInModule + 1 - cmd.Aliases.First().Length)} :: {cmd.Summary}\n");
                         moduleInfo += "\nUse the $help command for more information on any of these commands.```";
                         await c.Channel.SendMessageAsync(moduleInfo);
                         return;
@@ -57,7 +57,7 @@ namespace EduardoBotv2.Core.Services
                             new EmbedFieldBuilder
                             {
                                 Name = "Usage",
-                                Value = $"`{Constants.DEFAULT_PREFIX}{commandOrModule}{command.GetUsage()}`"
+                                Value = $"`{Constants.CMD_PREFIX}{commandOrModule}{command.GetUsage()}`"
                             }
                         };
 
@@ -66,7 +66,7 @@ namespace EduardoBotv2.Core.Services
                             fields.Add(new EmbedFieldBuilder
                             {
                                 Name = "Example",
-                                Value = $"`{Constants.DEFAULT_PREFIX}{commandOrModule} {command.Remarks}`"
+                                Value = $"`{Constants.CMD_PREFIX}{commandOrModule} {command.Remarks}`"
                             });
                         }
 

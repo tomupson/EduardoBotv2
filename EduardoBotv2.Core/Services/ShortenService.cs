@@ -65,7 +65,7 @@ namespace EduardoBotv2.Core.Services
                 return;
             }
 
-            string shorten = await GoogleHelper.ShortenUrlAsync(c.EduardoSettings.GoogleShortenerApiKey, url);
+            string shorten = await GoogleHelper.ShortenUrlAsync(c.EduardoCredentials.GoogleShortenerApiKey, url);
 
             await c.Channel.SendMessageAsync($"**{c.User.Mention}, your shortened url is: \"{shorten}\"**");
         }
@@ -78,7 +78,7 @@ namespace EduardoBotv2.Core.Services
                 return;
             }
 
-            string unshortened = await GoogleHelper.UnshortenUrlAsync(c.EduardoSettings.GoogleShortenerApiKey, url);
+            string unshortened = await GoogleHelper.UnshortenUrlAsync(c.EduardoCredentials.GoogleShortenerApiKey, url);
 
             await c.Channel.SendMessageAsync($"**{c.User.Mention}, your unshortened url is: \"{unshortened}\"**");
         }

@@ -290,7 +290,7 @@ namespace EduardoBotv2.Core.Services
             try
             {
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Constants.PUBG_PLAYER_LOOKUP(platform, region, username));
-                request.Headers.Add("Authorization", "bearer " + c.EduardoSettings.PUBGApiKey);
+                request.Headers.Add("Authorization", "bearer " + c.EduardoCredentials.PUBGApiKey);
                 request.Headers.Add("Accept", "application/vnd.api+json");
                 HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();
@@ -307,7 +307,7 @@ namespace EduardoBotv2.Core.Services
             try
             {
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Constants.PUBG_PLAYER_LOOKUP_WITH_ID(platform, region, id));
-                request.Headers.Add("Authorization", "bearer " + c.EduardoSettings.PUBGApiKey);
+                request.Headers.Add("Authorization", "bearer " + c.EduardoCredentials.PUBGApiKey);
                 request.Headers.Add("Accept", "application/vnd.api+json");
                 HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();
@@ -324,7 +324,7 @@ namespace EduardoBotv2.Core.Services
             try
             {
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Constants.PUBG_MATCH_LOOKUP(platform, region, matchId));
-                request.Headers.Add("Authorization", "bearer " + c.EduardoSettings.PUBGApiKey);
+                request.Headers.Add("Authorization", "bearer " + c.EduardoCredentials.PUBGApiKey);
                 request.Headers.Add("Accept", "application/vnd.api+json");
                 HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();

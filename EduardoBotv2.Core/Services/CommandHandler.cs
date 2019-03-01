@@ -40,7 +40,7 @@ namespace EduardoBotv2.Core.Services
 
             int argPos = 0;
 
-            if (msg.HasStringPrefix(Constants.DEFAULT_PREFIX, ref argPos) || msg.HasMentionPrefix(client.CurrentUser, ref argPos))
+            if (msg.HasStringPrefix(Constants.CMD_PREFIX, ref argPos) || msg.HasMentionPrefix(client.CurrentUser, ref argPos))
             {
                 IResult result = await commandService.ExecuteAsync(context, argPos, serviceProvider);
 
