@@ -9,14 +9,14 @@ namespace EduardoBotv2.Core.Services
 {
     public class UtilityService
     {
-        public async Task CleanMessages(EduardoContext c, uint count)
+        public async Task CleanMessages(EduardoContext context, uint count)
         {
             if (count <= 0) return;
 
-            IEnumerable<IMessage> messagesToDelete = await c.Channel.GetMessagesAsync((int)count + 1).FlattenAsync();
-            await ((ITextChannel) c.Channel).DeleteMessagesAsync(messagesToDelete);
+            IEnumerable<IMessage> messagesToDelete = await context.Channel.GetMessagesAsync((int)count + 1).FlattenAsync();
+            await ((ITextChannel) context.Channel).DeleteMessagesAsync(messagesToDelete);
             string plural = count > 1 ? "s" : "";
-            RestUserMessage finishedMessage = await c.Channel.SendMessageAsync($"Successfully cleared {count} message{plural} :ok_hand:");
+            RestUserMessage finishedMessage = await context.Channel.SendMessageAsync($"Successfully cleared {count} message{plural} :ok_hand:");
             await Task.Delay(3000);
             await finishedMessage.DeleteAsync();
         }

@@ -11,17 +11,16 @@ namespace EduardoBotv2.Core.Services
 {
     public class UserService
     {
-        public async Task DisplayUserInfo(EduardoContext c, IGuildUser user = null)
+        public async Task DisplayUserInfo(EduardoContext context, IGuildUser user = null)
         {
             SocketUser targetSocketUser;
             SocketGuildUser targetGuildUser;
 
             if (user == null)
             {
-                targetSocketUser = c.User;
-                targetGuildUser = c.User as SocketGuildUser;
-            }
-            else
+                targetSocketUser = context.User;
+                targetGuildUser = context.User as SocketGuildUser;
+            } else
             {
                 targetSocketUser = user as SocketUser;
                 targetGuildUser = user as SocketGuildUser;
@@ -45,7 +44,7 @@ namespace EduardoBotv2.Core.Services
                 ThumbnailUrl = targetSocketUser?.GetAvatarUrl(),
                 Footer = new EmbedFooterBuilder
                 {
-                    IconUrl = c.Guild.CurrentUser.GetAvatarUrl(),
+                    IconUrl = context.Guild.CurrentUser.GetAvatarUrl(),
                     Text = $"Eduardo | {string.Format("{0:dddd MMM d}{1} {0:yyyy} at {0:h:m tt}", DateTime.Now, CommonHelper.GetDaySuffix(DateTime.Now.Day))}"
                 },
                 Author = new EmbedAuthorBuilder
@@ -73,25 +72,17 @@ namespace EduardoBotv2.Core.Services
                 }
             };
 
-            await c.Channel.SendMessageAsync("", false, builder.Build());
+            await context.Channel.SendMessageAsync("", false, builder.Build());
         }
 
-        public async Task CheckInvisible(EduardoContext c)
-        {
-            await c.Channel.TriggerTypingAsync();
-            List<SocketGuildUser> invis = c.Guild.Users.Where(x => x.Guild.IsConnected && x.Status == UserStatus.Offline).ToList();
-            string plural = invis.Count > 1 ? "are" : "is";
-            await c.Channel.SendMessageAsync(invis.Any() ? $"{string.Join(", ", invis.Select(x => x.Username))} {plural} probably invisible." : "Nobody appears to be invisible!");
-        }
-
-        public async Task GetAvatar(EduardoContext c, IUser targetUser = null)
+        public async Task GetAvatar(EduardoContext context, IUser targetUser = null)
         {
             if (targetUser == null)
             {
-                await c.Channel.SendMessageAsync(c.User.GetAvatarUrl());
+                await context.Channel.SendMessageAsync(context.User.GetAvatarUrl());
             } else
             {
-                await c.Channel.SendMessageAsync(targetUser.GetAvatarUrl());
+                await context.Channel.SendMessageAsync(targetUser.GetAvatarUrl());
             }
         }
     }

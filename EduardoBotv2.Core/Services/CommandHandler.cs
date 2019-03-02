@@ -15,13 +15,12 @@ namespace EduardoBotv2.Core.Services
         private readonly Credentials settings;
         private IServiceProvider serviceProvider;
 
-        public CommandHandler(DiscordSocketClient client, CommandService commandService, IServiceProvider provider, Credentials settings)
+        public CommandHandler(DiscordSocketClient client, CommandService commandService, Credentials settings)
         {
-            this.settings = settings;
             this.client = client;
             this.commandService = commandService;
+            this.settings = settings;
             this.commandService.Log += Logger.Log;
-            serviceProvider = provider;
 
             this.client.MessageReceived += OnMessageReceviedAsync;
         }
@@ -29,7 +28,7 @@ namespace EduardoBotv2.Core.Services
         public async Task InitializeAsync(IServiceProvider provider)
         {
             serviceProvider = provider;
-            await commandService.AddModulesAsync(Assembly.GetEntryAssembly(), serviceProvider);
+            await commandService.AddModulesAsync(GetType().GetTypeInfo().Assembly, provider);
         }
 
         private async Task OnMessageReceviedAsync(SocketMessage sm)

@@ -4,7 +4,7 @@ namespace EduardoBotv2.Core.Models
 {
     public static class Constants
     {
-        public const string CMD_PREFIX = "$";
+        public const string CMD_PREFIX = ".";
         public const int MIN_CHAR_LENGTH = 7;
         public const int MAX_DESCRIPTION_LENGTH = 250;
 
@@ -53,22 +53,21 @@ namespace EduardoBotv2.Core.Models
         // Fortnite API
         public const string FORTNITE_LAUNCHER_TOKEN = "MzRhMDJjZjhmNDQxNGUyOWIxNTkyMTg3NmRhMzZmOWE6ZGFhZmJjY2M3Mzc3NDUwMzlkZmZlNTNkOTRmYzc2Y2Y==";
         public const string FORTNITE_CLIENT_TOKEN = "ZWM2ODRiOGM2ODdmNDc5ZmFkZWEzY2IyYWQ4M2Y1YzY6ZTFmMzFjMjExZjI4NDEzMTg2MjYyZDM3YTEzZmM4NGQ==";
-        // OAUTH URLS
+
         public const string FORTNITE_OAUTH_TOKEN = "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token";
         public const string FORTNITE_OAUTH_EXCHANGE = "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/exchange";
         public const string FORTNITE_OAUTH_VERIFY = "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/verify?includePerms=true";
-        // API URLS
+
         public const string FORTNITE_STORE = "https://fortnite-public-service-prod11.ol.epicgames.com/fortnite/api/storefront/v2/catalog";
         public const string FORTNITE_SERVER_STATUS = "https://lightswitch-public-service-prod06.ol.epicgames.com/lightswitch/api/service/bulk/status?serviceId=Fortnite";
         public static string FORTNITE_PLAYER_LOOKUP(string username) => "https://persona-public-service-prod06.ol.epicgames.com/persona/api/public/account/lookup?q=" + username;
         public const string FORTNITE_NEWS = "https://fortnitecontent-website-prod07.ol.epicgames.com/content/api/pages/fortnite-game";
-        // PVP
+
         public static string FORTNITE_STATS_BR(string accountId) => "https://fortnite-public-service-prod11.ol.epicgames.com/fortnite/api/stats/accountId/" + accountId + "/bulk/window/alltime";
-        // PVE
+
         public const string FORTNITE_PVE_INFO = "https://fortnite-public-service-prod11.ol.epicgames.com/fortnite/api/game/v2/world/info";
         public static string FORTNITE_PROFILE_LOOKUP(string accountId) => "https://fortnite-public-service-prod11.ol.epicgames.com/fortnite/api/game/v2/profile/" + accountId + "/public/QueryProfile";
 
-        // PUBG API
         public static string PUBG_PLAYER_LOOKUP(string platform, string region, string username) => "https://api.playbattlegrounds.com/shards/" + platform + "-" + region + "/players?filter[playerNames]=" + username;
         public static string PUBG_PLAYER_LOOKUP_WITH_ID(string platform, string region, string id) => "https://api.playbattlegrounds.com/shards/" + platform + "-" + region + "/players/" + id;
         public static string PUBG_MATCH_LOOKUP(string platform, string region, string matchId) => "https://api.playbattlegrounds.com/shards/" + platform + "-" + region + "/matches/" + matchId;

@@ -13,11 +13,11 @@ namespace EduardoBotv2.Core.Services
 {
     public class YouTubeModuleService
     {
-        public async Task SearchYouTube(EduardoContext c, string searchQuery = null)
+        public async Task SearchYouTube(EduardoContext context, string searchQuery = null)
         {
             if (searchQuery != null)
             {
-                SearchListResponse searchVideosResponse = await GoogleHelper.SearchYouTubeAsync(c.EduardoCredentials.GoogleYouTubeApiKey, "snippet", searchQuery, 5, YouTubeRequestType.Video);
+                SearchListResponse searchVideosResponse = await GoogleHelper.SearchYouTubeAsync(context.EduardoCredentials.GoogleYouTubeApiKey, "snippet", searchQuery, 5, YouTubeRequestType.Video);
                 
                 List<Embed> pageEmbeds = searchVideosResponse.Items.Select((t, i) => new EmbedBuilder
                 {
@@ -34,7 +34,7 @@ namespace EduardoBotv2.Core.Services
                     Url = $"http://youtu.be/{t.Id.VideoId}"
                 }.Build()).ToList();
 
-                await c.SendPaginatedMessageAsync(new PaginatedMessage
+                await context.SendPaginatedMessageAsync(new PaginatedMessage
                 {
                     Embeds = pageEmbeds,
                     Timeout = TimeSpan.FromSeconds(Constants.PAGINATION_TIMEOUT_SECONDS),

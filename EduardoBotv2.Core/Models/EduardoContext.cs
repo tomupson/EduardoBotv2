@@ -7,7 +7,6 @@ namespace EduardoBotv2.Core.Models
 {
     public class EduardoContext : ICommandContext
     {
-        // Default
         public SocketUser User { get; }
 
         public SocketGuild Guild { get; }

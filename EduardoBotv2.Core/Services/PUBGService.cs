@@ -15,7 +15,7 @@ namespace EduardoBotv2.Core.Services
 {
     public class PUBGService
     {
-        public async Task GetPlayer(EduardoContext c, string username, string platformRegionString)
+        public async Task GetPlayer(EduardoContext context, string username, string platformRegionString)
         {
             if (Enum.TryParse(platformRegionString.Replace("-", "_"), out PUBGPlatformRegion platformRegion))
             {
@@ -24,7 +24,7 @@ namespace EduardoBotv2.Core.Services
                     string name = Enum.GetName(typeof(PUBGPlatformRegion), platformRegion);
                     string platform = name.Split("_")[0];
                     string region = name.Split("_")[1];
-                    JObject playerJson = await GetPlayerFromApi(c, username, platform, region);
+                    JObject playerJson = await GetPlayerFromApi(context, username, platform, region);
                     EmbedBuilder builder = new EmbedBuilder
                     {
                         Color = Color.Orange,
@@ -52,15 +52,15 @@ namespace EduardoBotv2.Core.Services
                         Title = playerJson["data"][0]["attributes"]["name"].ToString()
                     };
 
-                    await c.Channel.SendMessageAsync("", false, builder.Build());
+                    await context.Channel.SendMessageAsync("", false, builder.Build());
                 }
             } else
             {
-                await c.Channel.SendMessageAsync("Invalid platform-region. You can view valid options with `$pubgvalids`");
+                await context.Channel.SendMessageAsync("Invalid platform-region. You can view valid options with `$pubgvalids`");
             }
         }
 
-        public async Task GetMatches(EduardoContext c, string username, string platformRegionString)
+        public async Task GetMatches(EduardoContext context, string username, string platformRegionString)
         {
             if (Enum.TryParse(platformRegionString.Replace("-", "_"), out PUBGPlatformRegion platformRegion))
             {
@@ -69,7 +69,7 @@ namespace EduardoBotv2.Core.Services
                     string name = Enum.GetName(typeof(PUBGPlatformRegion), platformRegion);
                     string platform = name.Split("_")[0];
                     string region = name.Split("_")[1];
-                    JObject lookupJson = await GetPlayerFromApi(c, username, platform, region);
+                    JObject lookupJson = await GetPlayerFromApi(context, username, platform, region);
                     File.WriteAllText(@"D:\Thomas\Documents\ExamplePlayer.json", lookupJson.ToString());
                     JToken matchesJson = lookupJson["data"][0]["relationships"]["matches"]["data"];
 
@@ -79,7 +79,7 @@ namespace EduardoBotv2.Core.Services
                     {
                         if (match["type"].ToString() == "match")
                         {
-                            JObject matchJson = await GetMatchFromApi(c, match["id"].ToString(), platform, region);
+                            JObject matchJson = await GetMatchFromApi(context, match["id"].ToString(), platform, region);
                             TimeSpan t = TimeSpan.FromSeconds((int)matchJson["data"]["attributes"]["duration"]);
                             List<JToken> participants = matchJson["included"].ToObject<JArray>().Where(x => x["type"].ToString() == "participant").ToList();
                             JToken me = participants.FirstOrDefault(x => x["attributes"]["stats"]["playerId"].ToString() == lookupJson["data"][0]["id"].ToString());
@@ -198,11 +198,11 @@ namespace EduardoBotv2.Core.Services
                             pageEmbeds.Add(builder.Build());
                         } else
                         {
-                            await c.Channel.SendMessageAsync($"Type of match is {match["type"]}??");
+                            await context.Channel.SendMessageAsync($"Type of match is {match["type"]}??");
                         }
                     }
 
-                    await c.SendPaginatedMessageAsync(new PaginatedMessage
+                    await context.SendPaginatedMessageAsync(new PaginatedMessage
                     {
                         Embeds = pageEmbeds,
                         Timeout = TimeSpan.FromSeconds(Constants.PAGINATION_TIMEOUT_SECONDS),
@@ -212,7 +212,7 @@ namespace EduardoBotv2.Core.Services
             }
         }
 
-        public async Task GetMatch(EduardoContext c, string matchId, string platformRegionString)
+        public async Task GetMatch(EduardoContext context, string matchId, string platformRegionString)
         {
             if (Enum.TryParse(platformRegionString.Replace("-", "_"), out PUBGPlatformRegion platformRegion))
             {
@@ -221,12 +221,12 @@ namespace EduardoBotv2.Core.Services
                     string name = Enum.GetName(typeof(PUBGPlatformRegion), platformRegion);
                     string platform = name.Split("_")[0];
                     string region = name.Split("_")[1];
-                    JObject matchJson = await GetMatchFromApi(c, matchId, platform, region);
+                    JObject matchJson = await GetMatchFromApi(context, matchId, platform, region);
                 }
             }
         }
 
-        public async Task GetTelemetry(EduardoContext c, string username, string platformRegionString)
+        public async Task GetTelemetry(EduardoContext context, string username, string platformRegionString)
         {
             if (Enum.TryParse(platformRegionString.Replace("-", "_"), out PUBGPlatformRegion platformRegion))
             {
@@ -235,9 +235,9 @@ namespace EduardoBotv2.Core.Services
                     string name = Enum.GetName(typeof(PUBGPlatformRegion), platformRegion);
                     string platform = name.Split("_")[0];
                     string region = name.Split("_")[1];
-                    JObject lookupJson = await GetPlayerFromApi(c, username, platform, region);
+                    JObject lookupJson = await GetPlayerFromApi(context, username, platform, region);
                     string matchId = lookupJson["data"][0]["relationships"]["matches"]["data"][0]["id"].ToString();
-                    JObject matchJson = await GetMatchFromApi(c, matchId, platform, region);
+                    JObject matchJson = await GetMatchFromApi(context, matchId, platform, region);
                     JArray telemetry = await GetTelemetryDataFromMatch(matchJson);
                     foreach (JToken jToken in telemetry)
                     {
@@ -285,12 +285,12 @@ namespace EduardoBotv2.Core.Services
             await c.Channel.SendMessageAsync($"Valid options for platform-region are:\n{string.Join(", ", values)}");
         }
 
-        private static async Task<JObject> GetPlayerFromApi(EduardoContext c, string username, string platform, string region)
+        private static async Task<JObject> GetPlayerFromApi(EduardoContext context, string username, string platform, string region)
         {
             try
             {
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Constants.PUBG_PLAYER_LOOKUP(platform, region, username));
-                request.Headers.Add("Authorization", "bearer " + c.EduardoCredentials.PUBGApiKey);
+                request.Headers.Add("Authorization", "bearer " + context.EduardoCredentials.PUBGApiKey);
                 request.Headers.Add("Accept", "application/vnd.api+json");
                 HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();
@@ -302,12 +302,12 @@ namespace EduardoBotv2.Core.Services
             }
         }
 
-        private async Task<JObject> GetPlayerFromApiWithId(EduardoContext c, string id, string platform, string region)
+        private async Task<JObject> GetPlayerFromApiWithId(EduardoContext context, string id, string platform, string region)
         {
             try
             {
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Constants.PUBG_PLAYER_LOOKUP_WITH_ID(platform, region, id));
-                request.Headers.Add("Authorization", "bearer " + c.EduardoCredentials.PUBGApiKey);
+                request.Headers.Add("Authorization", "bearer " + context.EduardoCredentials.PUBGApiKey);
                 request.Headers.Add("Accept", "application/vnd.api+json");
                 HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();
@@ -319,12 +319,12 @@ namespace EduardoBotv2.Core.Services
             }
         }
 
-        private static async Task<JObject> GetMatchFromApi(EduardoContext c, string matchId, string platform, string region)
+        private static async Task<JObject> GetMatchFromApi(EduardoContext context, string matchId, string platform, string region)
         {
             try
             {
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Constants.PUBG_MATCH_LOOKUP(platform, region, matchId));
-                request.Headers.Add("Authorization", "bearer " + c.EduardoCredentials.PUBGApiKey);
+                request.Headers.Add("Authorization", "bearer " + context.EduardoCredentials.PUBGApiKey);
                 request.Headers.Add("Accept", "application/vnd.api+json");
                 HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
                 string responseString = await response.Content.ReadAsStringAsync();

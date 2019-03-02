@@ -10,7 +10,7 @@ namespace EduardoBotv2.Core.Extensions
 {
     public static class PaginationExtensions
     {
-        public static async Task SendPaginatedMessageAsync(this EduardoContext c, PaginatedMessage pm)
+        public static async Task SendPaginatedMessageAsync(this EduardoContext context, PaginatedMessage pm)
         {
             if (pm.Embeds.Count == 0)
             {
@@ -21,16 +21,16 @@ namespace EduardoBotv2.Core.Extensions
             CancellationTokenSource ct = new CancellationTokenSource(pm.Timeout); // Cancellation token automatically activates after timeout.
             ct.Token.Register(() => tcs.TrySetResult(null)); // Once it has been cancelled (token activates), it will set tcs to null, which will trigger await tcs.Task.
 
-            RestUserMessage m = await c.Channel.SendMessageAsync("", false, pm.Embeds[pm.CurrentIndex]);
+            RestUserMessage m = await context.Channel.SendMessageAsync("", false, pm.Embeds[pm.CurrentIndex]);
             await m.AddPaginationReactionsAsync();
 
-            c.Client.ReactionAdded += async (e, channel, reaction) =>
+            context.Client.ReactionAdded += async (e, channel, reaction) =>
             {
                 IUserMessage message = e.GetOrDownloadAsync().Result;
 
                 // If the id of the message matches the id of the message we made...
                 // ...and the id of the user is the same one as who posted the message.
-                if (message.Id == m.Id && reaction.User.Value.Id != c.Client.CurrentUser.Id)
+                if (message.Id == m.Id && reaction.User.Value.Id != context.Client.CurrentUser.Id)
                 {
                     pm.ProcessPaginationReaction(reaction.Emote, ct);
                 }
@@ -38,13 +38,13 @@ namespace EduardoBotv2.Core.Extensions
                 await Task.CompletedTask;
             };
 
-            c.Client.ReactionRemoved += async (e, channel, reaction) =>
+            context.Client.ReactionRemoved += async (e, channel, reaction) =>
             {
                 IUserMessage message = e.GetOrDownloadAsync().Result;
 
                 // If the id of the message matches the id of the message we made...
                 // ...and the id of the user is the same one as who posted the message.
-                if (message.Id == m.Id && reaction.User.Value.Id != c.Client.CurrentUser.Id)
+                if (message.Id == m.Id && reaction.User.Value.Id != context.Client.CurrentUser.Id)
                 {
                     pm.ProcessPaginationReaction(reaction.Emote, ct);
                 }

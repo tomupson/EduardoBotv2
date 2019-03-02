@@ -33,10 +33,14 @@ namespace EduardoBotv2.Core.Services
                 if (_pokemonInventory.ContainsKey(pokemonRoll))
                 {
                     _pokemonInventory[pokemonRoll] += 1;
+                } else
+                {
+                    _pokemonInventory.Add(pokemonRoll, 1);
                 }
-                else _pokemonInventory.Add(pokemonRoll, 1);
+            } else
+            {
+                await Logger.Log(new LogMessage(LogSeverity.Error, "Eduardo", $"Error fetching Pokemon with id {roll}"));
             }
-            else await Logger.Log(new LogMessage(LogSeverity.Error, "Eduardo", $"Error fetching Pokemon with id {roll}"));
         }
 
         public async Task ShowInventory(EduardoContext c)
@@ -80,8 +84,7 @@ namespace EduardoBotv2.Core.Services
                     Timeout = TimeSpan.FromSeconds(Constants.PAGINATION_TIMEOUT_SECONDS),
                     TimeoutBehaviour = TimeoutBehaviour.Delete
                 });
-            }
-            else
+            } else
             {
                 await c.Channel.SendMessageAsync($"**{c.User.Mention} You dont have any Pokemon! Use `$pokemon` to find a wild Pokemon!**");
             }

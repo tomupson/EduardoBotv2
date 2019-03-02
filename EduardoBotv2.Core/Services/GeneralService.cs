@@ -16,12 +16,12 @@ namespace EduardoBotv2.Core.Services
 {
     public class GeneralService
     {
-        public async Task EchoText(EduardoContext c, string echo)
+        public async Task EchoText(EduardoContext context, string echo)
         {
-            await c.Channel.SendMessageAsync($"{c.User.Mention} {echo}");
+            await context.Channel.SendMessageAsync($"{context.User.Mention} {echo}");
         }
 
-        public async Task DisplayHelp(CommandService service, EduardoContext c, string commandOrModule = null)
+        public async Task DisplayHelp(CommandService service, EduardoContext context, string commandOrModule = null)
         {
             if (commandOrModule != null)
             {
@@ -40,7 +40,7 @@ namespace EduardoBotv2.Core.Services
                         string moduleInfo = $"**{module.Name} Commands **: ```asciidoc\n";
                         moduleInfo = module.Commands.Aggregate(moduleInfo, (current, cmd) => current + $"{Constants.CMD_PREFIX}{cmd.Aliases.First()}{new string(' ', longestInModule + 1 - cmd.Aliases.First().Length)} :: {cmd.Summary}\n");
                         moduleInfo += "\nUse the $help command for more information on any of these commands.```";
-                        await c.Channel.SendMessageAsync(moduleInfo);
+                        await context.Channel.SendMessageAsync(moduleInfo);
                         return;
                     }
 
@@ -74,7 +74,7 @@ namespace EduardoBotv2.Core.Services
                         {
                             Author = new EmbedAuthorBuilder
                             {
-                                IconUrl = c.Client.CurrentUser.GetAvatarUrl(),
+                                IconUrl = context.Client.CurrentUser.GetAvatarUrl(),
                                 Name = $"Command Summary for \"{commandOrModule}\""
                             },
                             Color = Color.DarkPurple,
@@ -84,16 +84,15 @@ namespace EduardoBotv2.Core.Services
                         //await c.Channel.SendMessageAsync($"**Description:** {command.Summary}\n\n" +
                         //$"**Usage:** `{Config.DEFAULT_PREFIX}{commandOrModule}{command.GetUsage()}`\n\n" +
                         //$"**Example:** {example}");
-                        await c.Channel.SendMessageAsync("", false, builder.Build());
+                        await context.Channel.SendMessageAsync("", false, builder.Build());
                         return;
                     }
                 }
 
-                await c.Channel.SendMessageAsync("This command/module does not exist.");
-            }
-            else
+                await context.Channel.SendMessageAsync("This command/module does not exist.");
+            } else
             {
-                IDMChannel userDm = await c.User.GetOrCreateDMChannelAsync();
+                IDMChannel userDm = await context.User.GetOrCreateDMChannelAsync();
 
                 string modulesAndCommands = string.Empty;
 
@@ -105,7 +104,7 @@ namespace EduardoBotv2.Core.Services
 
                 await userDm.SendMessageAsync($"\nEduardo is a multi-purpose Discord Bot. This command can be used the view the usage of a specific command.\nHere are the commands you can use:\n {modulesAndCommands}\n\nUse `$help <command>` to view the usage of any command!");
 
-                await c.Channel.SendMessageAsync($"{c.User.Mention} - you have been DMed with all the command information!");
+                await context.Channel.SendMessageAsync($"{context.User.Mention} - you have been DMed with all the command information!");
             }
         }
 
@@ -144,23 +143,23 @@ namespace EduardoBotv2.Core.Services
             });
         }
 
-        public async Task Choose(EduardoContext c, string[] words)
+        public async Task Choose(EduardoContext context, string[] words)
         {
-            await c.Channel.SendMessageAsync(words[new Random().Next(0, words.Length)]);
+            await context.Channel.SendMessageAsync(words[new Random().Next(0, words.Length)]);
         }
 
-        public async Task GoogleForYou(EduardoContext c, string searchQuery)
+        public async Task GoogleForYou(EduardoContext context, string searchQuery)
         {
-            await c.Channel.SendMessageAsync($"**Your special URL: **<http://lmgtfy.com/?q={ Uri.EscapeUriString(searchQuery) }>");
+            await context.Channel.SendMessageAsync($"**Your special URL: **<http://lmgtfy.com/?q={ Uri.EscapeUriString(searchQuery) }>");
         }
 
-        public async Task SearchUrbanDictionary(EduardoContext c, string searchQuery)
+        public async Task SearchUrbanDictionary(EduardoContext context, string searchQuery)
         {
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"http://api.urbandictionary.com/v0/define?term={searchQuery.Replace(' ', '+')}");
             HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
             if (!response.IsSuccessStatusCode)
             {
-                await c.Channel.SendMessageAsync("**Failed to communicate with Urban's API**");
+                await context.Channel.SendMessageAsync("**Failed to communicate with Urban's API**");
                 return;
             }
 
@@ -168,7 +167,7 @@ namespace EduardoBotv2.Core.Services
             Urban data = JsonConvert.DeserializeObject<Urban>(result);
             if (!data.List.Any())
             {
-                await c.Channel.SendMessageAsync($"**Couldn't find anything related to {searchQuery}**");
+                await context.Channel.SendMessageAsync($"**Couldn't find anything related to {searchQuery}**");
                 return;
             }
 
@@ -195,13 +194,13 @@ namespace EduardoBotv2.Core.Services
                 }
             };
 
-            await c.Channel.SendMessageAsync("", false, builder.Build());
+            await context.Channel.SendMessageAsync("", false, builder.Build());
         }
 
-        public async Task RoboMe(EduardoContext c, string username)
+        public async Task RoboMe(EduardoContext context, string username)
         {
             username = username.Replace(" ", "");
-            await c.Channel.SendMessageAsync($"**https://robohash.org/{username}**");
+            await context.Channel.SendMessageAsync($"**https://robohash.org/{username}**");
         }
     }
 }

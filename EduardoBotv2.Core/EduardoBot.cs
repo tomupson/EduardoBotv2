@@ -2,10 +2,8 @@
 using Discord.Net;
 using Discord.Commands;
 using Discord.WebSocket;
-using Newtonsoft.Json;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Models;
@@ -56,14 +54,13 @@ namespace EduardoBotv2.Core
         }
 
         private IServiceProvider InitializeServices() => new ServiceCollection()
-            // Base
             .AddSingleton(client)
+            .AddSingleton(credentials)
             .AddSingleton<CommandService>()
             .AddSingleton<CommandHandler>()
-            // Services
             .AddSingleton(new AudioService())
+            .AddSingleton(new DrawService())
             .AddSingleton(new FinanceService())
-            .AddSingleton(new FortniteService())
             .AddSingleton(new GamesService())
             .AddSingleton(new GeneralService())
             .AddSingleton(new ImgurService())
@@ -75,7 +72,6 @@ namespace EduardoBotv2.Core
             .AddSingleton(new UserService())
             .AddSingleton(new UtilityService())
             .AddSingleton(new YouTubeModuleService())
-            .AddSingleton(credentials)
             .BuildServiceProvider();
     }
 }

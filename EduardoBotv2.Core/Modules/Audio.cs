@@ -17,14 +17,12 @@ namespace EduardoBotv2.Core.Modules
         [Command("play", RunMode = RunMode.Async)]
         [Summary("Play an individual song, or the queue")]
         [Remarks("despacito 2")]
-        public async Task PlayCommand([Remainder, Summary("The url or name of the song to play, or empty for the queue")]
-            string url = null)
+        public async Task PlayCommand([Remainder, Summary("The url or name of the song to play, or empty for the queue")] string url = "")
         {
             if (string.IsNullOrWhiteSpace(url))
             {
                 await service.StartQueue(Context);
-            }
-            else
+            } else
             {
                 await service.PlaySong(Context, url);
             }

@@ -11,13 +11,16 @@ namespace EduardoBotv2.Core.Helpers
 {
     public static class GoogleHelper
     {
-        public static YouTubeService CreateYouTubeService(string apiKey) => new YouTubeService(new BaseClientService.Initializer
+        private static YouTubeService youTubeService;
+        private static UrlshortenerService urlShortenerService;
+
+        public static YouTubeService CreateYouTubeService(string apiKey) => youTubeService = new YouTubeService(new BaseClientService.Initializer
         {
             ApiKey = apiKey,
             ApplicationName = "EduardoBot"
         });
 
-        public static UrlshortenerService CreateShortenerService(string apiKey) => new UrlshortenerService(new BaseClientService.Initializer
+        public static UrlshortenerService CreateShortenerService(string apiKey) => urlShortenerService = new UrlshortenerService(new BaseClientService.Initializer
         {
             ApiKey = apiKey,
             ApplicationName = "EduardoBot"
@@ -27,16 +30,13 @@ namespace EduardoBotv2.Core.Helpers
         {
             return await Task.Run(() =>
             {
-                using (YouTubeService service = CreateYouTubeService(apiKey))
-                {
-                    SearchResource.ListRequest searchVideoRequest = service.Search.List(part);
-                    searchVideoRequest.Q = searchQuery;
-                    searchVideoRequest.MaxResults = maxResults;
-                    searchVideoRequest.Type = Enum.GetName(typeof(YouTubeRequestType), type).ToLower();
+                YouTubeService service = youTubeService ?? CreateYouTubeService(apiKey);
+                SearchResource.ListRequest searchVideoRequest = service.Search.List(part);
+                searchVideoRequest.Q = searchQuery;
+                searchVideoRequest.MaxResults = maxResults;
+                searchVideoRequest.Type = Enum.GetName(typeof(YouTubeRequestType), type).ToLower();
 
-                    Task<SearchListResponse> response = searchVideoRequest.ExecuteAsync();
-                    return response;
-                }
+                return searchVideoRequest.ExecuteAsync();
             });
         }
 
@@ -44,45 +44,38 @@ namespace EduardoBotv2.Core.Helpers
         {
             return await Task.Run(() =>
             {
-                using (YouTubeService service = CreateYouTubeService(apiKey))
-                {
-                    VideosResource.ListRequest getVideoByIdRequest = service.Videos.List(part);
-                    getVideoByIdRequest.MaxResults = 1;
-                    getVideoByIdRequest.Id = videoId;
+                YouTubeService service = youTubeService ?? CreateYouTubeService(apiKey);
+                VideosResource.ListRequest getVideoByIdRequest = service.Videos.List(part);
+                getVideoByIdRequest.MaxResults = 1;
+                getVideoByIdRequest.Id = videoId;
 
-                    Task<VideoListResponse> response = getVideoByIdRequest.ExecuteAsync();
-                    return response;
-                }
+                return getVideoByIdRequest.ExecuteAsync();
             });
         }
 
-        public static Task<string> ShortenUrlAsync(string apiKey, string longUrl)
+        public static async Task<string> ShortenUrlAsync(string apiKey, string longUrl)
         {
-            return Task.Run(() =>
+            return (await Task.Run(() =>
             {
-                UrlshortenerService service = CreateShortenerService(apiKey);
+                UrlshortenerService service = urlShortenerService ?? CreateShortenerService(apiKey);
 
                 Url original = new Url
                 {
                     LongUrl = longUrl
                 };
 
-                string shorten = service.Url.Insert(original).Execute().Id;
-
-                return shorten;
-            });
+                return service.Url.Insert(original).ExecuteAsync();
+            })).Id;
         }
 
-        public static Task<string> UnshortenUrlAsync(string apiKey, string shortUrl)
+        public static async Task<string> UnshortenUrlAsync(string apiKey, string shortUrl)
         {
-            return Task.Run(() =>
+            return (await Task.Run(() =>
             {
-                UrlshortenerService service = CreateShortenerService(apiKey);
+                UrlshortenerService service = urlShortenerService ?? CreateShortenerService(apiKey);
 
-                string unshorten = service.Url.Get(shortUrl).Execute().LongUrl;
-
-                return unshorten;
-            });
+                return service.Url.Get(shortUrl).ExecuteAsync();
+            })).LongUrl;
         }
     }
 }

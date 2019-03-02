@@ -13,6 +13,7 @@ using EduardoBotv2.Core.Extensions;
 using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Models.Enums;
+using EduardoBotv2.Core.Models.Music;
 using Google.Apis.YouTube.v3.Data;
 using Newtonsoft.Json.Linq;
 
@@ -35,8 +36,7 @@ namespace EduardoBotv2.Core.Services
                 queueCts?.Cancel();
                 queue.Insert(0, song);
                 await StartQueue(context);
-            }
-            else
+            } else
             {
                 await context.Channel.SendMessageAsync($"Could not find video like \"{input}\"");
             }
@@ -82,8 +82,7 @@ namespace EduardoBotv2.Core.Services
             {
                 queue.Add(requestedSong);
                 await context.Channel.SendMessageAsync($"Addeed **{requestedSong.Title}** to the queue");
-            }
-            else
+            } else
             {
                 await context.Channel.SendMessageAsync($"Could not find video like \"{input}");
             }
@@ -121,8 +120,7 @@ namespace EduardoBotv2.Core.Services
             if (queue.Count > 0 && !(audioCts.IsCancellationRequested || queueCts.IsCancellationRequested))
             {
                 await context.Channel.SendMessageAsync("Currently playing:", false, BuildSongEmbed(queue[0]));
-            }
-            else
+            } else
             {
                 await context.Channel.SendMessageAsync("There is no song playing");
             }
@@ -144,8 +142,7 @@ namespace EduardoBotv2.Core.Services
                 }
 
                 await context.Channel.SendMessageAsync(queueInfo);
-            }
-            else
+            } else
             {
                 await context.Channel.SendMessageAsync($"There are no songs in the queue! Use {$"`{Constants.CMD_PREFIX}queue add <song>`".Boldify()} to add a song to the queue");
             }
@@ -172,8 +169,7 @@ namespace EduardoBotv2.Core.Services
             if (connectedChannels.TryAdd(context.Guild.Id, audioClient))
             {
                 await Logger.Log(new LogMessage(LogSeverity.Info, "EduardoRemastered", $"Connected to voice channel on {context.Guild.Name}"));
-            }
-            else
+            } else
             {
                 await Logger.Log(new LogMessage(LogSeverity.Error, "EduardoRemastered", $"Failed to join voice channel on {context.Guild.Name}"));
             }
@@ -199,32 +195,30 @@ namespace EduardoBotv2.Core.Services
 
             await Logger.Log(new LogMessage(LogSeverity.Debug, "EduardoRemastered", $"Starting playback of {song.Title} in {context.Guild.Name}"));
 
-            using (Process ffmpegProcess = CreateStream(song.StreamUrl))
+            using (Process ffmpegProcess = CreateFfmpegProcess(song.StreamUrl))
             {
                 try
                 {
-                    var buffer = new byte[81920];
-                    int bytesRead;
+                    //byte[] buffer = new byte[81920];
+                    //int bytesRead;
 
-                    while (!audioCts.IsCancellationRequested && (bytesRead = await ffmpegProcess.StandardOutput.BaseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                    {
-                        await discordStream.WriteAsync(buffer, 0, bytesRead, audioCts.Token);
-                    }
+                    //while (!audioCts.IsCancellationRequested && (bytesRead = await ffmpegProcess.StandardOutput.BaseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                    //{
+                    //    await discordStream.WriteAsync(buffer, 0, bytesRead, audioCts.Token);
+                    //}
 
-                    //await ffmpegProcess.StandardOutput.BaseStream.CopyToAsync(discordStream, audioCts.Token);
-                }
-                catch (Exception ex)
+                    await ffmpegProcess.StandardOutput.BaseStream.CopyToAsync(discordStream, audioCts.Token);
+                } catch (Exception ex)
                 {
                     if (ex is OperationCanceledException ocEx && !ocEx.CancellationToken.IsCancellationRequested) throw;
-                }
-                finally
+                } finally
                 {
                     await discordStream.FlushAsync();
                 }
             }
         }
 
-        private static Process CreateStream(string url) => Process.Start(new ProcessStartInfo
+        private static Process CreateFfmpegProcess(string url) => Process.Start(new ProcessStartInfo
         {
             FileName = "ffmpeg.exe",
             Arguments = $"-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -err_detect ignore_err -i {url} -vol 100 -f s16le -ar 48000 -vn -ac 2 pipe:1 -loglevel panic",
@@ -238,25 +232,24 @@ namespace EduardoBotv2.Core.Services
         {
             string videoId = "";
 
-            var validAuthorities = new List<string> {"youtube.com", "www.youtube.com", "youtu.be", "www.youtu.be"};
+            List<string> validAuthorities = new List<string> {"youtube.com", "www.youtube.com", "youtu.be", "www.youtu.be"};
 
             // Check if user input is any form of youtube url
             if (validAuthorities.Any(input.ToLower().Contains))
             {
-                var uri = new Uri(input);
+                Uri uri = new Uri(input);
 
                 if (validAuthorities.Contains(uri.Authority.ToLower()))
                 {
                     // If so, get the video id query parameter using regex
-                    var idExtractionRegex = new Regex(Constants.YOUTUBE_LINK_REGEX, RegexOptions.Compiled);
+                    Regex idExtractionRegex = new Regex(Constants.YOUTUBE_LINK_REGEX, RegexOptions.Compiled);
                     Match idMatch = idExtractionRegex.Match(uri.ToString());
                     if (idMatch.Success)
                     {
                         videoId = idMatch.Groups[1].Value;
                     }
                 }
-            }
-            else
+            } else
             {
                 // Otherwise, search youtube for the user input and get the video id that way
                 SearchListResponse response = await GoogleHelper.SearchYouTubeAsync(context.EduardoCredentials.GoogleYouTubeApiKey, "snippet", input, 1, YouTubeRequestType.Video);
@@ -264,11 +257,7 @@ namespace EduardoBotv2.Core.Services
                 if (response.Items.Count > 0)
                 {
                     videoId = response.Items[0].Id.VideoId;
-                }
-                else
-                {
-                    return null;
-                }
+                } else return null;
             }
 
             // Get the video by the previously determined id
@@ -294,7 +283,7 @@ namespace EduardoBotv2.Core.Services
         private static string GetStreamUrl(string url)
         {
             // Use youtube-dl to get the url of the video stream, from the youtube url
-            var youtubeDl = new Process
+            Process youtubeDl = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
@@ -314,7 +303,7 @@ namespace EduardoBotv2.Core.Services
             return songJson.url ?? songJson.requested_formats[1]?.url ?? "";
         }
 
-        private Embed BuildSongEmbed(Song song)
+        private static Embed BuildSongEmbed(Song song)
         {
             return new EmbedBuilder
             {
@@ -343,6 +332,28 @@ namespace EduardoBotv2.Core.Services
                 },
                 ThumbnailUrl = song.ThumbnailUrl
             }.Build();
+        }
+
+        private static unsafe byte[] AdjustVolume(byte[] audioSamples, float volume)
+        {
+            if (Math.Abs(volume - 1f) < 0.0001f) return audioSamples;
+
+            // 16-bit precision for the multiplication
+            int volumeFixed = (int) Math.Round(volume * 65536d);
+
+            int count = audioSamples.Length / 2;
+
+            fixed (byte* srcBytes = audioSamples)
+            {
+                short* src = (short*) srcBytes;
+
+                for (int i = count; i != 0; i--, src++)
+                {
+                    *src = (short) ((*src * volumeFixed) >> 16);
+                }
+            }
+
+            return audioSamples;
         }
     }
 }

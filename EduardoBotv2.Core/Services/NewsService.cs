@@ -12,15 +12,15 @@ namespace EduardoBotv2.Core.Services
 {
     public class NewsService
     {
-        public async Task GetNewsHeadlines(EduardoContext c, string source)
+        public async Task GetNewsHeadlines(EduardoContext context, string source)
         {
             if (!Constants.NEWS_SOURCES.Contains(source))
             {
-                await c.Channel.SendMessageAsync($"**{source} is not a valid. Type `sources` to view available news sources**");
+                await context.Channel.SendMessageAsync($"**{source} is not a valid. Type `sources` to view available news sources**");
                 return;
             }
 
-            WebRequest request = WebRequest.Create(new Uri($"https://newsapi.org/v1/articles?source={source}&sortBy=top&apiKey={c.EduardoCredentials.NewsApiKey}"));
+            WebRequest request = WebRequest.Create(new Uri($"https://newsapi.org/v1/articles?source={source}&sortBy=top&apiKey={context.EduardoCredentials.NewsApiKey}"));
             WebResponse response = await request.GetResponseAsync();
 
             string json;
@@ -38,7 +38,7 @@ namespace EduardoBotv2.Core.Services
             int maxHeadlines = Math.Min(Constants.MAX_HEADLINES, jHeadlines.Count - 1);
             for (int i = 0; i < maxHeadlines; i++)
             {
-                string shorten = await GoogleHelper.ShortenUrlAsync(c.EduardoCredentials.GoogleShortenerApiKey, jHeadlines[i]["url"].ToString());
+                string shorten = await GoogleHelper.ShortenUrlAsync(context.EduardoCredentials.GoogleShortenerApiKey, jHeadlines[i]["url"].ToString());
 
                 headlines.Add(new EmbedFieldBuilder
                 {
@@ -64,7 +64,7 @@ namespace EduardoBotv2.Core.Services
                 }
             };
 
-            await c.Channel.SendMessageAsync("", false, builder.Build());
+            await context.Channel.SendMessageAsync("", false, builder.Build());
         }
 
         public async Task ShowNewsSources(EduardoContext c)

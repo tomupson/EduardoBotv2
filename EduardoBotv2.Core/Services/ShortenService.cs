@@ -10,7 +10,7 @@ namespace EduardoBotv2.Core.Services
 {
     public class ShortenService
     {
-        public async Task ShortenYouTube(EduardoContext c, string url)
+        public async Task ShortenYouTube(EduardoContext context, string url)
         {
             string videoId = string.Empty;
             List<string> alreadyShortened = new List<string>
@@ -20,7 +20,7 @@ namespace EduardoBotv2.Core.Services
 
             if (alreadyShortened.Any(url.Contains) && !url.Contains("&feature=youtu.be"))
             {
-                await c.Channel.SendMessageAsync($"**{c.User.Username}, This url is already shortened!**");
+                await context.Channel.SendMessageAsync($"**{context.User.Username}, This url is already shortened!**");
                 return;
             }
 
@@ -45,42 +45,42 @@ namespace EduardoBotv2.Core.Services
                         }
                     }
 
-                    await c.Channel.SendMessageAsync($"**{c.User.Mention}, your shortened url is: \"http://youtu.be/{videoId}\"**");
+                    await context.Channel.SendMessageAsync($"**{context.User.Mention}, your shortened url is: \"http://youtu.be/{videoId}\"**");
                 }
                 catch
                 {
-                    await c.Channel.SendMessageAsync("**Failed to parse url.**");
+                    await context.Channel.SendMessageAsync("**Failed to parse url.**");
                 }
             } else
             {
-                await c.Channel.SendMessageAsync($"**{c.User.Username}, This is not a valid YouTube url.");
+                await context.Channel.SendMessageAsync($"**{context.User.Username}, This is not a valid YouTube url.");
             }
         }
 
-        public async Task Shorten(EduardoContext c, string url)
+        public async Task Shorten(EduardoContext context, string url)
         {
             if (url.Contains("goo.gl"))
             {
-                await c.Channel.SendMessageAsync($"**{c.User.Username}, This Url is already shortened**");
+                await context.Channel.SendMessageAsync($"**{context.User.Username}, This Url is already shortened**");
                 return;
             }
 
-            string shorten = await GoogleHelper.ShortenUrlAsync(c.EduardoCredentials.GoogleShortenerApiKey, url);
+            string shorten = await GoogleHelper.ShortenUrlAsync(context.EduardoCredentials.GoogleShortenerApiKey, url);
 
-            await c.Channel.SendMessageAsync($"**{c.User.Mention}, your shortened url is: \"{shorten}\"**");
+            await context.Channel.SendMessageAsync($"**{context.User.Mention}, your shortened url is: \"{shorten}\"**");
         }
 
-        public async Task Unshorten(EduardoContext c, string url)
+        public async Task Unshorten(EduardoContext context, string url)
         {
             if (!url.Contains("goo.gl"))
             {
-                await c.Channel.SendMessageAsync($"**{c.User.Username}, This Url is not shortened**");
+                await context.Channel.SendMessageAsync($"**{context.User.Username}, This Url is not shortened**");
                 return;
             }
 
-            string unshortened = await GoogleHelper.UnshortenUrlAsync(c.EduardoCredentials.GoogleShortenerApiKey, url);
+            string unshortened = await GoogleHelper.UnshortenUrlAsync(context.EduardoCredentials.GoogleShortenerApiKey, url);
 
-            await c.Channel.SendMessageAsync($"**{c.User.Mention}, your unshortened url is: \"{unshortened}\"**");
+            await context.Channel.SendMessageAsync($"**{context.User.Mention}, your unshortened url is: \"{unshortened}\"**");
         }
     }
 }
