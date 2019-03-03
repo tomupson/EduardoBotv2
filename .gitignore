@@ -298,3 +298,6 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 EduardoBotv2/credentials.json
+deploy.bat
+deploy.sh
+publish.bat
