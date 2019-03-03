@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Threading.Tasks;
 using Discord;
 using EduardoBotv2.Core.Helpers;
@@ -20,51 +19,47 @@ namespace EduardoBotv2.Core.Services
                 return;
             }
 
-            WebRequest request = WebRequest.Create(new Uri($"https://newsapi.org/v1/articles?source={source}&sortBy=top&apiKey={context.EduardoCredentials.NewsApiKey}"));
-            WebResponse response = await request.GetResponseAsync();
-
-            string json;
-
-            using (StreamReader sr = new StreamReader(response.GetResponseStream() ?? throw new Exception()))
+            using (Stream responseStream = await NetworkHelper.GetStream($"https://newsapi.org/v1/articles?source={source}&sortBy=top&apiKey={context.EduardoCredentials.NewsApiKey}"))
+            using (StreamReader sr = new StreamReader(responseStream))
             {
-                json = sr.ReadToEnd();
-            }
+                string json = sr.ReadToEnd();
 
-            JObject jResult = JObject.Parse(json);
+                JObject jResult = JObject.Parse(json);
 
-            JArray jHeadlines = (JArray)jResult["articles"];
-            List<EmbedFieldBuilder> headlines = new List<EmbedFieldBuilder>();
+                JArray jHeadlines = (JArray)jResult["articles"];
+                List<EmbedFieldBuilder> headlines = new List<EmbedFieldBuilder>();
 
-            int maxHeadlines = Math.Min(Constants.MAX_HEADLINES, jHeadlines.Count - 1);
-            for (int i = 0; i < maxHeadlines; i++)
-            {
-                string shorten = await GoogleHelper.ShortenUrlAsync(context.EduardoCredentials.GoogleShortenerApiKey, jHeadlines[i]["url"].ToString());
-
-                headlines.Add(new EmbedFieldBuilder
+                int maxHeadlines = Math.Min(Constants.MAX_HEADLINES, jHeadlines.Count - 1);
+                for (int i = 0; i < maxHeadlines; i++)
                 {
-                    Name = jHeadlines[i]["title"].ToString(),
-                    Value = $"{jHeadlines[i]["description"]}\n({shorten})"
-                });
-            }
+                    string shorten = await GoogleHelper.ShortenUrlAsync(context.EduardoCredentials.GoogleShortenerApiKey, jHeadlines[i]["url"].ToString());
 
-            EmbedBuilder builder = new EmbedBuilder
-            {
-                Author = new EmbedAuthorBuilder
-                {
-                    IconUrl = @"http://shmector.com/_ph/18/412122157.png",
-                    Name = $"Latest News from {source.Replace('-', ' ').ToUpper()}"
-                },
-                Color = Color.Blue,
-                ThumbnailUrl = jResult["articles"][0]["urlToImage"].ToString(),
-                Fields = headlines,
-                Footer = new EmbedFooterBuilder
-                {
-                    Text = "News via newsapi.org",
-                    IconUrl = @"https://pbs.twimg.com/profile_images/815237522641092609/6IeO3WLV.jpg"
+                    headlines.Add(new EmbedFieldBuilder
+                    {
+                        Name = jHeadlines[i]["title"].ToString(),
+                        Value = $"{jHeadlines[i]["description"]}\n({shorten})"
+                    });
                 }
-            };
 
-            await context.Channel.SendMessageAsync("", false, builder.Build());
+                EmbedBuilder builder = new EmbedBuilder
+                {
+                    Author = new EmbedAuthorBuilder
+                    {
+                        IconUrl = @"http://shmector.com/_ph/18/412122157.png",
+                        Name = $"Latest News from {source.Replace('-', ' ').ToUpper()}"
+                    },
+                    Color = Color.Blue,
+                    ThumbnailUrl = jResult["articles"][0]["urlToImage"].ToString(),
+                    Fields = headlines,
+                    Footer = new EmbedFooterBuilder
+                    {
+                        Text = "News via newsapi.org",
+                        IconUrl = @"https://pbs.twimg.com/profile_images/815237522641092609/6IeO3WLV.jpg"
+                    }
+                };
+
+                await context.Channel.SendMessageAsync("", false, builder.Build());
+            }
         }
 
         public async Task ShowNewsSources(EduardoContext c)

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Discord;
 using EduardoBotv2.Core.Extensions;
@@ -105,10 +104,8 @@ namespace EduardoBotv2.Core.Services
 
         private static async Task<Pokemon> GetPokemonFromApi(int roll)
         {
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"http://pokeapi.co/api/v2/pokemon/{roll}");
-            HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
-            string result = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<Pokemon>(result);
+            string json = await NetworkHelper.GetString($"http://pokeapi.co/api/v2/pokemon/{roll}");
+            return JsonConvert.DeserializeObject<Pokemon>(json);
         }
     }
 }

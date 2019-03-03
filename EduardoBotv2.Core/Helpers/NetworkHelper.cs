@@ -1,25 +1,48 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Discord;
 
 namespace EduardoBotv2.Core.Helpers
 {
     public static class NetworkHelper
     {
-        private static HttpClient httpClient = new HttpClient();
-
-        public static async Task<HttpResponseMessage> MakeRequest(HttpRequestMessage request)
+        private static readonly HttpClient _client = new HttpClient(new HttpClientHandler
         {
-            try
+            AutomaticDecompression = (DecompressionMethods) 0xFF
+        });
+
+        public static async Task<Stream> GetStream(string url, Dictionary<string, string> headers = null)
+        {
+            HttpResponseMessage response = await _client.SendAsync(BuildRequest(url, HttpMethod.Get, headers));
+            return await response.Content.ReadAsStreamAsync();
+        }
+
+        public static async Task<string> GetString(string url, Dictionary<string, string> headers = null)
+        {
+            HttpResponseMessage response = await _client.SendAsync(BuildRequest(url, HttpMethod.Get, headers));
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public static async Task<byte[]> GetBytes(string url, Dictionary<string, string> headers = null)
+        {
+            HttpResponseMessage response = await _client.SendAsync(BuildRequest(url, HttpMethod.Get, headers));
+            return await response.Content.ReadAsByteArrayAsync();
+        }
+
+        private static HttpRequestMessage BuildRequest(string url, HttpMethod method, Dictionary<string, string> headers = null)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(method, url);
+            if (headers != null)
             {
-                return await httpClient.SendAsync(request);
+                foreach ((string name, string value) in headers)
+                {
+                    request.Headers.Add(name, value);
+                }
             }
-            catch (Exception e)
-            {
-                await Logger.Log(new LogMessage(LogSeverity.Critical, "EduardoBot", $"Error sending request.\n{e}"));
-                return null;
-            }
+
+            return request;
         }
     }
 }

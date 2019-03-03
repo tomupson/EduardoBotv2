@@ -60,17 +60,17 @@ namespace EduardoBotv2.Core.Models
 
         public const string FORTNITE_STORE = "https://fortnite-public-service-prod11.ol.epicgames.com/fortnite/api/storefront/v2/catalog";
         public const string FORTNITE_SERVER_STATUS = "https://lightswitch-public-service-prod06.ol.epicgames.com/lightswitch/api/service/bulk/status?serviceId=Fortnite";
-        public static string FORTNITE_PLAYER_LOOKUP(string username) => "https://persona-public-service-prod06.ol.epicgames.com/persona/api/public/account/lookup?q=" + username;
+        public static string FORTNITE_PLAYER_LOOKUP(string username) => $"https://persona-public-service-prod06.ol.epicgames.com/persona/api/public/account/lookup?q={username}";
         public const string FORTNITE_NEWS = "https://fortnitecontent-website-prod07.ol.epicgames.com/content/api/pages/fortnite-game";
 
-        public static string FORTNITE_STATS_BR(string accountId) => "https://fortnite-public-service-prod11.ol.epicgames.com/fortnite/api/stats/accountId/" + accountId + "/bulk/window/alltime";
+        public static string FORTNITE_STATS_BR(string accountId) => $"https://fortnite-public-service-prod11.ol.epicgames.com/fortnite/api/stats/accountId/{accountId}/bulk/window/alltime";
 
         public const string FORTNITE_PVE_INFO = "https://fortnite-public-service-prod11.ol.epicgames.com/fortnite/api/game/v2/world/info";
-        public static string FORTNITE_PROFILE_LOOKUP(string accountId) => "https://fortnite-public-service-prod11.ol.epicgames.com/fortnite/api/game/v2/profile/" + accountId + "/public/QueryProfile";
+        public static string FORTNITE_PROFILE_LOOKUP(string accountId) => $"https://fortnite-public-service-prod11.ol.epicgames.com/fortnite/api/game/v2/profile/{accountId}/public/QueryProfile";
 
-        public static string PUBG_PLAYER_LOOKUP(string platform, string region, string username) => "https://api.playbattlegrounds.com/shards/" + platform + "-" + region + "/players?filter[playerNames]=" + username;
-        public static string PUBG_PLAYER_LOOKUP_WITH_ID(string platform, string region, string id) => "https://api.playbattlegrounds.com/shards/" + platform + "-" + region + "/players/" + id;
-        public static string PUBG_MATCH_LOOKUP(string platform, string region, string matchId) => "https://api.playbattlegrounds.com/shards/" + platform + "-" + region + "/matches/" + matchId;
+        public static string PUBG_PLAYER_LOOKUP(string platform, string region, string username) => $"https://api.playbattlegrounds.com/shards/{platform}-{region}/players?filter[playerNames]={username}";
+        public static string PUBG_PLAYER_LOOKUP_WITH_ID(string platform, string region, string id) => $"https://api.playbattlegrounds.com/shards/{platform}-{region}/players/{id}";
+        public static string PUBG_MATCH_LOOKUP(string platform, string region, string matchId) => $"https://api.playbattlegrounds.com/shards/{platform}-{region}/matches/{matchId}";
         public const string PUBG_API_STATUS = "https://api.playbattlegrounds.com/status";
     }
 }

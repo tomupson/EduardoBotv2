@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Discord;
 using EduardoBotv2.Core.Extensions;
@@ -270,7 +269,7 @@ namespace EduardoBotv2.Core.Services
                                         JObject item = (JObject) jToken1;
                                         items.Add($"{item["itemId"]} x {item["stackCount"]}");
                                     }
-                                    Console.WriteLine("Care Package Spawned with: " + string.Join(", ", items));
+                                    Console.WriteLine($"Care Package Spawned with: {string.Join(", ", items)}");
                                     break;
                             }
                         }
@@ -289,12 +288,13 @@ namespace EduardoBotv2.Core.Services
         {
             try
             {
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Constants.PUBG_PLAYER_LOOKUP(platform, region, username));
-                request.Headers.Add("Authorization", "bearer " + context.EduardoCredentials.PUBGApiKey);
-                request.Headers.Add("Accept", "application/vnd.api+json");
-                HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
-                string responseString = await response.Content.ReadAsStringAsync();
-                return JObject.Parse(responseString);
+                string json = await NetworkHelper.GetString(Constants.PUBG_PLAYER_LOOKUP(platform, region, username), new Dictionary<string, string>
+                {
+                    { "Authorization", $"bearer {context.EduardoCredentials.PUBGApiKey}" },
+                    { "Accept", "application/vnd.api+json" }
+                });
+
+                return JObject.Parse(json);
             } catch (Exception e)
             {
                 await Logger.Log(new LogMessage(LogSeverity.Critical, "EduardoBot", $"Error fetching PUBG Player from API.\n{e}"));
@@ -306,12 +306,13 @@ namespace EduardoBotv2.Core.Services
         {
             try
             {
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Constants.PUBG_PLAYER_LOOKUP_WITH_ID(platform, region, id));
-                request.Headers.Add("Authorization", "bearer " + context.EduardoCredentials.PUBGApiKey);
-                request.Headers.Add("Accept", "application/vnd.api+json");
-                HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
-                string responseString = await response.Content.ReadAsStringAsync();
-                return JObject.Parse(responseString);
+                string json = await NetworkHelper.GetString(Constants.PUBG_PLAYER_LOOKUP_WITH_ID(platform, region, id), new Dictionary<string, string>
+                {
+                    { "Authorization", $"bearer {context.EduardoCredentials.PUBGApiKey}" },
+                    { "Accept", "application/vnd.api+json" }
+                });
+
+                return JObject.Parse(json);
             } catch (Exception e)
             {
                 await Logger.Log(new LogMessage(LogSeverity.Critical, "EduardoBot", $"Error fetching PUBG player from API.\n{e}"));
@@ -323,12 +324,13 @@ namespace EduardoBotv2.Core.Services
         {
             try
             {
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Constants.PUBG_MATCH_LOOKUP(platform, region, matchId));
-                request.Headers.Add("Authorization", "bearer " + context.EduardoCredentials.PUBGApiKey);
-                request.Headers.Add("Accept", "application/vnd.api+json");
-                HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
-                string responseString = await response.Content.ReadAsStringAsync();
-                return JObject.Parse(responseString);
+                string json = await NetworkHelper.GetString(Constants.PUBG_MATCH_LOOKUP(platform, region, matchId), new Dictionary<string, string>
+                {
+                    { "Authorization", $"bearer {context.EduardoCredentials.PUBGApiKey}" },
+                    { "Accept", "application/vnd.api+json" }
+                });
+
+                return JObject.Parse(json);
             } catch (Exception e)
             {
                 await Logger.Log(new LogMessage(LogSeverity.Critical, "EduardoBot", $"Error fetching PUBG match from API.\n{e}"));
@@ -341,13 +343,11 @@ namespace EduardoBotv2.Core.Services
             string telemetryUrl = matchJson["included"].ToObject<JArray>().FirstOrDefault(x => x["type"].ToString() == "asset" && x["id"].ToString() == matchJson["data"]["relationships"]["assets"]["data"][0]["id"].ToString())?["attributes"]["URL"].ToString();
             try
             {
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, telemetryUrl);
-                HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
-                string responseString = await response.Content.ReadAsStringAsync();
-                return JArray.Parse(responseString);
-            } catch (Exception e)
+                string json = await NetworkHelper.GetString(telemetryUrl);
+                return JArray.Parse(json);
+            } catch (Exception ex)
             {
-                await Logger.Log(new LogMessage(LogSeverity.Critical, "EduardoBot", $"Error fetching PUBG Telemetry Data for match.\n{e}"));
+                await Logger.Log(new LogMessage(LogSeverity.Critical, "EduardoBot", "Error fetching PUBG Telemetry Data for match", ex));
                 return null;
             }
         }

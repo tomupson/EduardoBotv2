@@ -29,11 +29,11 @@ namespace EduardoBotv2.Core.Services
             string targetSocketUserGame = targetSocketUser?.Activity.Name ?? "N/A";
             string targetGuildUserNickname = targetGuildUser?.Nickname ?? "N/A";
 
-            string userInfo = $"Created: {string.Format("{0:dddd MMM d}{1} {0:yyyy} at {0:h:m tt}", targetSocketUser?.CreatedAt, CommonHelper.GetDaySuffix(DateTime.Now.Day))}\n" +
+            string userInfo = $"Created: {targetSocketUser?.CreatedAt:dddd MMM d}{CommonHelper.GetDaySuffix(DateTime.Now.Day)} {targetSocketUser?.CreatedAt:yyyy} at {targetSocketUser?.CreatedAt:h:m tt}\n" +
                            $"Status: {targetSocketUser?.Status}\n" +
                            $"Game: {targetSocketUserGame}\n";
 
-            string memberInfo = $"Joined: {string.Format("{0:dddd MMM d}{1} {0:yyyy} at {0:h:m tt}", targetGuildUser?.JoinedAt, CommonHelper.GetDaySuffix(DateTime.Now.Day))}\n" +
+            string memberInfo = $"Joined: {targetGuildUser?.JoinedAt:dddd MMM d}{CommonHelper.GetDaySuffix(DateTime.Now.Day)} {targetGuildUser?.JoinedAt:yyyy} at {targetGuildUser?.JoinedAt:h:m tt}\n" +
                              $"Nickname: {targetGuildUserNickname}\n";
 
             string roleInfo = string.Join(", ", targetGuildUser?.Roles.Where(x => !x.IsEveryone));

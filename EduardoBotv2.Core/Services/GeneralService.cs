@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -155,16 +154,9 @@ namespace EduardoBotv2.Core.Services
 
         public async Task SearchUrbanDictionary(EduardoContext context, string searchQuery)
         {
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"http://api.urbandictionary.com/v0/define?term={searchQuery.Replace(' ', '+')}");
-            HttpResponseMessage response = await NetworkHelper.MakeRequest(request);
-            if (!response.IsSuccessStatusCode)
-            {
-                await context.Channel.SendMessageAsync("**Failed to communicate with Urban's API**");
-                return;
-            }
+            string json = await NetworkHelper.GetString($"http://api.urbandictionary.com/v0/define?term={searchQuery.Replace(' ', '+')}");
+            Urban data = JsonConvert.DeserializeObject<Urban>(json);
 
-            string result = await response.Content.ReadAsStringAsync();
-            Urban data = JsonConvert.DeserializeObject<Urban>(result);
             if (!data.List.Any())
             {
                 await context.Channel.SendMessageAsync($"**Couldn't find anything related to {searchQuery}**");
