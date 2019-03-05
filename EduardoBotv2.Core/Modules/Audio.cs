@@ -43,6 +43,22 @@ namespace EduardoBotv2.Core.Modules
             await service.ShowCurrentSong(Context);
         }
 
+        [Command("volume", RunMode = RunMode.Async)]
+        [Summary("Change the volume of the current song")]
+        public async Task VolumeCommand([Summary("The new volume")] int volume)
+        {
+            service.SetVolume(volume);
+            await Task.CompletedTask;
+        }
+
+        [Command("pause", RunMode = RunMode.Async)]
+        [Summary("Toggle the pause of the current song")]
+        public async Task PauseCommand()
+        {
+            service.TogglePause();
+            await Task.CompletedTask;
+        }
+
         [Group("queue")]
         public class Queue : ModuleBase<EduardoContext>
         {

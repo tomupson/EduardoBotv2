@@ -23,8 +23,11 @@ namespace EduardoBotv2.Core.Services
     {
         private readonly ConcurrentDictionary<ulong, IAudioClient> connectedChannels = new ConcurrentDictionary<ulong, IAudioClient>();
         private readonly List<Song> queue = new List<Song>();
+        private float volume = 1.0f;
         private CancellationTokenSource queueCts;
         private CancellationTokenSource audioCts;
+
+        private TaskCompletionSource<bool> PauseTaskSource { get; set; }
 
         public async Task PlaySong(EduardoContext context, string input)
         {
@@ -55,7 +58,7 @@ namespace EduardoBotv2.Core.Services
 
             if (connectedChannels.TryGetValue(context.Guild.Id, out IAudioClient client))
             {
-                using (AudioOutStream stream = client.CreatePCMStream(AudioApplication.Music))
+                using (AudioOutStream stream = client.CreatePCMStream(AudioApplication.Music, bufferMillis: 1))
                 {
                     while (queue.Count > 0 && !queueCts.IsCancellationRequested)
                     {
@@ -81,7 +84,7 @@ namespace EduardoBotv2.Core.Services
             if (requestedSong != null)
             {
                 queue.Add(requestedSong);
-                await context.Channel.SendMessageAsync($"Addeed **{requestedSong.Title}** to the queue");
+                await context.Channel.SendMessageAsync($"Added **{requestedSong.Title}** to the queue");
             } else
             {
                 await context.Channel.SendMessageAsync($"Could not find video like \"{input}");
@@ -129,6 +132,25 @@ namespace EduardoBotv2.Core.Services
         public void ClearQueue()
         {
             queue.Clear();
+        }
+
+        public void SetVolume(int newVolume)
+        {
+            if (newVolume < 0 || volume > 100)
+                throw new ArgumentOutOfRangeException(nameof(newVolume));
+
+            volume = ((float) newVolume) / 100;
+        }
+
+        public void TogglePause()
+        {
+            if (PauseTaskSource == null)
+                PauseTaskSource = new TaskCompletionSource<bool>();
+            else
+            {
+                PauseTaskSource?.TrySetResult(true);
+                PauseTaskSource = null;
+            }
         }
 
         public async Task ViewQueue(EduardoContext context)
@@ -195,38 +217,35 @@ namespace EduardoBotv2.Core.Services
 
             await Logger.Log(new LogMessage(LogSeverity.Debug, "EduardoRemastered", $"Starting playback of {song.Title} in {context.Guild.Name}"));
 
-            using (Process ffmpegProcess = CreateFfmpegProcess(song.StreamUrl))
+            SongBuffer songBuffer = null;
+
+            try
             {
-                try
-                {
-                    //byte[] buffer = new byte[81920];
-                    //int bytesRead;
+                songBuffer = new SongBuffer(song.StreamUrl);
+                songBuffer.StartBuffering();
 
-                    //while (!audioCts.IsCancellationRequested && (bytesRead = await ffmpegProcess.StandardOutput.BaseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                    //{
-                    //    await discordStream.WriteAsync(buffer, 0, bytesRead, audioCts.Token);
-                    //}
+                await Task.WhenAny(Task.Delay(10000), songBuffer.PrebufferingCompleted.Task);
 
-                    await ffmpegProcess.StandardOutput.BaseStream.CopyToAsync(discordStream, audioCts.Token);
-                } catch (Exception ex)
+                while (true)
                 {
-                    if (ex is OperationCanceledException ocEx && !ocEx.CancellationToken.IsCancellationRequested) throw;
-                } finally
-                {
-                    await discordStream.FlushAsync();
+                    byte[] buffer = songBuffer.Read(3840);
+                    if (buffer.Length == 0) break;
+
+                    AdjustVolume(ref buffer, volume);
+
+                    await discordStream.WriteAsync(buffer, 0, buffer.Length, audioCts.Token);
+
+                    await (PauseTaskSource?.Task ?? Task.CompletedTask);
                 }
+            } catch (Exception ex)
+            {
+                if (ex is OperationCanceledException ocEx && !ocEx.CancellationToken.IsCancellationRequested) throw;
+            } finally
+            {
+                await discordStream.FlushAsync();
+                songBuffer?.Dispose();
             }
         }
-
-        private static Process CreateFfmpegProcess(string url) => Process.Start(new ProcessStartInfo
-        {
-            FileName = "ffmpeg.exe",
-            Arguments = $"-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -err_detect ignore_err -i {url} -vol 100 -f s16le -ar 48000 -vn -ac 2 pipe:1 -loglevel panic",
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            CreateNoWindow = true,
-            WorkingDirectory = Environment.CurrentDirectory
-        });
 
         private static async Task<Song> GetVideoInfo(EduardoContext context, string input)
         {
@@ -334,9 +353,9 @@ namespace EduardoBotv2.Core.Services
             }.Build();
         }
 
-        private static unsafe byte[] AdjustVolume(byte[] audioSamples, float volume)
+        private static unsafe void AdjustVolume(ref byte[] audioSamples, float volume)
         {
-            if (Math.Abs(volume - 1f) < 0.0001f) return audioSamples;
+            if (Math.Abs(volume - 1f) < 0.0001f) return;
 
             // 16-bit precision for the multiplication
             int volumeFixed = (int) Math.Round(volume * 65536d);
@@ -352,8 +371,6 @@ namespace EduardoBotv2.Core.Services
                     *src = (short) ((*src * volumeFixed) >> 16);
                 }
             }
-
-            return audioSamples;
         }
     }
 }

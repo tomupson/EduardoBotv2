@@ -24,7 +24,7 @@ namespace EduardoBotv2.Core
             {
                 MessageCacheSize = 100,
                 AlwaysDownloadUsers = true,
-                LogLevel = LogSeverity.Info
+                LogLevel = LogSeverity.Verbose
             });
 
             client.Log += Logger.Log;
