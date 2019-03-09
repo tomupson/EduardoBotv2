@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -7,7 +8,8 @@ using EduardoBotv2.Core.Extensions;
 using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Models.Enums;
-using EduardoBotv2.Core.Models.Pokemon;
+using EduardoBotv2.Core.Models.Games;
+using EduardoBotv2.Core.Models.Games.Pokemon;
 using Newtonsoft.Json;
 
 namespace EduardoBotv2.Core.Services
@@ -16,10 +18,19 @@ namespace EduardoBotv2.Core.Services
     {
         private static readonly Dictionary<Pokemon, int> _pokemonInventory = new Dictionary<Pokemon, int>();
 
+        private readonly PokemonData pokemonData;
+        private readonly EightBallData eightBallData;
+
+        public GamesService()
+        {
+            pokemonData = JsonConvert.DeserializeObject<PokemonData>(File.ReadAllText("data/pokemon.json"));
+            eightBallData = JsonConvert.DeserializeObject<EightBallData>(File.ReadAllText("data/eightball.json"));
+        }
+
         public async Task GetPokemon(EduardoContext c)
         {
             // .Next() lower bound is inclusive, upper bound is exclusive.
-            int roll = new Random().Next(1, Constants.ALL_POKEMON_COUNT + 1);
+            int roll = new Random().Next(1, pokemonData.PokemonCount + 1);
 
             Pokemon pokemonRoll = await GetPokemonFromApi(roll);
             IMessage waitingMessage = await c.Channel.SendMessageAsync($"{c.User.Username.Boldify()} is looking for a Pokemon...");
@@ -47,9 +58,9 @@ namespace EduardoBotv2.Core.Services
             if (_pokemonInventory.Count > 0)
             {
                 List<Embed> pageEmbeds = new List<Embed>();
-                for (int i = 0; i < _pokemonInventory.Count; i += Constants.MAX_POKEMON_PER_PAGE)
+                for (int i = 0; i < _pokemonInventory.Count; i += pokemonData.MaxPokemonPerPage)
                 {
-                    Dictionary<Pokemon, int> pokemonPage = _pokemonInventory.Skip(i).Take(Math.Max(_pokemonInventory.Count / 4 - (i + 1), Constants.MAX_POKEMON_PER_PAGE)).ToDictionary(x => x.Key, x => x.Value);
+                    Dictionary<Pokemon, int> pokemonPage = _pokemonInventory.Skip(i).Take(Math.Max(_pokemonInventory.Count / 4 - (i + 1), pokemonData.MaxPokemonPerPage)).ToDictionary(x => x.Key, x => x.Value);
                     List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>();
                     foreach ((Pokemon pokemon, int amount) in pokemonPage)
                     {
@@ -72,7 +83,7 @@ namespace EduardoBotv2.Core.Services
                         Footer = new EmbedFooterBuilder
                         {
                             IconUrl = @"https://maxcdn.icons8.com/Share/icon/color/Gaming//pokeball1600.png",
-                            Text = $"Page {i / Constants.MAX_POKEMON_PER_PAGE + 1} | Pokemon via pokeapi.co"
+                            Text = $"Page {i / pokemonData.MaxPokemonPerPage + 1} | Pokemon via pokeapi.co"
                         }
                     }.Build());
                 }
@@ -98,7 +109,7 @@ namespace EduardoBotv2.Core.Services
         public async Task DisplayEightBall(EduardoContext c)
         {
             await c.Channel.TriggerTypingAsync();
-            string answer = Constants.EIGHT_BALL_WORDS[new Random().Next(0, Constants.EIGHT_BALL_WORDS.Count)];
+            string answer = eightBallData.Words[new Random().Next(0, eightBallData.Words.Count)];
             await c.Channel.SendMessageAsync(answer);
         }
 

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace EduardoBotv2.Core.Models.Pokemon
+namespace EduardoBotv2.Core.Models.Games.Pokemon
 {
     public class PokemonSprite
     {

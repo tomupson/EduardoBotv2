@@ -139,7 +139,7 @@ namespace EduardoBotv2.Core.Services
             if (newVolume < 0 || volume > 100)
                 throw new ArgumentOutOfRangeException(nameof(newVolume));
 
-            volume = ((float) newVolume) / 100;
+            volume = (float) newVolume / 100;
         }
 
         public void TogglePause()

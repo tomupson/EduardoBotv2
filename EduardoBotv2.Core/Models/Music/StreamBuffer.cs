@@ -17,7 +17,7 @@ namespace EduardoBotv2.Core.Models.Music
 
         public int ContentLength => WritePosition >= ReadPosition
             ? WritePosition - ReadPosition
-            : (buffer.Length - ReadPosition) + WritePosition;
+            : buffer.Length - ReadPosition + WritePosition;
 
         public int FreeSpace => buffer.Length - ContentLength;
 

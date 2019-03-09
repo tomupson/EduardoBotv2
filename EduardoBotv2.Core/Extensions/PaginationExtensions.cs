@@ -24,13 +24,14 @@ namespace EduardoBotv2.Core.Extensions
             RestUserMessage m = await context.Channel.SendMessageAsync("", false, pm.Embeds[pm.CurrentIndex]);
             await m.AddPaginationReactionsAsync();
 
+            ulong botUserId = context.Client.CurrentUser.Id;
             context.Client.ReactionAdded += async (e, channel, reaction) =>
             {
                 IUserMessage message = e.GetOrDownloadAsync().Result;
 
                 // If the id of the message matches the id of the message we made...
                 // ...and the id of the user is the same one as who posted the message.
-                if (message.Id == m.Id && reaction.User.Value.Id != context.Client.CurrentUser.Id)
+                if (message.Id == m.Id && reaction.User.Value.Id != botUserId)
                 {
                     pm.ProcessPaginationReaction(reaction.Emote, ct);
                 }
@@ -44,7 +45,7 @@ namespace EduardoBotv2.Core.Extensions
 
                 // If the id of the message matches the id of the message we made...
                 // ...and the id of the user is the same one as who posted the message.
-                if (message.Id == m.Id && reaction.User.Value.Id != context.Client.CurrentUser.Id)
+                if (message.Id == m.Id && reaction.User.Value.Id != botUserId)
                 {
                     pm.ProcessPaginationReaction(reaction.Emote, ct);
                 }
