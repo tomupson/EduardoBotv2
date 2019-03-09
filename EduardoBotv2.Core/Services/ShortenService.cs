@@ -10,6 +10,13 @@ namespace EduardoBotv2.Core.Services
 {
     public class ShortenService
     {
+        private readonly Credentials credentials;
+
+        public ShortenService(Credentials credentials)
+        {
+            this.credentials = credentials;
+        }
+
         public async Task ShortenYouTube(EduardoContext context, string url)
         {
             string videoId = string.Empty;
@@ -65,7 +72,7 @@ namespace EduardoBotv2.Core.Services
                 return;
             }
 
-            string shorten = await GoogleHelper.ShortenUrlAsync(context.EduardoCredentials.GoogleShortenerApiKey, url);
+            string shorten = await GoogleHelper.ShortenUrlAsync(credentials.GoogleShortenerApiKey, url);
 
             await context.Channel.SendMessageAsync($"**{context.User.Mention}, your shortened url is: \"{shorten}\"**");
         }
@@ -78,7 +85,7 @@ namespace EduardoBotv2.Core.Services
                 return;
             }
 
-            string unshortened = await GoogleHelper.UnshortenUrlAsync(context.EduardoCredentials.GoogleShortenerApiKey, url);
+            string unshortened = await GoogleHelper.UnshortenUrlAsync(credentials.GoogleShortenerApiKey, url);
 
             await context.Channel.SendMessageAsync($"**{context.User.Mention}, your unshortened url is: \"{unshortened}\"**");
         }

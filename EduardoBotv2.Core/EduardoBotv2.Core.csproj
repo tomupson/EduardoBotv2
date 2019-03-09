@@ -17,11 +17,12 @@
     <PackageReference Include="Discord.Net" Version="2.0.1" />
     <PackageReference Include="Google.Apis.Urlshortener.v1" Version="1.38.0.138" />
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.38.0.1488" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.9.1" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.9.2" />
     <PackageReference Include="Imgur.API" Version="5.0.0-beta1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="RedditSharp" Version="2.0.0-CI00075" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0006" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0006" />
   </ItemGroup>

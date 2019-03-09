@@ -19,9 +19,7 @@ namespace EduardoBotv2.Core.Models
 
         public IServiceProvider Provider { get; set; }
 
-        public Credentials EduardoCredentials { get; set; }
-
-        public EduardoContext(DiscordSocketClient client, SocketUserMessage msg, IServiceProvider provider, Credentials credentials)
+        public EduardoContext(DiscordSocketClient client, SocketUserMessage msg, IServiceProvider provider)
         {
             Client = client;
             Guild = (msg.Channel as SocketGuildChannel)?.Guild;
@@ -30,7 +28,6 @@ namespace EduardoBotv2.Core.Models
             Message = msg;
 
             Provider = provider;
-            EduardoCredentials = credentials;
         }
 
         #region ICommandContext implementation

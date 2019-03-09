@@ -14,6 +14,13 @@ namespace EduardoBotv2.Core.Services
 {
     public class PUBGService
     {
+        private readonly Credentials credentials;
+
+        public PUBGService(Credentials credentials)
+        {
+            this.credentials = credentials;
+        }
+
         public async Task GetPlayer(EduardoContext context, string username, string platformRegionString)
         {
             if (Enum.TryParse(platformRegionString.Replace("-", "_"), out PUBGPlatformRegion platformRegion))
@@ -23,7 +30,7 @@ namespace EduardoBotv2.Core.Services
                     string name = Enum.GetName(typeof(PUBGPlatformRegion), platformRegion);
                     string platform = name.Split("_")[0];
                     string region = name.Split("_")[1];
-                    JObject playerJson = await GetPlayerFromApi(context, username, platform, region);
+                    JObject playerJson = await GetPlayerFromApi(username, platform, region);
                     EmbedBuilder builder = new EmbedBuilder
                     {
                         Color = Color.Orange,
@@ -68,7 +75,7 @@ namespace EduardoBotv2.Core.Services
                     string name = Enum.GetName(typeof(PUBGPlatformRegion), platformRegion);
                     string platform = name.Split("_")[0];
                     string region = name.Split("_")[1];
-                    JObject lookupJson = await GetPlayerFromApi(context, username, platform, region);
+                    JObject lookupJson = await GetPlayerFromApi(username, platform, region);
                     File.WriteAllText(@"D:\Thomas\Documents\ExamplePlayer.json", lookupJson.ToString());
                     JToken matchesJson = lookupJson["data"][0]["relationships"]["matches"]["data"];
 
@@ -78,7 +85,7 @@ namespace EduardoBotv2.Core.Services
                     {
                         if (match["type"].ToString() == "match")
                         {
-                            JObject matchJson = await GetMatchFromApi(context, match["id"].ToString(), platform, region);
+                            JObject matchJson = await GetMatchFromApi(match["id"].ToString(), platform, region);
                             TimeSpan t = TimeSpan.FromSeconds((int)matchJson["data"]["attributes"]["duration"]);
                             List<JToken> participants = matchJson["included"].ToObject<JArray>().Where(x => x["type"].ToString() == "participant").ToList();
                             JToken me = participants.FirstOrDefault(x => x["attributes"]["stats"]["playerId"].ToString() == lookupJson["data"][0]["id"].ToString());
@@ -220,7 +227,7 @@ namespace EduardoBotv2.Core.Services
                     string name = Enum.GetName(typeof(PUBGPlatformRegion), platformRegion);
                     string platform = name.Split("_")[0];
                     string region = name.Split("_")[1];
-                    JObject matchJson = await GetMatchFromApi(context, matchId, platform, region);
+                    JObject matchJson = await GetMatchFromApi(matchId, platform, region);
                 }
             }
         }
@@ -234,9 +241,9 @@ namespace EduardoBotv2.Core.Services
                     string name = Enum.GetName(typeof(PUBGPlatformRegion), platformRegion);
                     string platform = name.Split("_")[0];
                     string region = name.Split("_")[1];
-                    JObject lookupJson = await GetPlayerFromApi(context, username, platform, region);
+                    JObject lookupJson = await GetPlayerFromApi(username, platform, region);
                     string matchId = lookupJson["data"][0]["relationships"]["matches"]["data"][0]["id"].ToString();
-                    JObject matchJson = await GetMatchFromApi(context, matchId, platform, region);
+                    JObject matchJson = await GetMatchFromApi(matchId, platform, region);
                     JArray telemetry = await GetTelemetryDataFromMatch(matchJson);
                     foreach (JToken jToken in telemetry)
                     {
@@ -284,13 +291,13 @@ namespace EduardoBotv2.Core.Services
             await c.Channel.SendMessageAsync($"Valid options for platform-region are:\n{string.Join(", ", values)}");
         }
 
-        private static async Task<JObject> GetPlayerFromApi(EduardoContext context, string username, string platform, string region)
+        private async Task<JObject> GetPlayerFromApi(string username, string platform, string region)
         {
             try
             {
                 string json = await NetworkHelper.GetString(Constants.PUBG_PLAYER_LOOKUP(platform, region, username), new Dictionary<string, string>
                 {
-                    { "Authorization", $"bearer {context.EduardoCredentials.PUBGApiKey}" },
+                    { "Authorization", $"bearer {credentials.PUBGApiKey}" },
                     { "Accept", "application/vnd.api+json" }
                 });
 
@@ -302,13 +309,13 @@ namespace EduardoBotv2.Core.Services
             }
         }
 
-        private async Task<JObject> GetPlayerFromApiWithId(EduardoContext context, string id, string platform, string region)
+        private async Task<JObject> GetPlayerFromApiWithId(string id, string platform, string region)
         {
             try
             {
                 string json = await NetworkHelper.GetString(Constants.PUBG_PLAYER_LOOKUP_WITH_ID(platform, region, id), new Dictionary<string, string>
                 {
-                    { "Authorization", $"bearer {context.EduardoCredentials.PUBGApiKey}" },
+                    { "Authorization", $"bearer {credentials.PUBGApiKey}" },
                     { "Accept", "application/vnd.api+json" }
                 });
 
@@ -320,13 +327,13 @@ namespace EduardoBotv2.Core.Services
             }
         }
 
-        private static async Task<JObject> GetMatchFromApi(EduardoContext context, string matchId, string platform, string region)
+        private async Task<JObject> GetMatchFromApi(string matchId, string platform, string region)
         {
             try
             {
                 string json = await NetworkHelper.GetString(Constants.PUBG_MATCH_LOOKUP(platform, region, matchId), new Dictionary<string, string>
                 {
-                    { "Authorization", $"bearer {context.EduardoCredentials.PUBGApiKey}" },
+                    { "Authorization", $"bearer {credentials.PUBGApiKey}" },
                     { "Accept", "application/vnd.api+json" }
                 });
 

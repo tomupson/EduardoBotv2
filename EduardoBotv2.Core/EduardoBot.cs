@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Services;
+using RedditSharp;
 
 namespace EduardoBotv2.Core
 {
@@ -32,8 +33,32 @@ namespace EduardoBotv2.Core
 
         public async Task RunAsync()
         {
-            IServiceProvider services = InitializeServices();
-            await services.GetRequiredService<CommandHandler>().InitializeAsync(services);
+            IServiceCollection services = new ServiceCollection()
+                .AddSingleton(client)
+                .AddSingleton(credentials)
+                .AddSingleton<CommandService>()
+                .AddSingleton<CommandHandler>()
+                .AddSingleton<AudioService>()
+                .AddSingleton<MemesService>()
+                .AddSingleton<DrawService>()
+                .AddSingleton<FinanceService>()
+                .AddSingleton<GamesService>()
+                .AddSingleton<GeneralService>()
+                .AddSingleton<ImgurService>()
+                .AddSingleton<ModerationService>()
+                .AddSingleton<MoneyService>()
+                .AddSingleton<NewsService>()
+                .AddSingleton<PUBGService>()
+                .AddSingleton<ShortenService>()
+                .AddSingleton<UserService>()
+                .AddSingleton<UtilityService>()
+                .AddSingleton<YouTubeModuleService>();
+
+            services.AddSingleton(new Reddit(new RefreshTokenWebAgent(credentials.RedditRefreshToken, credentials.RedditClientId, credentials.RedditClientSecret, credentials.RedditRedirectUri)));
+
+            IServiceProvider provider = services.BuildServiceProvider();
+
+            await provider.GetRequiredService<CommandHandler>().InitializeAsync(provider);
 
             try
             {
@@ -52,26 +77,5 @@ namespace EduardoBotv2.Core
 
             await Task.Delay(-1);
         }
-
-        private IServiceProvider InitializeServices() => new ServiceCollection()
-            .AddSingleton(client)
-            .AddSingleton(credentials)
-            .AddSingleton<CommandService>()
-            .AddSingleton<CommandHandler>()
-            .AddSingleton(new AudioService())
-            .AddSingleton(new DrawService())
-            .AddSingleton(new FinanceService())
-            .AddSingleton(new GamesService())
-            .AddSingleton(new GeneralService())
-            .AddSingleton(new ImgurService())
-            .AddSingleton(new ModerationService())
-            .AddSingleton(new MoneyService())
-            .AddSingleton(new NewsService())
-            .AddSingleton(new PUBGService())
-            .AddSingleton(new ShortenService())
-            .AddSingleton(new UserService())
-            .AddSingleton(new UtilityService())
-            .AddSingleton(new YouTubeModuleService())
-            .BuildServiceProvider();
     }
 }

@@ -14,10 +14,12 @@ namespace EduardoBotv2.Core.Services
     public class NewsService
     {
         private readonly NewsData newsData;
+        private readonly Credentials credentials;
 
-        public NewsService()
+        public NewsService(Credentials credentials)
         {
             newsData = JsonConvert.DeserializeObject<NewsData>(File.ReadAllText("data/news.json"));
+            this.credentials = credentials;
         }
 
         public async Task GetNewsHeadlines(EduardoContext context, string source)
@@ -28,7 +30,7 @@ namespace EduardoBotv2.Core.Services
                 return;
             }
 
-            using (Stream responseStream = await NetworkHelper.GetStream($"https://newsapi.org/v1/articles?source={source}&sortBy=top&apiKey={context.EduardoCredentials.NewsApiKey}"))
+            using (Stream responseStream = await NetworkHelper.GetStream($"https://newsapi.org/v1/articles?source={source}&sortBy=top&apiKey={credentials.NewsApiKey}"))
             using (StreamReader sr = new StreamReader(responseStream))
             {
                 string json = sr.ReadToEnd();
@@ -41,7 +43,7 @@ namespace EduardoBotv2.Core.Services
                 int maxHeadlines = Math.Min(newsData.MaxHeadlines, jHeadlines.Count - 1);
                 for (int i = 0; i < maxHeadlines; i++)
                 {
-                    string shorten = await GoogleHelper.ShortenUrlAsync(context.EduardoCredentials.GoogleShortenerApiKey, jHeadlines[i]["url"].ToString());
+                    string shorten = await GoogleHelper.ShortenUrlAsync(credentials.GoogleShortenerApiKey, jHeadlines[i]["url"].ToString());
 
                     headlines.Add(new EmbedFieldBuilder
                     {

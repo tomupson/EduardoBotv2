@@ -25,6 +25,14 @@ namespace EduardoBotv2.Core.Models
 
         public string PUBGApiKey { get; set; }
 
+        public string RedditRefreshToken { get; set; }
+
+        public string RedditClientId { get;set; }
+
+        public string RedditClientSecret { get; set; }
+
+        public string RedditRedirectUri { get; set; }
+
         public Credentials()
         {
             string credentialsFilePath = Path.Combine(Directory.GetCurrentDirectory(), "credentials.json");
@@ -52,6 +60,10 @@ namespace EduardoBotv2.Core.Models
             ImgurClientSecret = data[nameof(ImgurClientSecret)];
             NewsApiKey = data[nameof(NewsApiKey)];
             PUBGApiKey = data[nameof(PUBGApiKey)];
+            RedditRefreshToken = data[nameof(RedditRefreshToken)];
+            RedditClientId = data[nameof(RedditClientId)];
+            RedditClientSecret = data[nameof(RedditClientSecret)];
+            RedditRedirectUri = data[nameof(RedditRedirectUri)];
         }
     }
 }

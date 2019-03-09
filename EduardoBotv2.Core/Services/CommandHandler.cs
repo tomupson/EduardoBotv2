@@ -12,14 +12,12 @@ namespace EduardoBotv2.Core.Services
     {
         private readonly DiscordSocketClient client;
         private readonly CommandService commandService;
-        private readonly Credentials settings;
         private IServiceProvider serviceProvider;
 
         public CommandHandler(DiscordSocketClient client, CommandService commandService, Credentials settings)
         {
             this.client = client;
             this.commandService = commandService;
-            this.settings = settings;
             this.commandService.Log += Logger.Log;
 
             this.client.MessageReceived += OnMessageReceviedAsync;
@@ -35,7 +33,7 @@ namespace EduardoBotv2.Core.Services
         {
             if (!(sm is SocketUserMessage msg)) return;
 
-            EduardoContext context = new EduardoContext(client, msg, serviceProvider, settings);
+            EduardoContext context = new EduardoContext(client, msg, serviceProvider);
 
             int argPos = 0;
 

@@ -13,11 +13,18 @@ namespace EduardoBotv2.Core.Services
 {
     public class YouTubeModuleService
     {
+        private readonly Credentials credentials;
+
+        public YouTubeModuleService(Credentials credentials)
+        {
+            this.credentials = credentials;
+        }
+
         public async Task SearchYouTube(EduardoContext context, string searchQuery = null)
         {
             if (searchQuery != null)
             {
-                SearchListResponse searchVideosResponse = await GoogleHelper.SearchYouTubeAsync(context.EduardoCredentials.GoogleYouTubeApiKey, "snippet", searchQuery, 5, YouTubeRequestType.Video);
+                SearchListResponse searchVideosResponse = await GoogleHelper.SearchYouTubeAsync(credentials.GoogleYouTubeApiKey, "snippet", searchQuery, 5, YouTubeRequestType.Video);
                 
                 List<Embed> pageEmbeds = searchVideosResponse.Items.Select((t, i) => new EmbedBuilder
                 {

@@ -39,7 +39,7 @@ namespace EduardoBotv2.Core.Extensions
                 await Task.CompletedTask;
             };
 
-            context.Client.ReactionRemoved += async (e, channel, reaction) =>
+            context.Client.ReactionRemoved += (e, channel, reaction) =>
             {
                 IUserMessage message = e.GetOrDownloadAsync().Result;
 
@@ -50,7 +50,7 @@ namespace EduardoBotv2.Core.Extensions
                     pm.ProcessPaginationReaction(reaction.Emote, ct);
                 }
 
-                await Task.CompletedTask;
+                return Task.CompletedTask;
             };
 
             Timer timer = new Timer(async x =>
@@ -90,12 +90,11 @@ namespace EduardoBotv2.Core.Extensions
             await m.AddReactionAsync(new Emoji("❌")); // :x:
             await Task.Delay(delay);
             await m.AddReactionAsync(new Emoji("▶")); // :arrow_forward:
-            await Task.CompletedTask;
         }
 
         public static void ProcessPaginationReaction(this PaginatedMessage pm, IEmote emoji, CancellationTokenSource ct)
         {
-            switch(emoji.Name)
+            switch (emoji.Name)
             {
                 case "◀":
                     pm.CurrentIndex = pm.CurrentIndex - 1 >= 0 ? pm.CurrentIndex - 1 : pm.Embeds.Count - 1;

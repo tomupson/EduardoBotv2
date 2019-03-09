@@ -21,6 +21,8 @@ namespace EduardoBotv2.Core.Services
 {
     public class AudioService
     {
+        private readonly Credentials credentials;
+
         private readonly ConcurrentDictionary<ulong, IAudioClient> connectedChannels = new ConcurrentDictionary<ulong, IAudioClient>();
         private readonly List<Song> queue = new List<Song>();
         private float volume = 1.0f;
@@ -28,6 +30,11 @@ namespace EduardoBotv2.Core.Services
         private CancellationTokenSource audioCts;
 
         private TaskCompletionSource<bool> PauseTaskSource { get; set; }
+
+        public AudioService(Credentials credentials)
+        {
+            this.credentials = credentials;
+        }
 
         public async Task PlaySong(EduardoContext context, string input)
         {
@@ -228,7 +235,7 @@ namespace EduardoBotv2.Core.Services
 
                 while (true)
                 {
-                    byte[] buffer = songBuffer.Read(3840);
+                    byte[] buffer = songBuffer.Read(3840).ToArray();
                     if (buffer.Length == 0) break;
 
                     AdjustVolume(ref buffer, volume);
@@ -247,7 +254,7 @@ namespace EduardoBotv2.Core.Services
             }
         }
 
-        private static async Task<Song> GetVideoInfo(EduardoContext context, string input)
+        private async Task<Song> GetVideoInfo(EduardoContext context, string input)
         {
             string videoId = "";
 
@@ -271,7 +278,7 @@ namespace EduardoBotv2.Core.Services
             } else
             {
                 // Otherwise, search youtube for the user input and get the video id that way
-                SearchListResponse response = await GoogleHelper.SearchYouTubeAsync(context.EduardoCredentials.GoogleYouTubeApiKey, "snippet", input, 1, YouTubeRequestType.Video);
+                SearchListResponse response = await GoogleHelper.SearchYouTubeAsync(credentials.GoogleYouTubeApiKey, "snippet", input, 1, YouTubeRequestType.Video);
 
                 if (response.Items.Count > 0)
                 {
@@ -280,7 +287,7 @@ namespace EduardoBotv2.Core.Services
             }
 
             // Get the video by the previously determined id
-            VideoListResponse getVideoResponse = await GoogleHelper.GetVideoFromYouTubeAsync(context.EduardoCredentials.GoogleYouTubeApiKey, "snippet,contentDetails", videoId, 1);
+            VideoListResponse getVideoResponse = await GoogleHelper.GetVideoFromYouTubeAsync(credentials.GoogleYouTubeApiKey, "snippet,contentDetails", videoId, 1);
 
             if (getVideoResponse.Items.Count == 0) return null;
 
