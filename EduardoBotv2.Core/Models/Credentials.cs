@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata;
 using Discord;
 using EduardoBotv2.Core.Helpers;
 using Microsoft.Extensions.Configuration;
@@ -33,6 +34,14 @@ namespace EduardoBotv2.Core.Models
 
         public string RedditRedirectUri { get; set; }
 
+        public string SpotifyRefreshToken { get; set; }
+
+        public string SpotifyClientId { get; set; }
+
+        public string SpotifyClientSecret { get; set; }
+
+        public string SpotifyRedirectUri { get; set; }
+
         public Credentials()
         {
             string credentialsFilePath = Path.Combine(Directory.GetCurrentDirectory(), "credentials.json");
@@ -54,16 +63,26 @@ namespace EduardoBotv2.Core.Models
             }
 
             OwnerIds = data.GetSection(nameof(OwnerIds)).GetChildren().Select(id => ulong.Parse(id.Value)).ToArray();
+
             GoogleYouTubeApiKey = data[nameof(GoogleYouTubeApiKey)];
             GoogleShortenerApiKey = data[nameof(GoogleShortenerApiKey)];
+
             ImgurClientId = data[nameof(ImgurClientId)];
             ImgurClientSecret = data[nameof(ImgurClientSecret)];
+
             NewsApiKey = data[nameof(NewsApiKey)];
+
             PUBGApiKey = data[nameof(PUBGApiKey)];
+
             RedditRefreshToken = data[nameof(RedditRefreshToken)];
             RedditClientId = data[nameof(RedditClientId)];
             RedditClientSecret = data[nameof(RedditClientSecret)];
             RedditRedirectUri = data[nameof(RedditRedirectUri)];
+
+            SpotifyRefreshToken = data[nameof(SpotifyRefreshToken)];
+            SpotifyClientId = data[nameof(SpotifyClientId)];
+            SpotifyClientSecret = data[nameof(SpotifyClientSecret)];
+            SpotifyRedirectUri = data[nameof(SpotifyRedirectUri)];
         }
     }
 }

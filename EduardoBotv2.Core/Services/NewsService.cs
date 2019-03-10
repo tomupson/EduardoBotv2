@@ -69,13 +69,13 @@ namespace EduardoBotv2.Core.Services
                     }
                 };
 
-                await context.Channel.SendMessageAsync("", false, builder.Build());
+                await context.Channel.SendMessageAsync(embed: builder.Build());
             }
         }
 
-        public async Task ShowNewsSources(EduardoContext c)
+        public async Task ShowNewsSources(EduardoContext context)
         {
-            await c.Channel.SendMessageAsync($"**Available sources for the news command are:**\n{string.Join(", ", newsData.NewsSources)}");
+            await context.Channel.SendMessageAsync($"**Available sources for the news command are:**\n{string.Join(", ", newsData.NewsSources)}");
         }
     }
 }

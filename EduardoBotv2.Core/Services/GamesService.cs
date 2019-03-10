@@ -27,19 +27,19 @@ namespace EduardoBotv2.Core.Services
             eightBallData = JsonConvert.DeserializeObject<EightBallData>(File.ReadAllText("data/eightball.json"));
         }
 
-        public async Task GetPokemon(EduardoContext c)
+        public async Task GetPokemon(EduardoContext context)
         {
             // .Next() lower bound is inclusive, upper bound is exclusive.
             int roll = new Random().Next(1, pokemonData.PokemonCount + 1);
 
             Pokemon pokemonRoll = await GetPokemonFromApi(roll);
-            IMessage waitingMessage = await c.Channel.SendMessageAsync($"{c.User.Username.Boldify()} is looking for a Pokemon...");
+            IMessage waitingMessage = await context.Channel.SendMessageAsync($"{context.User.Username.Boldify()} is looking for a Pokemon...");
 
             await waitingMessage.DeleteAsync();
 
             if (pokemonRoll.Id != 0)
             {
-                await c.Channel.SendMessageAsync($"{c.User.Username.Boldify()} has found a wild {pokemonRoll.Name.UpperFirstChar()}!\n{pokemonRoll.Sprites.FrontDefaultSpriteUrl}");
+                await context.Channel.SendMessageAsync($"{context.User.Username.Boldify()} has found a wild {pokemonRoll.Name.UpperFirstChar()}!\n{pokemonRoll.Sprites.FrontDefaultSpriteUrl}");
                 if (_pokemonInventory.ContainsKey(pokemonRoll))
                 {
                     _pokemonInventory[pokemonRoll] += 1;
@@ -53,7 +53,7 @@ namespace EduardoBotv2.Core.Services
             }
         }
 
-        public async Task ShowInventory(EduardoContext c)
+        public async Task ShowInventory(EduardoContext context)
         {
             if (_pokemonInventory.Count > 0)
             {
@@ -75,8 +75,8 @@ namespace EduardoBotv2.Core.Services
                     {
                         Author = new EmbedAuthorBuilder
                         {
-                            IconUrl = c.User.GetAvatarUrl(),
-                            Name = $"{c.User.Username}'s Pokemon"
+                            IconUrl = context.User.GetAvatarUrl(),
+                            Name = $"{context.User.Username}'s Pokemon"
                         },
                         Color = new Color(255, 255, 0),
                         Fields = fields,
@@ -88,7 +88,7 @@ namespace EduardoBotv2.Core.Services
                     }.Build());
                 }
 
-                await c.SendPaginatedMessageAsync(new PaginatedMessage
+                await context.SendPaginatedMessageAsync(new PaginatedMessage
                 {
                     Embeds = pageEmbeds,
                     Timeout = TimeSpan.FromSeconds(Constants.PAGINATION_TIMEOUT_SECONDS),
@@ -96,21 +96,21 @@ namespace EduardoBotv2.Core.Services
                 });
             } else
             {
-                await c.Channel.SendMessageAsync($"**{c.User.Mention} You dont have any Pokemon! Use `$pokemon` to find a wild Pokemon!**");
+                await context.Channel.SendMessageAsync($"**{context.User.Mention} You dont have any Pokemon! Use `$pokemon` to find a wild Pokemon!**");
             }
         }
 
-        public async Task FlipCoin(EduardoContext c)
+        public async Task FlipCoin(EduardoContext context)
         {
             string result = new Random().Next(0, 2) == 0 ? "Heads" : "Tails";
-            await c.Channel.SendMessageAsync(result);
+            await context.Channel.SendMessageAsync(result);
         }
 
-        public async Task DisplayEightBall(EduardoContext c)
+        public async Task DisplayEightBall(EduardoContext context)
         {
-            await c.Channel.TriggerTypingAsync();
+            await context.Channel.TriggerTypingAsync();
             string answer = eightBallData.Words[new Random().Next(0, eightBallData.Words.Count)];
-            await c.Channel.SendMessageAsync(answer);
+            await context.Channel.SendMessageAsync(answer);
         }
 
         private static async Task<Pokemon> GetPokemonFromApi(int roll)

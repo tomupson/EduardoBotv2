@@ -58,7 +58,7 @@ namespace EduardoBotv2.Core.Services
                         Title = playerJson["data"][0]["attributes"]["name"].ToString()
                     };
 
-                    await context.Channel.SendMessageAsync("", false, builder.Build());
+                    await context.Channel.SendMessageAsync(embed: builder.Build());
                 }
             } else
             {
@@ -285,10 +285,10 @@ namespace EduardoBotv2.Core.Services
             }
         }
 
-        public async Task ShowValidOptions(EduardoContext c)
+        public async Task ShowValidOptions(EduardoContext context)
         {
             string[] values = Enum.GetNames(typeof(PUBGPlatformRegion));
-            await c.Channel.SendMessageAsync($"Valid options for platform-region are:\n{string.Join(", ", values)}");
+            await context.Channel.SendMessageAsync($"Valid options for platform-region are:\n{string.Join(", ", values)}");
         }
 
         private async Task<JObject> GetPlayerFromApi(string username, string platform, string region)

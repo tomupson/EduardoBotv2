@@ -21,9 +21,9 @@ namespace EduardoBotv2.Core.Services
             await finishedMessage.DeleteAsync();
         }
 
-        public async Task DisplayInvite(EduardoContext c)
+        public async Task DisplayInvite(EduardoContext context)
         {
-            await c.Channel.SendMessageAsync($"{c.User.Mention.Boldify()}, you can invite me to your server with this link!:\nhttps://discordapp.com/oauth2/authorize?client_id=360500527869460480&scope=bot&permissions=8");
+            await context.Channel.SendMessageAsync($"{context.User.Mention.Boldify()}, you can invite me to your server with this link!:\nhttps://discordapp.com/oauth2/authorize?client_id=360500527869460480&scope=bot&permissions=8");
         }
     }
 }

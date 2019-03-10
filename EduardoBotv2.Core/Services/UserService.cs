@@ -72,7 +72,7 @@ namespace EduardoBotv2.Core.Services
                 }
             };
 
-            await context.Channel.SendMessageAsync("", false, builder.Build());
+            await context.Channel.SendMessageAsync(embed: builder.Build());
         }
 
         public async Task GetAvatar(EduardoContext context, IUser targetUser = null)

@@ -83,7 +83,7 @@ namespace EduardoBotv2.Core.Services
                         //await c.Channel.SendMessageAsync($"**Description:** {command.Summary}\n\n" +
                         //$"**Usage:** `{Config.DEFAULT_PREFIX}{commandOrModule}{command.GetUsage()}`\n\n" +
                         //$"**Example:** {example}");
-                        await context.Channel.SendMessageAsync("", false, builder.Build());
+                        await context.Channel.SendMessageAsync(embed: builder.Build());
                         return;
                     }
                 }
@@ -107,10 +107,10 @@ namespace EduardoBotv2.Core.Services
             }
         }
 
-        public async Task Ping(EduardoContext c)
+        public async Task Ping(EduardoContext context)
         {
-            SocketUserMessage ping = c.Message;
-            RestUserMessage pong = await c.Channel.SendMessageAsync("", false, new EmbedBuilder
+            SocketUserMessage ping = context.Message;
+            RestUserMessage pong = await context.Channel.SendMessageAsync(embed: new EmbedBuilder
             {
                 Title = "Measuring Latency...",
                 Color = Color.DarkRed
@@ -134,7 +134,7 @@ namespace EduardoBotv2.Core.Services
                         new EmbedFieldBuilder
                         {
                             Name = "Web Socket Latency",
-                            Value = $"{c.Client.Latency} ms"
+                            Value = $"{context.Client.Latency} ms"
                         }
                     },
                     Title = "Latency Results"
@@ -186,7 +186,7 @@ namespace EduardoBotv2.Core.Services
                 }
             };
 
-            await context.Channel.SendMessageAsync("", false, builder.Build());
+            await context.Channel.SendMessageAsync(embed: builder.Build());
         }
 
         public async Task RoboMe(EduardoContext context, string username)

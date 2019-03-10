@@ -21,7 +21,7 @@ namespace EduardoBotv2.Core.Extensions
             CancellationTokenSource ct = new CancellationTokenSource(pm.Timeout); // Cancellation token automatically activates after timeout.
             ct.Token.Register(() => tcs.TrySetResult(null)); // Once it has been cancelled (token activates), it will set tcs to null, which will trigger await tcs.Task.
 
-            RestUserMessage m = await context.Channel.SendMessageAsync("", false, pm.Embeds[pm.CurrentIndex]);
+            RestUserMessage m = await context.Channel.SendMessageAsync(embed: pm.Embeds[pm.CurrentIndex]);
             await m.AddPaginationReactionsAsync();
 
             ulong botUserId = context.Client.CurrentUser.Id;

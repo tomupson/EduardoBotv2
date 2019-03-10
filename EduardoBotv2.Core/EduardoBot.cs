@@ -9,6 +9,9 @@ using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Services;
 using RedditSharp;
+using SpotifyAPI.Web;
+using SpotifyAPI.Web.Auth;
+using SpotifyAPI.Web.Models;
 
 namespace EduardoBotv2.Core
 {
@@ -52,7 +55,9 @@ namespace EduardoBotv2.Core
                 .AddSingleton<ShortenService>()
                 .AddSingleton<UserService>()
                 .AddSingleton<UtilityService>()
-                .AddSingleton<YouTubeModuleService>();
+                .AddSingleton<YouTubeModuleService>()
+                .AddSingleton<SpotifyWebAPI>()
+                .AddSingleton<SpotifyService>();
 
             services.AddSingleton(new Reddit(new RefreshTokenWebAgent(credentials.RedditRefreshToken, credentials.RedditClientId, credentials.RedditClientSecret, credentials.RedditRedirectUri)));
 
