@@ -26,19 +26,19 @@ namespace EduardoBotv2.Core.Services
             {
                 SearchListResponse searchVideosResponse = await GoogleHelper.SearchYouTubeAsync(credentials.GoogleYouTubeApiKey, "snippet", searchQuery, 5, YouTubeRequestType.Video);
                 
-                List<Embed> pageEmbeds = searchVideosResponse.Items.Select((t, i) => new EmbedBuilder
+                List<Embed> pageEmbeds = searchVideosResponse.Items.Select((video, index) => new EmbedBuilder
                 {
                     Color = Color.Red,
-                    Title = t.Snippet.Title,
-                    Description = t.Snippet.Description,
-                    ThumbnailUrl = t.Snippet.Thumbnails.Default__.Url,
+                    Title = video.Snippet.Title,
+                    Description = video.Snippet.Description,
+                    ThumbnailUrl = video.Snippet.Thumbnails.Default__.Url,
 
                     Footer = new EmbedFooterBuilder
                     {
                         IconUrl = @"https://seeklogo.com/images/Y/youtube-icon-logo-521820CDD7-seeklogo.com.png",
-                        Text = $"Page {i + 1}"
+                        Text = $"Page {index + 1}"
                     },
-                    Url = $"http://youtu.be/{t.Id.VideoId}"
+                    Url = $"http://youtu.be/{video.Id.VideoId}"
                 }.Build()).ToList();
 
                 await context.SendPaginatedMessageAsync(new PaginatedMessage
