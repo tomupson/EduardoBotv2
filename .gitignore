@@ -302,3 +302,5 @@ deploy.bat
 deploy.sh
 publish.bat
 debug.json
+youtube-dl.exe
+ffmpeg.exe
