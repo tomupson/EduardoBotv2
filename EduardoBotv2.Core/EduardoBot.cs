@@ -6,23 +6,21 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 using EduardoBotv2.Core.Helpers;
-using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Services;
+using Octokit;
 using RedditSharp;
 using SpotifyAPI.Web;
-using SpotifyAPI.Web.Auth;
-using SpotifyAPI.Web.Models;
 
 namespace EduardoBotv2.Core
 {
     public class EduardoBot
     {
         private readonly DiscordSocketClient client;
-        private readonly Credentials credentials;
+        private readonly Models.Credentials credentials;
 
         public EduardoBot()
         {
-            credentials = new Credentials();
+            credentials = new Models.Credentials();
 
             client = new DiscordSocketClient(new DiscordSocketConfig
             {

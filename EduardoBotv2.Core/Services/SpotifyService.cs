@@ -17,7 +17,7 @@ namespace EduardoBotv2.Core.Services
         private readonly Credentials credentials;
         private readonly SpotifyWebAPI spotify;
 
-        private int[] acessTokenErrorStatusCodes = {400, 401};
+        private readonly int[] acessTokenErrorStatusCodes = { 400, 401 };
         
         public SpotifyService(SpotifyWebAPI spotify, Credentials credentials)
         {
@@ -78,7 +78,7 @@ namespace EduardoBotv2.Core.Services
                         }
                     },
                     ImageUrl = album.Images.Count > 0 ? album.Images[0].Url : "",
-                    Url = album.ExternalUrls["spotify"],
+                    Url = album.ExternalUrls["spotify"]
                 }.Build());
             }
 
@@ -111,7 +111,7 @@ namespace EduardoBotv2.Core.Services
                         }
                     },
                     ImageUrl = artist.Images.Count > 0 ? artist.Images[0].Url : "",
-                    Url = artist.ExternalUrls["spotify"],
+                    Url = artist.ExternalUrls["spotify"]
                 }.Build());
             }
 

@@ -44,48 +44,47 @@ namespace EduardoBotv2.Core.Services
                     }
 
                     CommandInfo command = module.Commands.FirstOrDefault(x => x.Aliases.Any(y => y.ToLower() == commandOrModule));
-                    if (command != default(CommandInfo))
+                    if (command == default(CommandInfo)) continue;
+
+                    List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>
                     {
-                        List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>
+                        new EmbedFieldBuilder
                         {
-                            new EmbedFieldBuilder
-                            {
-                                Name = "Description",
-                                Value = command.Summary
-                            },
-                            new EmbedFieldBuilder
-                            {
-                                Name = "Usage",
-                                Value = $"`{Constants.CMD_PREFIX}{commandOrModule}{command.GetUsage()}`"
-                            }
-                        };
-
-                        if (command.Parameters.Count > 0)
+                            Name = "Description",
+                            Value = command.Summary
+                        },
+                        new EmbedFieldBuilder
                         {
-                            fields.Add(new EmbedFieldBuilder
-                            {
-                                Name = "Example",
-                                Value = $"`{Constants.CMD_PREFIX}{commandOrModule} {command.Remarks}`"
-                            });
+                            Name = "Usage",
+                            Value = $"`{Constants.CMD_PREFIX}{commandOrModule}{command.GetUsage()}`"
                         }
+                    };
 
-                        EmbedBuilder builder = new EmbedBuilder
+                    if (command.Parameters.Count > 0)
+                    {
+                        fields.Add(new EmbedFieldBuilder
                         {
-                            Author = new EmbedAuthorBuilder
-                            {
-                                IconUrl = context.Client.CurrentUser.GetAvatarUrl(),
-                                Name = $"Command Summary for \"{commandOrModule}\""
-                            },
-                            Color = Color.DarkPurple,
-                            Fields = fields
-                        };
-
-                        //await c.Channel.SendMessageAsync($"**Description:** {command.Summary}\n\n" +
-                        //$"**Usage:** `{Config.DEFAULT_PREFIX}{commandOrModule}{command.GetUsage()}`\n\n" +
-                        //$"**Example:** {example}");
-                        await context.Channel.SendMessageAsync(embed: builder.Build());
-                        return;
+                            Name = "Example",
+                            Value = $"`{Constants.CMD_PREFIX}{commandOrModule} {command.Remarks}`"
+                        });
                     }
+
+                    EmbedBuilder builder = new EmbedBuilder
+                    {
+                        Author = new EmbedAuthorBuilder
+                        {
+                            IconUrl = context.Client.CurrentUser.GetAvatarUrl(),
+                            Name = $"Command Summary for \"{commandOrModule}\""
+                        },
+                        Color = Color.DarkPurple,
+                        Fields = fields
+                    };
+
+                    //await c.Channel.SendMessageAsync($"**Description:** {command.Summary}\n\n" +
+                    //$"**Usage:** `{Config.DEFAULT_PREFIX}{commandOrModule}{command.GetUsage()}`\n\n" +
+                    //$"**Example:** {example}");
+                    await context.Channel.SendMessageAsync(embed: builder.Build());
+                    return;
                 }
 
                 await context.Channel.SendMessageAsync("This command/module does not exist.");

@@ -9,7 +9,7 @@ namespace EduardoBotv2.Core.Models.Music
     {
         private readonly Process process;
         private readonly byte[] buffer;
-        private Stream stream;
+        private readonly Stream stream;
         private bool prebuffered;
         private bool stopped;
 

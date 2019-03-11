@@ -14,7 +14,7 @@ namespace EduardoBotv2.Core.Services
         private readonly CommandService commandService;
         private IServiceProvider serviceProvider;
 
-        public CommandHandler(DiscordSocketClient client, CommandService commandService, Credentials settings)
+        public CommandHandler(DiscordSocketClient client, CommandService commandService)
         {
             this.client = client;
             this.commandService = commandService;

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
+using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -13,7 +13,7 @@ namespace EduardoBotv2.Core.Services
 {
     public class DrawService
     {
-        private static Dictionary<Color, string> colourDictionary = new Dictionary<Color, string>
+        private static readonly Dictionary<Color, string> _colourDictionary = new Dictionary<Color, string>
         {
             {new Color(120, 177, 89), ":green_heart:"},
             {new Color(221, 46, 68), ":red_circle:"},
@@ -30,8 +30,6 @@ namespace EduardoBotv2.Core.Services
             {new Color(119, 178, 85), ":green_book:"},
             {new Color(85, 172, 238), ":blue_book:"}
         };
-
-        private static HttpClient client = new HttpClient();
 
         public async Task Draw(EduardoContext context, string emojiOrUrl, int size)
         {
@@ -71,7 +69,7 @@ namespace EduardoBotv2.Core.Services
         private static async Task<List<string>> GetBlocks(string url, int size)
         {
             List<string> blocks = new List<string>();
-            byte[] imgBytes = await client.GetByteArrayAsync(url);
+            byte[] imgBytes = await NetworkHelper.GetBytes(url);
 
             using (Image<Rgba32> image = SixLabors.ImageSharp.Image.Load(imgBytes))
             {
@@ -85,7 +83,7 @@ namespace EduardoBotv2.Core.Services
                     for (int x = 0; x < image.Width; x++)
                     {
                         Rgba32 pixel = image[x, y];
-                        lineEmojis[x] = colourDictionary[GetNearestColour(pixel.R, pixel.G, pixel.B)];
+                        lineEmojis[x] = _colourDictionary[GetNearestColour(pixel.R, pixel.G, pixel.B)];
                     }
 
                     int lineLength = lineEmojis.Sum(x => x.Length);
@@ -111,7 +109,7 @@ namespace EduardoBotv2.Core.Services
             Color nearestColour = new Color();
             double distance = 500.0;
 
-            foreach (Color colour in colourDictionary.Keys)
+            foreach (Color colour in _colourDictionary.Keys)
             {
                 double red = Math.Pow(colour.R - inputR, 2.0);
                 double green = Math.Pow(colour.G - inputG, 2.0);
@@ -124,11 +122,10 @@ namespace EduardoBotv2.Core.Services
                     break;
                 }
 
-                if (calculatedDistance < distance)
-                {
-                    distance = calculatedDistance;
-                    nearestColour = colour;
-                }
+                if (!(calculatedDistance < distance)) continue;
+
+                distance = calculatedDistance;
+                nearestColour = colour;
             }
 
             return nearestColour;

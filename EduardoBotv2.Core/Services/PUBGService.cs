@@ -90,7 +90,6 @@ namespace EduardoBotv2.Core.Services
                             List<JToken> participants = matchJson["included"].ToObject<JArray>().Where(x => x["type"].ToString() == "participant").ToList();
                             JToken me = participants.FirstOrDefault(x => x["attributes"]["stats"]["playerId"].ToString() == lookupJson["data"][0]["id"].ToString());
                             JToken winner = participants.FirstOrDefault(x => (int)x["attributes"]["stats"]["winPlace"] == 1);
-                            string winnerShard = winner?["attributes"]["shardId"].ToString();
                             DateTime startDate = DateTime.Parse(matchJson["data"]["attributes"]["createdAt"].ToString(), null, System.Globalization.DateTimeStyles.RoundtripKind);
                             //JArray telemetryData = await GetTelemetryDataFromMatch(matchJson);
                             TimeSpan timeSurvived = TimeSpan.FromSeconds((int)me?["attributes"]["stats"]["timeSurvived"]);
@@ -250,35 +249,34 @@ namespace EduardoBotv2.Core.Services
                         JObject obj = (JObject) jToken;
                         string logEvent = obj["_T"].ToString();
 
-                        if (Enum.TryParse(logEvent, out TelemetryEvents evnt))
+                        if (!Enum.TryParse(logEvent, out TelemetryEvents evnt)) continue;
+
+                        switch (evnt)
                         {
-                            switch (evnt)
-                            {
-                                case TelemetryEvents.LogPlayerKill:
-                                    switch (obj["damageTypeCategory"].ToString())
-                                    {
-                                        case "Damage_BlueZone":
-                                            Console.WriteLine($"BLUEZONE killed {obj["victim"]["name"]}");
-                                            break;
-                                        case "Damage_Explosion_RedZone":
-                                            Console.WriteLine($"REDZONE killed {obj["victim"]["name"]}");
-                                            break;
-                                        default:
-                                            Console.WriteLine($"{obj["killer"]["name"]} killed {obj["victim"]["name"]}");
-                                            break;
-                                    }
-                                    break;
-                                case TelemetryEvents.LogCarePackageSpawn:
-                                    List<string> items = new List<string>();
-                                    JArray itemJson = JArray.Parse(obj["itemPackage"]["items"].ToString());
-                                    foreach (JToken jToken1 in itemJson)
-                                    {
-                                        JObject item = (JObject) jToken1;
-                                        items.Add($"{item["itemId"]} x {item["stackCount"]}");
-                                    }
-                                    Console.WriteLine($"Care Package Spawned with: {string.Join(", ", items)}");
-                                    break;
-                            }
+                            case TelemetryEvents.LogPlayerKill:
+                                switch (obj["damageTypeCategory"].ToString())
+                                {
+                                    case "Damage_BlueZone":
+                                        Console.WriteLine($"BLUEZONE killed {obj["victim"]["name"]}");
+                                        break;
+                                    case "Damage_Explosion_RedZone":
+                                        Console.WriteLine($"REDZONE killed {obj["victim"]["name"]}");
+                                        break;
+                                    default:
+                                        Console.WriteLine($"{obj["killer"]["name"]} killed {obj["victim"]["name"]}");
+                                        break;
+                                }
+                                break;
+                            case TelemetryEvents.LogCarePackageSpawn:
+                                List<string> items = new List<string>();
+                                JArray itemJson = JArray.Parse(obj["itemPackage"]["items"].ToString());
+                                foreach (JToken jToken1 in itemJson)
+                                {
+                                    JObject item = (JObject) jToken1;
+                                    items.Add($"{item["itemId"]} x {item["stackCount"]}");
+                                }
+                                Console.WriteLine($"Care Package Spawned with: {string.Join(", ", items)}");
+                                break;
                         }
                     }
                 }

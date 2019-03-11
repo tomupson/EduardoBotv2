@@ -73,7 +73,7 @@ namespace EduardoBotv2.Core.Extensions
 
         private static async Task AddPaginationReactionsAsync(IUserMessage message)
         {
-            int delay = 1300; // Delay as to not reach the reaction limit.
+            const int delay = 1300; // Delay as to not reach the reaction limit.
             await message.AddReactionAsync(new Emoji("◀")); // :arrow_backward:
             await Task.Delay(delay);
             await message.AddReactionAsync(new Emoji("❌")); // :x:

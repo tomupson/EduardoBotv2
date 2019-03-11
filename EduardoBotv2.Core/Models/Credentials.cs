@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata;
 using Discord;
 using EduardoBotv2.Core.Helpers;
 using Microsoft.Extensions.Configuration;
