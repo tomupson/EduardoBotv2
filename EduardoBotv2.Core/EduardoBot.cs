@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Services;
 using Octokit;
+using Pubg.Net;
 using RedditSharp;
 using SpotifyAPI.Web;
 
@@ -49,7 +50,7 @@ namespace EduardoBotv2.Core
                 .AddSingleton<ModerationService>()
                 .AddSingleton<MoneyService>()
                 .AddSingleton<NewsService>()
-                .AddSingleton<PUBGService>()
+                .AddSingleton<PubgService>()
                 .AddSingleton<ShortenService>()
                 .AddSingleton<UserService>()
                 .AddSingleton<UtilityService>()
@@ -58,6 +59,11 @@ namespace EduardoBotv2.Core
                 .AddSingleton<SpotifyService>();
 
             services.AddSingleton(new Reddit(new RefreshTokenWebAgent(credentials.RedditRefreshToken, credentials.RedditClientId, credentials.RedditClientSecret, credentials.RedditRedirectUri)));
+
+            PubgApiConfiguration.Configure(config =>
+            {
+                config.ApiKey = credentials.PUBGApiKey;
+            });
 
             IServiceProvider provider = services.BuildServiceProvider();
 
