@@ -65,7 +65,7 @@ namespace EduardoBotv2.Core.Services
                 List<Embed> pageEmbeds = new List<Embed>();
                 for (int i = 0; i < _pokemonInventory.Count; i += pokemonData.MaxPokemonPerPage)
                 {
-                    Dictionary<Pokemon, int> pokemonPage = _pokemonInventory.Skip(i).Take(Math.Min(pokemonData.MaxPokemonPerPage, _pokemonInventory.Count - i - 1)).ToDictionary(x => x.Key, x => x.Value);
+                    Dictionary<Pokemon, int> pokemonPage = _pokemonInventory.Skip(i).Take(Math.Min(pokemonData.MaxPokemonPerPage, _pokemonInventory.Count - i)).ToDictionary(x => x.Key, x => x.Value);
                     List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>();
                     foreach ((Pokemon pokemon, int amount) in pokemonPage)
                     {
