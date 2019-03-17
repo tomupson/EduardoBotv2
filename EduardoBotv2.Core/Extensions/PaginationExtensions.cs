@@ -19,11 +19,9 @@ namespace EduardoBotv2.Core.Extensions
                 await context.Channel.SendMessageAsync(embed: embeds[0]);
             } else
             {
-                await context.SendPaginatedMessageAsync(new PaginatedMessage
-                {
-                    Embeds = embeds,
-                    Timeout = TimeSpan.FromSeconds(Constants.PAGINATION_TIMEOUT_SECONDS)
-                });
+                PaginatedMessage paginatedMessage = PaginatedMessage.Default;
+                paginatedMessage.Embeds = embeds;
+                await context.SendPaginatedMessageAsync(paginatedMessage);
             }
         }
 

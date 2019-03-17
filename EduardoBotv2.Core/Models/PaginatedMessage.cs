@@ -16,5 +16,11 @@ namespace EduardoBotv2.Core.Models
         public TimeSpan Timeout { get; set; }
 
         public TimeoutBehaviour TimeoutBehaviour { get; set; }
+
+        public static readonly PaginatedMessage Default = new PaginatedMessage
+        {
+            Timeout = TimeSpan.FromSeconds(Constants.PAGINATION_TIMEOUT_SECONDS),
+            TimeoutBehaviour = TimeoutBehaviour.Default
+        };
     }
 }

@@ -43,7 +43,6 @@ namespace EduardoBotv2.Core
                 .AddSingleton<AudioService>()
                 .AddSingleton<MemesService>()
                 .AddSingleton<DrawService>()
-                .AddSingleton<FinanceService>()
                 .AddSingleton<GamesService>()
                 .AddSingleton<GeneralService>()
                 .AddSingleton<ImgurService>()

@@ -30,16 +30,21 @@ namespace EduardoBotv2.Core.Services
         public async Task GetPokemon(EduardoContext context)
         {
             // .Next() lower bound is inclusive, upper bound is exclusive.
-            int roll = new Random().Next(1, pokemonData.PokemonCount + 1);
+            int roll = new Random().Next(0, pokemonData.PokemonCount);
 
-            Pokemon pokemonRoll = await GetPokemonFromApi(roll);
             IMessage waitingMessage = await context.Channel.SendMessageAsync($"{context.User.Username.Boldify()} is looking for a Pokemon...");
+
+            Pokemon pokemonRoll = await GetPokemonFromApi(roll + 1);
 
             await waitingMessage.DeleteAsync();
 
             if (pokemonRoll.Id != 0)
             {
-                await context.Channel.SendMessageAsync($"{context.User.Username.Boldify()} has found a wild {pokemonRoll.Name.UpperFirstChar()}!\n{pokemonRoll.Sprites.FrontDefaultSpriteUrl}");
+                using (Stream stream = await NetworkHelper.GetStream(pokemonRoll.Sprites.FrontDefaultSpriteUrl))
+                {
+                    await context.Channel.SendFileAsync(stream, $"{pokemonRoll.Name}.png", $"{context.User.Username.Boldify()} has found a wild {pokemonRoll.Name.UpperFirstChar()}!");
+                }
+
                 if (_pokemonInventory.ContainsKey(pokemonRoll))
                 {
                     _pokemonInventory[pokemonRoll] += 1;
@@ -60,7 +65,7 @@ namespace EduardoBotv2.Core.Services
                 List<Embed> pageEmbeds = new List<Embed>();
                 for (int i = 0; i < _pokemonInventory.Count; i += pokemonData.MaxPokemonPerPage)
                 {
-                    Dictionary<Pokemon, int> pokemonPage = _pokemonInventory.Skip(i).Take(Math.Max(_pokemonInventory.Count / 4 - (i + 1), pokemonData.MaxPokemonPerPage)).ToDictionary(x => x.Key, x => x.Value);
+                    Dictionary<Pokemon, int> pokemonPage = _pokemonInventory.Skip(i).Take(Math.Min(pokemonData.MaxPokemonPerPage, _pokemonInventory.Count - i - 1)).ToDictionary(x => x.Key, x => x.Value);
                     List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>();
                     foreach ((Pokemon pokemon, int amount) in pokemonPage)
                     {
@@ -87,7 +92,7 @@ namespace EduardoBotv2.Core.Services
                         }
                     }.Build());
                 }
-
+                
                 await context.SendPaginatedMessageAsync(new PaginatedMessage
                 {
                     Embeds = pageEmbeds,

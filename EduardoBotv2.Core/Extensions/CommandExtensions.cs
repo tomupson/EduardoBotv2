@@ -13,6 +13,7 @@ namespace EduardoBotv2.Core.Extensions
             {
                 string before = "<";
                 string after = ">";
+
                 if (param.IsOptional)
                 {
                     before = "[";
