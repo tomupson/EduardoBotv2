@@ -6,6 +6,22 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 using EduardoBotv2.Core.Helpers;
+using EduardoBotv2.Core.Modules.Audio.Services;
+using EduardoBotv2.Core.Modules.Draw.Services;
+using EduardoBotv2.Core.Modules.Games.Database;
+using EduardoBotv2.Core.Modules.Games.Services;
+using EduardoBotv2.Core.Modules.General.Services;
+using EduardoBotv2.Core.Modules.Imgur.Services;
+using EduardoBotv2.Core.Modules.Memes.Services;
+using EduardoBotv2.Core.Modules.Moderation.Services;
+using EduardoBotv2.Core.Modules.Money.Services;
+using EduardoBotv2.Core.Modules.News.Services;
+using EduardoBotv2.Core.Modules.PUBG.Services;
+using EduardoBotv2.Core.Modules.Shorten.Services;
+using EduardoBotv2.Core.Modules.Spotify.Services;
+using EduardoBotv2.Core.Modules.User.Services;
+using EduardoBotv2.Core.Modules.Utility.Services;
+using EduardoBotv2.Core.Modules.YouTube.Services;
 using EduardoBotv2.Core.Services;
 using Octokit;
 using Pubg.Net;
@@ -55,7 +71,8 @@ namespace EduardoBotv2.Core
                 .AddSingleton<UtilityService>()
                 .AddSingleton<YouTubeModuleService>()
                 .AddSingleton<SpotifyWebAPI>()
-                .AddSingleton<SpotifyService>();
+                .AddSingleton<SpotifyService>()
+                .AddSingleton<IPokemonRepository, DatabasePokemonRepository>();
 
             services.AddSingleton(new Reddit(new RefreshTokenWebAgent(credentials.RedditRefreshToken, credentials.RedditClientId, credentials.RedditClientSecret, credentials.RedditRedirectUri)));
 

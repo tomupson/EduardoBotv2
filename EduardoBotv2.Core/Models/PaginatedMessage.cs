@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Discord;
-using EduardoBotv2.Core.Models.Enums;
 
 namespace EduardoBotv2.Core.Models
 {

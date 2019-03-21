@@ -41,6 +41,8 @@ namespace EduardoBotv2.Core.Models
 
         public string SpotifyRedirectUri { get; set; }
 
+        public string AttachDbFilename { get; set; }
+
         public Credentials()
         {
             string credentialsFilePath = Path.Combine(Directory.GetCurrentDirectory(), "credentials.json");
@@ -82,6 +84,8 @@ namespace EduardoBotv2.Core.Models
             SpotifyClientId = data[nameof(SpotifyClientId)];
             SpotifyClientSecret = data[nameof(SpotifyClientSecret)];
             SpotifyRedirectUri = data[nameof(SpotifyRedirectUri)];
+
+            AttachDbFilename = data[nameof(AttachDbFilename)];
         }
     }
 }

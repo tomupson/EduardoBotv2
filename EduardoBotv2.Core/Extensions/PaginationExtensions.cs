@@ -6,7 +6,6 @@ using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
 using EduardoBotv2.Core.Models;
-using EduardoBotv2.Core.Models.Enums;
 
 namespace EduardoBotv2.Core.Extensions
 {
@@ -14,29 +13,40 @@ namespace EduardoBotv2.Core.Extensions
     {
         public static async Task SendMessageOrPaginatedAsync(this EduardoContext context, List<Embed> embeds)
         {
-            if (embeds.Count == 1)
+            PaginatedMessage paginatedMsg = PaginatedMessage.Default;
+            paginatedMsg.Embeds = embeds;
+            await SendMessageOrPaginatedAsync(context, paginatedMsg);
+        }
+
+        public static async Task SendMessageOrPaginatedAsync(this EduardoContext context, PaginatedMessage paginatedMsg)
+        {
+            if (paginatedMsg.Embeds.Count == 1)
             {
-                await context.Channel.SendMessageAsync(embed: embeds[0]);
+                await context.Channel.SendMessageAsync(embed: paginatedMsg.Embeds[0]);
             } else
             {
-                PaginatedMessage paginatedMessage = PaginatedMessage.Default;
-                paginatedMessage.Embeds = embeds;
-                await context.SendPaginatedMessageAsync(paginatedMessage);
+                await context.SendPaginatedMessageAsync(paginatedMsg);
             }
         }
 
-        public static async Task SendPaginatedMessageAsync(this EduardoContext context, PaginatedMessage paginatedMessage)
+        public static async Task SendPaginatedMessageAsync(this EduardoContext context, PaginatedMessage paginatedMsg)
         {
-            if (paginatedMessage.Embeds.Count == 0)
+            if (paginatedMsg.Embeds.Count == 0)
             {
                 throw new ArgumentException("No pages provided");
             }
 
             TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
-            CancellationTokenSource cts = new CancellationTokenSource(paginatedMessage.Timeout);
+            CancellationTokenSource cts = new CancellationTokenSource(paginatedMsg.Timeout);
             cts.Token.Register(() => tcs.TrySetResult(true));
 
-            RestUserMessage message = await context.Channel.SendMessageAsync(embed: paginatedMessage.Embeds[paginatedMessage.CurrentIndex]);
+            string text = "";
+            if (paginatedMsg.TimeoutBehaviour == TimeoutBehaviour.Delete)
+            {
+                text = $"This message will automatically delete in {paginatedMsg.Timeout.TotalSeconds} seconds";
+            }
+
+            RestUserMessage message = await context.Channel.SendMessageAsync(text, embed: paginatedMsg.Embeds[paginatedMsg.CurrentIndex]);
             await AddPaginationReactionsAsync(message);
 
             ulong botUserId = context.Client.CurrentUser.Id;
@@ -47,8 +57,8 @@ namespace EduardoBotv2.Core.Extensions
 
                 if (reactionMessage.Id == message.Id && reaction.User.Value.Id != botUserId)
                 {
-                    ProcessPaginationReaction(paginatedMessage, reaction.Emote, cts);
-                    await ChangePage(paginatedMessage, message, cts);
+                    ProcessPaginationReaction(paginatedMsg, reaction.Emote, cts);
+                    await ChangePage(paginatedMsg, message, cts);
                 }
             }
 
@@ -57,7 +67,7 @@ namespace EduardoBotv2.Core.Extensions
 
             await tcs.Task;
 
-            switch(paginatedMessage.TimeoutBehaviour)
+            switch(paginatedMsg.TimeoutBehaviour)
             {
                 case TimeoutBehaviour.Default:
                 case TimeoutBehaviour.Ignore:
@@ -79,34 +89,34 @@ namespace EduardoBotv2.Core.Extensions
             await message.AddReactionAsync(new Emoji("▶")); // :arrow_forward:
         }
 
-        private static void ProcessPaginationReaction(PaginatedMessage paginatedMessage, IEmote emoji, CancellationTokenSource cts)
+        private static void ProcessPaginationReaction(PaginatedMessage paginatedMsg, IEmote emoji, CancellationTokenSource cts)
         {
             switch (emoji.Name)
             {
                 case "◀":
-                    paginatedMessage.CurrentIndex = paginatedMessage.CurrentIndex - 1 >= 0 ? paginatedMessage.CurrentIndex - 1 : paginatedMessage.Embeds.Count - 1;
-                    cts.CancelAfter(paginatedMessage.Timeout);
+                    paginatedMsg.CurrentIndex = paginatedMsg.CurrentIndex - 1 >= 0 ? paginatedMsg.CurrentIndex - 1 : paginatedMsg.Embeds.Count - 1;
+                    cts.CancelAfter(paginatedMsg.Timeout);
                     break;
                 case "❌":
                     cts.Cancel();
                     break;
                 case "▶":
-                    paginatedMessage.CurrentIndex = paginatedMessage.CurrentIndex + 1 <= paginatedMessage.Embeds.Count - 1 ? paginatedMessage.CurrentIndex + 1 : 0;
-                    cts.CancelAfter(paginatedMessage.Timeout);
+                    paginatedMsg.CurrentIndex = paginatedMsg.CurrentIndex + 1 <= paginatedMsg.Embeds.Count - 1 ? paginatedMsg.CurrentIndex + 1 : 0;
+                    cts.CancelAfter(paginatedMsg.Timeout);
                     break;
             }
         }
 
-        private static async Task ChangePage(PaginatedMessage paginatedMessage, IUserMessage message, CancellationTokenSource cts)
+        private static async Task ChangePage(PaginatedMessage paginatedMsg, IUserMessage message, CancellationTokenSource cts)
         {
-            if (!cts.IsCancellationRequested && paginatedMessage.CurrentIndex != paginatedMessage.PreviousIndex)
+            if (!cts.IsCancellationRequested && paginatedMsg.CurrentIndex != paginatedMsg.PreviousIndex)
             {
                 await message.ModifyAsync(n =>
                 {
-                    n.Embed = paginatedMessage.Embeds[paginatedMessage.CurrentIndex];
+                    n.Embed = paginatedMsg.Embeds[paginatedMsg.CurrentIndex];
                 });
 
-                paginatedMessage.PreviousIndex = paginatedMessage.CurrentIndex;
+                paginatedMsg.PreviousIndex = paginatedMsg.CurrentIndex;
             }
         }
     }

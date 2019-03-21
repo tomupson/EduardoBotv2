@@ -13,19 +13,19 @@ namespace EduardoBotv2.Core.Helpers
             AutomaticDecompression = (DecompressionMethods) 0xFF
         });
 
-        public static async Task<Stream> GetStream(string url, Dictionary<string, string> headers = null)
+        public static async Task<Stream> GetStreamAsync(string url, Dictionary<string, string> headers = null)
         {
             HttpResponseMessage response = await _client.SendAsync(BuildRequest(url, HttpMethod.Get, headers));
             return await response.Content.ReadAsStreamAsync();
         }
 
-        public static async Task<string> GetString(string url, Dictionary<string, string> headers = null)
+        public static async Task<string> GetStringAsync(string url, Dictionary<string, string> headers = null)
         {
             HttpResponseMessage response = await _client.SendAsync(BuildRequest(url, HttpMethod.Get, headers));
             return await response.Content.ReadAsStringAsync();
         }
 
-        public static async Task<byte[]> GetBytes(string url, Dictionary<string, string> headers = null)
+        public static async Task<byte[]> GetBytesAsync(string url, Dictionary<string, string> headers = null)
         {
             HttpResponseMessage response = await _client.SendAsync(BuildRequest(url, HttpMethod.Get, headers));
             return await response.Content.ReadAsByteArrayAsync();
