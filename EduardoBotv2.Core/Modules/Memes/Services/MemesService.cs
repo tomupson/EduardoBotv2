@@ -12,18 +12,18 @@ namespace EduardoBotv2.Core.Modules.Memes.Services
 {
     public class MemesService
     {
-        private readonly Reddit reddit;
-        private readonly Random rng;
+        private readonly Reddit _reddit;
+        private readonly Random _rng;
 
         public MemesService(Reddit reddit)
         {
-            this.reddit = reddit;
-            rng = new Random();
+            _reddit = reddit;
+            _rng = new Random();
         }
 
         public async Task PostDankMeme(EduardoContext context)
         {
-            Subreddit subreddit = await reddit.GetSubredditAsync("dankmemes");
+            Subreddit subreddit = await _reddit.GetSubredditAsync("dankmemes");
             Listing<Post> postListing = subreddit.GetPosts(Subreddit.Sort.Hot, 100);
             List<Post> posts = new List<Post>(100);
 
@@ -32,7 +32,7 @@ namespace EduardoBotv2.Core.Modules.Memes.Services
                 posts.Add(post);
             });
 
-            Post randomPost = posts[rng.Next(0, posts.Count)];
+            Post randomPost = posts[_rng.Next(0, posts.Count)];
 
             using (Stream stream = await NetworkHelper.GetStreamAsync(randomPost.Url.AbsoluteUri))
             {

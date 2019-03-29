@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 using EduardoBotv2.Core.Helpers;
+using EduardoBotv2.Core.Modules.Audio.Database.Playlist;
 using EduardoBotv2.Core.Modules.Audio.Services;
 using EduardoBotv2.Core.Modules.Draw.Services;
 using EduardoBotv2.Core.Modules.Games.Database;
@@ -23,37 +24,36 @@ using EduardoBotv2.Core.Modules.User.Services;
 using EduardoBotv2.Core.Modules.Utility.Services;
 using EduardoBotv2.Core.Modules.YouTube.Services;
 using EduardoBotv2.Core.Services;
-using Octokit;
 using Pubg.Net;
 using RedditSharp;
 using SpotifyAPI.Web;
 
 namespace EduardoBotv2.Core
 {
-    public class EduardoBot
+    public class EduardoBot : IDisposable
     {
-        private readonly DiscordSocketClient client;
-        private readonly Models.Credentials credentials;
+        private readonly DiscordSocketClient _client;
+        private readonly Models.Credentials _credentials;
 
         public EduardoBot()
         {
-            credentials = new Models.Credentials();
+            _credentials = new Models.Credentials();
 
-            client = new DiscordSocketClient(new DiscordSocketConfig
+            _client = new DiscordSocketClient(new DiscordSocketConfig
             {
                 MessageCacheSize = 100,
                 AlwaysDownloadUsers = true,
                 LogLevel = LogSeverity.Verbose
             });
 
-            client.Log += Logger.Log;
+            _client.Log += Logger.Log;
         }
 
         public async Task RunAsync()
         {
             IServiceCollection services = new ServiceCollection()
-                .AddSingleton(client)
-                .AddSingleton(credentials)
+                .AddSingleton(_client)
+                .AddSingleton(_credentials)
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandler>()
                 .AddSingleton<AudioService>()
@@ -69,16 +69,18 @@ namespace EduardoBotv2.Core
                 .AddSingleton<ShortenService>()
                 .AddSingleton<UserService>()
                 .AddSingleton<UtilityService>()
-                .AddSingleton<YouTubeModuleService>()
+                .AddSingleton<YouTubeService>()
                 .AddSingleton<SpotifyWebAPI>()
                 .AddSingleton<SpotifyService>()
-                .AddSingleton<IPokemonRepository, DatabasePokemonRepository>();
+                .AddSingleton<PlaylistService>()
+                .AddSingleton<IPokemonRepository, DatabasePokemonRepository>()
+                .AddSingleton<IPlaylistRepository, DatabasePlaylistRepository>();
 
-            services.AddSingleton(new Reddit(new RefreshTokenWebAgent(credentials.RedditRefreshToken, credentials.RedditClientId, credentials.RedditClientSecret, credentials.RedditRedirectUri)));
+            services.AddSingleton(new Reddit(new RefreshTokenWebAgent(_credentials.RedditRefreshToken, _credentials.RedditClientId, _credentials.RedditClientSecret, _credentials.RedditRedirectUri)));
 
             PubgApiConfiguration.Configure(config =>
             {
-                config.ApiKey = credentials.PUBGApiKey;
+                config.ApiKey = _credentials.PUBGApiKey;
             });
 
             IServiceProvider provider = services.BuildServiceProvider();
@@ -87,7 +89,7 @@ namespace EduardoBotv2.Core
 
             try
             {
-                await client.LoginAsync(TokenType.Bot, credentials.Token);
+                await _client.LoginAsync(TokenType.Bot, _credentials.Token);
             } catch (HttpException e)
             {
                 await Logger.Log(new LogMessage(LogSeverity.Critical, "Eduardo", $"Failed to log in: {e.Message}"));
@@ -95,12 +97,17 @@ namespace EduardoBotv2.Core
                 Environment.Exit(0);
             }
             
-            await client.StartAsync();
+            await _client.StartAsync();
 
-            await client.SetGameAsync("chat", "", ActivityType.Listening);
-            await client.SetStatusAsync(UserStatus.DoNotDisturb);
+            await _client.SetGameAsync("chat", "", ActivityType.Listening);
+            await _client.SetStatusAsync(UserStatus.DoNotDisturb);
 
             await Task.Delay(-1);
+        }
+
+        public void Dispose()
+        {
+            _client.Dispose();
         }
     }
 }

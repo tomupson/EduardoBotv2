@@ -8,16 +8,16 @@ namespace EduardoBotv2.Core.Modules.Imgur.Services
 {
     public class ImgurService
     {
-        private readonly Credentials credentials;
+        private readonly Credentials _credentials;
 
         public ImgurService(Credentials credentials)
         {
-            this.credentials = credentials;
+            _credentials = credentials;
         }
 
         public async Task SearchImgur(EduardoContext context, string searchQuery = null)
         {
-            IGalleryItem img = await ImgurHelper.SearchImgur(credentials.ImgurClientId, credentials.ImgurClientSecret, searchQuery);
+            IGalleryItem img = await ImgurHelper.SearchImgur(_credentials.ImgurClientId, _credentials.ImgurClientSecret, searchQuery);
 
             if (img != null)
             {
@@ -38,7 +38,7 @@ namespace EduardoBotv2.Core.Modules.Imgur.Services
 
         public async Task FetchSubredditImage(EduardoContext context, string subredditName)
         {
-            IGalleryItem img = await ImgurHelper.SearchImgurSubreddit(credentials.ImgurClientId, credentials.ImgurClientSecret, subredditName);
+            IGalleryItem img = await ImgurHelper.SearchImgurSubreddit(_credentials.ImgurClientId, _credentials.ImgurClientSecret, subredditName);
 
             if (img != null)
             {

@@ -12,27 +12,27 @@ namespace EduardoBotv2.Core.Modules.Imgur.Helpers
     {
         public static GalleryEndpoint CreateImgurClientAndEndpoint(string clientId, string clientSecret) => new GalleryEndpoint(new ImgurClient(clientId, clientSecret));
 
-        public static async Task<IGalleryItem> SearchImgur(string clientId, string clientSecret, string searchQuery) => await Task.Run(() =>
+        public static async Task<IGalleryItem> SearchImgur(string clientId, string clientSecret, string searchQuery)
         {
             GalleryEndpoint endpoint = CreateImgurClientAndEndpoint(clientId, clientSecret);
 
-            List<IGalleryItem> gallery = string.IsNullOrWhiteSpace(searchQuery) ?
-                endpoint.GetRandomGalleryAsync().Result.ToList() :
-                endpoint.SearchGalleryAsync(searchQuery).Result.ToList();
+            return string.IsNullOrWhiteSpace(searchQuery) ?
+                GetRandomGalleryItem(await endpoint.GetRandomGalleryAsync()) :
+                GetRandomGalleryItem(await endpoint.SearchGalleryAsync(searchQuery));
+        }
 
-            IGalleryItem img = gallery.Any() ? gallery[new Random().Next(0, gallery.Count)] : null;
-
-            return img;
-        });
-
-        public static async Task<IGalleryItem> SearchImgurSubreddit(string clientId, string clientSecret, string subredditName) => await Task.Run(() =>
+        public static async Task<IGalleryItem> SearchImgurSubreddit(string clientId, string clientSecret, string subredditName)
         {
             GalleryEndpoint endpoint = CreateImgurClientAndEndpoint(clientId, clientSecret);
-            List<IGalleryItem> gallery = endpoint.GetSubredditGalleryAsync(subredditName).Result.ToList();
 
-            IGalleryItem img = gallery.Any() ? gallery[new Random().Next(0, gallery.Count)] : null;
+            return GetRandomGalleryItem(await endpoint.GetSubredditGalleryAsync(subredditName));
+        }
 
-            return img;
-        });
+        private static IGalleryItem GetRandomGalleryItem(IEnumerable<IGalleryItem> gallery)
+        {
+            List<IGalleryItem> galleryItems = gallery.ToList();
+
+            return galleryItems.Any() ? galleryItems[new Random().Next(0, galleryItems.Count)] : null;
+        }
     }
 }

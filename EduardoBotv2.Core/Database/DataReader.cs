@@ -7,7 +7,7 @@ namespace EduardoBotv2.Core.Database
 {
     public class DataReader
     {
-        private readonly List<SqlParameter> parameters = new List<SqlParameter>();
+        private readonly List<SqlParameter> _parameters = new List<SqlParameter>();
 
         public string StoredProcedure { get; }
 
@@ -21,9 +21,9 @@ namespace EduardoBotv2.Core.Database
 
         public void AddParameter(string parameterName, object value) => AddParameter(new SqlParameter(parameterName, value));
 
-        public void AddParameter(SqlParameter parameter) => parameters.Add(parameter);
+        public void AddParameter(SqlParameter parameter) => _parameters.Add(parameter);
 
-        public void ClearParameters() => parameters.Clear();
+        public void ClearParameters() => _parameters.Clear();
 
         public async Task ExecuteReaderAsync(ProcessRecordAsyncDelegate processor)
         {
@@ -34,7 +34,7 @@ namespace EduardoBotv2.Core.Database
                 using (SqlCommand cmd = new SqlCommand(StoredProcedure, conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddRange(parameters.ToArray());
+                    cmd.Parameters.AddRange(_parameters.ToArray());
 
                     IDataReader reader = await cmd.ExecuteReaderAsync();
 
@@ -55,7 +55,7 @@ namespace EduardoBotv2.Core.Database
                 using (SqlCommand cmd = new SqlCommand(StoredProcedure, conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddRange(parameters.ToArray());
+                    cmd.Parameters.AddRange(_parameters.ToArray());
 
                     IDataReader reader = cmd.ExecuteReader();
 
@@ -76,7 +76,7 @@ namespace EduardoBotv2.Core.Database
                 using (SqlCommand cmd = new SqlCommand(StoredProcedure, conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddRange(parameters.ToArray());
+                    cmd.Parameters.AddRange(_parameters.ToArray());
                     await cmd.ExecuteNonQueryAsync();
                 }
             }
@@ -91,7 +91,7 @@ namespace EduardoBotv2.Core.Database
                 using (SqlCommand cmd = new SqlCommand(StoredProcedure, conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddRange(parameters.ToArray());
+                    cmd.Parameters.AddRange(_parameters.ToArray());
                     return cmd.ExecuteScalar();
                 }
             }

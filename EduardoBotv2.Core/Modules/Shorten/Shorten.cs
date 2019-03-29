@@ -1,40 +1,41 @@
 ﻿using System.Threading.Tasks;
 using Discord.Commands;
-using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Modules.Shorten.Services;
+using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Shorten
 {
-    public class Shorten : ModuleBase<EduardoContext>
+    public class Shorten : EduardoModule
     {
-        private readonly ShortenService service;
+        private readonly ShortenService _service;
         public Shorten(ShortenService service)
         {
-            this.service = service;
+            _service = service;
         }
 
-        [Command("shorten", RunMode = RunMode.Async)]
-        [Summary("Shorten any url into a goo.gl link.")]
+        [Command("shorten")]
+        [Summary("Shorten any url into a goo.gl link")]
         [Remarks("http://www.404errorpages.com/")]
         public async Task ShortenCommand(string url)
         {
-            await service.Shorten(Context, url);
+            await _service.Shorten(Context, url);
         }
 
-        [Command("shortenyt", RunMode = RunMode.Async), Alias("shortenyoutube")]
-        [Summary("Shortens YouTube links.")]
+        [Command("shortenyt")]
+        [Alias("shortenyoutube")]
+        [Summary("Shortens YouTube links")]
         [Remarks("https://www.youtube.com/watch?v=dQw4w9WgXcQ")]
         public async Task YouTubeCommand(string url)
         {
-            await service.ShortenYouTube(Context, url);
+            await _service.ShortenYouTube(Context, url);
         }
 
-        [Command("unshorten", RunMode = RunMode.Async), Alias("us")]
-        [Summary("Unshortens a shortened goo.gl url.")]
+        [Command("unshorten")]
+        [Summary("Unshortens a shortened goo.gl url")]
         [Remarks("https://goo.gl/MY6gDD")]
         public async Task UnshortenCommand(string url)
         {
-            await service.Unshorten(Context, url);
+            await _service.Unshorten(Context, url);
         }
     }
 }

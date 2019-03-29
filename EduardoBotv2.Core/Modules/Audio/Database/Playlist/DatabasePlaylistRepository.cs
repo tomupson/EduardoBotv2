@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using EduardoBotv2.Core.Modules.Audio.Models;
 
@@ -7,8 +6,19 @@ namespace EduardoBotv2.Core.Modules.Audio.Database.Playlist
 {
     public class DatabasePlaylistRepository : IPlaylistRepository
     {
-        public async Task<List<Models.Playlist>> GetPlaylist(long discordUserId) => throw new NotImplementedException();
+        public Task<List<Models.Playlist>> GetPlaylistAsync(long discordUserId)
+        {
+            return Task.FromResult(new List<Models.Playlist>());
+        }
 
-        public async Task AddSongToPlaylist(long playlistId, Song song) => throw new NotImplementedException();
+        public Task AddSongToPlaylistAsync(long playlistId, SongInfo song)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task CreatePlaylistAsync(ulong discordUserId, string playlistName)
+        {
+            return Task.CompletedTask;
+        }
     }
 }

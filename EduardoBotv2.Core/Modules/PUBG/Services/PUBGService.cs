@@ -16,11 +16,11 @@ namespace EduardoBotv2.Core.Modules.PUBG.Services
 {
     public class PubgService
     {
-        private readonly PubgData pubgData;
+        private readonly PubgData _pubgData;
 
         public PubgService()
         {
-            pubgData = JsonConvert.DeserializeObject<PubgData>(File.ReadAllText("data/pubg.json"));
+            _pubgData = JsonConvert.DeserializeObject<PubgData>(File.ReadAllText("data/pubg.json"));
         }
 
         public async Task GetPlayer(EduardoContext context, string username, PubgPlatform platform)
@@ -68,7 +68,7 @@ namespace EduardoBotv2.Core.Modules.PUBG.Services
             }
 
             List<Embed> embeds = new List<Embed>();
-            foreach (string matchId in player.MatchIds.Take(pubgData.MaxMatches))
+            foreach (string matchId in player.MatchIds.Take(_pubgData.MaxMatches))
             {
                 PubgMatch match = await GetMatchFromApiAsync(matchId, platform);
 

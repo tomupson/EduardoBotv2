@@ -4,13 +4,13 @@ namespace EduardoBotv2.Core.Modules.Github.Services
 {
     public class GithubService
     {
-        private readonly Models.Credentials credentials;
-        private readonly GitHubClient github;
+        private readonly Models.Credentials _credentials;
+        private readonly GitHubClient _github;
 
         public GithubService(Models.Credentials credentials, GitHubClient github)
         {
-            this.credentials = credentials;
-            this.github = github;
+            _credentials = credentials;
+            _github = github;
         }
     }
 }

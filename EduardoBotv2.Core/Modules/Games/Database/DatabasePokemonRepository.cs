@@ -9,16 +9,16 @@ namespace EduardoBotv2.Core.Modules.Games.Database
 {
     public class DatabasePokemonRepository : IPokemonRepository
     {
-        private readonly string connectionString;
+        private readonly string _connectionString;
 
         public DatabasePokemonRepository(Credentials credentials)
         {
-            connectionString = $@"Data Source=(LocalDb)\MSSQLLocalDB;Integrated Security=true;Initial Catalog=Eduardo;AttachDBFilename={credentials.AttachDbFilename}";
+            _connectionString = credentials.DbConnectionString;
         }
 
         public async Task<Dictionary<PokemonSummary, int>> GetPokemonAsync(ulong discordUserId, ulong guildId)
         {
-            DataReader dr = new DataReader("POKEMON_GetPokemonInventory", connectionString);
+            DataReader dr = new DataReader("POKEMON_GetPokemonInventory", _connectionString);
             dr.AddParameter("@DiscordGuildId", (long)guildId);
             dr.AddParameter("@DiscordUserId", (long)discordUserId);
 
@@ -36,7 +36,7 @@ namespace EduardoBotv2.Core.Modules.Games.Database
 
         public async Task AddPokemonAsync(ulong discordUserId, ulong guildId, PokemonSummary pokemon)
         { 
-            DataReader dr = new DataReader("POKEMON_AddPokemonToInventory", connectionString);
+            DataReader dr = new DataReader("POKEMON_AddPokemonToInventory", _connectionString);
             dr.AddParameter("@DiscordGuildId", (long)guildId);
             dr.AddParameter("@DiscordUserId", (long)discordUserId);
             dr.AddParameter("@PokemonNumber", pokemon.Id);

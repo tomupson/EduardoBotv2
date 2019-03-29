@@ -6,8 +6,10 @@ namespace EduardoBotv2.Core.Modules.Audio.Database.Playlist
 {
     public interface IPlaylistRepository
     {
-        Task<List<Models.Playlist>> GetPlaylist(long discordUserId);
+        Task<List<Models.Playlist>> GetPlaylistAsync(long discordUserId);
 
-        Task AddSongToPlaylist(long playlistId, Song song);
+        Task AddSongToPlaylistAsync(long playlistId, SongInfo song);
+
+        Task CreatePlaylistAsync(ulong discordUserId, string playlistName);
     }
 }

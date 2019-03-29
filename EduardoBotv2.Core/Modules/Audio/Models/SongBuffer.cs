@@ -7,9 +7,10 @@ namespace EduardoBotv2.Core.Modules.Audio.Models
 {
     public class SongBuffer : IDisposable
     {
-        private readonly Process process;
-        private readonly byte[] buffer;
-        private readonly Stream stream;
+        private readonly Process _process;
+        private readonly byte[] _buffer;
+        private readonly Stream _stream;
+
         private bool prebuffered;
         private bool stopped;
 
@@ -20,21 +21,21 @@ namespace EduardoBotv2.Core.Modules.Audio.Models
 
         public int ContentLength => WritePosition >= ReadPosition
             ? WritePosition - ReadPosition
-            : buffer.Length - ReadPosition + WritePosition;
+            : _buffer.Length - ReadPosition + WritePosition;
 
-        public int FreeSpace => buffer.Length - ContentLength;
+        public int FreeSpace => _buffer.Length - ContentLength;
 
         public SongBuffer(string songUrl, int bufferSize = 0)
         {
-            process = CreateFfmpegProcess(songUrl);
-            stream = process.StandardOutput.BaseStream;
+            _process = CreateFfmpegProcess(songUrl);
+            _stream = _process.StandardOutput.BaseStream;
 
             if (bufferSize == 0)
             {
                 bufferSize = 10 * 1024 * 1024;
             }
 
-            buffer = new byte[bufferSize];
+            _buffer = new byte[bufferSize];
 
             PrebufferingCompleted = new TaskCompletionSource<bool>();
         }
@@ -45,9 +46,9 @@ namespace EduardoBotv2.Core.Modules.Audio.Models
             {
                 byte[] output = new byte[38400];
                 int read;
-                while (!stopped && (read = await stream.ReadAsync(output, 0, 38400).ConfigureAwait(false)) > 0)
+                while (!stopped && (read = await _stream.ReadAsync(output, 0, 38400).ConfigureAwait(false)) > 0)
                 {
-                    while (buffer.Length - ContentLength <= read)
+                    while (_buffer.Length - ContentLength <= read)
                     {
                         if (!prebuffered)
                         {
@@ -71,19 +72,19 @@ namespace EduardoBotv2.Core.Modules.Audio.Models
             if (ContentLength == 0)
                 return ReadOnlySpan<byte>.Empty;
 
-            if (wp > ReadPosition || ReadPosition + toRead <= buffer.Length)
+            if (wp > ReadPosition || ReadPosition + toRead <= _buffer.Length)
             {
-                Span<byte> toReturn = ((Span<byte>)buffer).Slice(ReadPosition, toRead);
+                Span<byte> toReturn = ((Span<byte>)_buffer).Slice(ReadPosition, toRead);
                 ReadPosition += toRead;
                 return toReturn;
             } else
             {
                 byte[] toReturn = new byte[toRead];
-                int toEnd = buffer.Length - ReadPosition;
-                Buffer.BlockCopy(buffer, ReadPosition, toReturn, 0, toEnd);
+                int toEnd = _buffer.Length - ReadPosition;
+                Buffer.BlockCopy(_buffer, ReadPosition, toReturn, 0, toEnd);
 
                 int fromStart = toRead - toEnd;
-                Buffer.BlockCopy(buffer, 0, toReturn, toEnd, fromStart);
+                Buffer.BlockCopy(_buffer, 0, toReturn, toEnd, fromStart);
                 ReadPosition = fromStart;
                 return toReturn;
             }
@@ -91,31 +92,31 @@ namespace EduardoBotv2.Core.Modules.Audio.Models
 
         public void Dispose()
         {
-            process.StandardOutput.Dispose();
+            _process.StandardOutput.Dispose();
 
-            if (!process.HasExited)
+            if (!_process.HasExited)
             {
-                process.Kill();
+                _process.Kill();
             }
 
             stopped = true;
-            stream.Dispose();
-            process.Dispose();
+            _stream.Dispose();
+            _process.Dispose();
         }
 
         private void Write(byte[] input, int writeCount)
         {
-            if (WritePosition + writeCount < buffer.Length)
+            if (WritePosition + writeCount < _buffer.Length)
             {
-                Buffer.BlockCopy(input, 0, buffer, WritePosition, writeCount);
+                Buffer.BlockCopy(input, 0, _buffer, WritePosition, writeCount);
                 WritePosition += writeCount;
                 return;
             }
 
-            int wroteNormally = buffer.Length - WritePosition;
-            Buffer.BlockCopy(input, 0, buffer, WritePosition, wroteNormally);
+            int wroteNormally = _buffer.Length - WritePosition;
+            Buffer.BlockCopy(input, 0, _buffer, WritePosition, wroteNormally);
             int wroteFromStart = writeCount - wroteNormally;
-            Buffer.BlockCopy(input, wroteNormally, buffer, 0, wroteFromStart);
+            Buffer.BlockCopy(input, wroteNormally, _buffer, 0, wroteFromStart);
             WritePosition = wroteFromStart;
         }
 

@@ -1,36 +1,39 @@
 ﻿using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Modules.Moderation.Services;
+using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Moderation
 {
-    public class Moderation : ModuleBase<EduardoContext>
+    public class Moderation : EduardoModule
     {
-        private readonly ModerationService service;
+        private readonly ModerationService _service;
 
         public Moderation(ModerationService service)
         {
-            this.service = service;
+            _service = service;
         }
 
-        [Command("ban", RunMode = RunMode.Async), Alias("banish", "hammer")]
-        [Summary("Ban a user.")]
-        [Remarks("UppyMeister();")]
-        [RequireUserPermission(GuildPermission.BanMembers), RequireBotPermission(GuildPermission.BanMembers)]
-        public async Task BanCommand([Summary("User to ban.")] IGuildUser user, [Remainder] string reason = null)
+        [Command("ban")]
+        [Alias("banish", "hammer")]
+        [Summary("Ban a user")]
+        [Remarks("uppy")]
+        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireBotPermission(GuildPermission.BanMembers)]
+        public async Task BanCommand([Summary("User to ban")] IGuildUser user, [Remainder, Summary("Ban reason")] string reason = null)
         {
-            await service.BanUser(Context, user, reason);
+            await _service.BanUser(Context, user, reason);
         }
 
-        [Command("kick", RunMode = RunMode.Async)]
-        [Summary("Kick a user.")]
-        [Remarks("UppyMeister();")]
-        [RequireUserPermission(GuildPermission.KickMembers), RequireBotPermission(GuildPermission.KickMembers)]
-        public async Task KickCommand([Summary("User to kick.")] IGuildUser user, [Remainder] string reason = null)
+        [Command("kick")]
+        [Summary("Kick a user")]
+        [Remarks("uppy")]
+        [RequireUserPermission(GuildPermission.KickMembers)]
+        [RequireBotPermission(GuildPermission.KickMembers)]
+        public async Task KickCommand([Summary("User to kick")] IGuildUser user, [Remainder, Summary("Kick reason")] string reason = null)
         {
-            await service.KickUser(Context, user, reason);
+            await _service.KickUser(Context, user, reason);
         }
     }
 }

@@ -31,7 +31,7 @@ namespace EduardoBotv2.Core.Modules.Draw.Services
             {new Color(85, 172, 238), ":blue_book:"}
         };
 
-        public async Task Draw(EduardoContext context, string emojiOrUrl, int size)
+        public async Task DrawAsync(EduardoContext context, string emojiOrUrl, int size)
         {
             string url;
             if (Emote.TryParse(emojiOrUrl, out Emote emote))
@@ -53,7 +53,7 @@ namespace EduardoBotv2.Core.Modules.Draw.Services
                 x.Nickname = "----";
             });
 
-            List<string> blocks = await GetBlocks(url, size);
+            List<string> blocks = await GetBlocksAsync(url, size);
 
             foreach (string block in blocks)
             {
@@ -66,7 +66,7 @@ namespace EduardoBotv2.Core.Modules.Draw.Services
             });
         }
 
-        private static async Task<List<string>> GetBlocks(string url, int size)
+        private static async Task<List<string>> GetBlocksAsync(string url, int size)
         {
             List<string> blocks = new List<string>();
             byte[] imgBytes = await NetworkHelper.GetBytesAsync(url);
@@ -104,16 +104,16 @@ namespace EduardoBotv2.Core.Modules.Draw.Services
             return blocks;
         }
 
-        private static Color GetNearestColour(double inputR, double inputG, double inputB)
+        private static Color GetNearestColour(byte r, byte g, byte b)
         {
             Color nearestColour = new Color();
             double distance = 500.0;
 
             foreach (Color colour in _colourDictionary.Keys)
             {
-                double red = Math.Pow(colour.R - inputR, 2.0);
-                double green = Math.Pow(colour.G - inputG, 2.0);
-                double blue = Math.Pow(colour.B - inputB, 2.0);
+                double red = Math.Pow(colour.R - r, 2.0);
+                double green = Math.Pow(colour.G - g, 2.0);
+                double blue = Math.Pow(colour.B - b, 2.0);
                 double calculatedDistance = Math.Sqrt(red + green + blue);
 
                 if (Math.Abs(calculatedDistance) < 0.001)

@@ -1,9 +1,8 @@
-﻿using Discord.Commands;
-using EduardoBotv2.Core.Models;
+﻿using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Github
 {
-    public class Github : ModuleBase<EduardoContext>
+    public class Github : EduardoModule
     {
 
     }

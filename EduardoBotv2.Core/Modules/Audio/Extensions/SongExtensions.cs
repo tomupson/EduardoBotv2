@@ -4,9 +4,9 @@ namespace EduardoBotv2.Core.Modules.Audio.Extensions
 {
     public static class SongExtensions
     {
-        public static PlaylistSong ToPlaylistSong(this Song song)
+        public static Song ToPlaylistSong(this SongInfo song)
         {
-            return new PlaylistSong();
+            return new Song();
         }
     }
 }

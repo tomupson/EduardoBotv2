@@ -1,24 +1,24 @@
 ﻿using System.Threading.Tasks;
 using Discord.Commands;
-using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Modules.Memes.Services;
+using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Memes
 {
-    public class Memes : ModuleBase<EduardoContext>
+    public class Memes : EduardoModule
     {
-        private readonly MemesService service;
+        private readonly MemesService _service;
 
         public Memes(MemesService service)
         {
-            this.service = service;
+            _service = service;
         }
 
-        [Command("dank", RunMode = RunMode.Async)]
+        [Command("dank")]
         [Summary("Posts a random dank meme from hot posts on r/dankmemes")]
         public async Task DankCommand()
         {
-            await service.PostDankMeme(Context);
+            await _service.PostDankMeme(Context);
         }
     }
 }

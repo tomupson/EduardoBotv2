@@ -14,20 +14,20 @@ namespace EduardoBotv2.Core.Modules.Spotify.Services
 {
     public class SpotifyService
     {
-        private readonly Credentials credentials;
-        private readonly SpotifyWebAPI spotify;
+        private readonly Credentials _credentials;
+        private readonly SpotifyWebAPI _spotify;
 
-        private readonly int[] accessTokenErrorStatusCodes = { 400, 401 };
+        private readonly int[] _accessTokenErrorStatusCodes = { 400, 401 };
         
         public SpotifyService(SpotifyWebAPI spotify, Credentials credentials)
         {
-            this.spotify = spotify;
-            this.credentials = credentials;
+            _spotify = spotify;
+            _credentials = credentials;
         }
 
         public async Task GetSong(EduardoContext context, string searchSong)
         {
-            SearchItem searchItem = await GetAsync(() => spotify.SearchItemsAsync(searchSong, SearchType.Track));
+            SearchItem searchItem = await GetAsync(() => _spotify.SearchItemsAsync(searchSong, SearchType.Track));
 
             if (searchItem.Tracks.Total == 0)
             {
@@ -49,7 +49,7 @@ namespace EduardoBotv2.Core.Modules.Spotify.Services
 
         public async Task GetAlbum(EduardoContext context, string searchAlbum)
         {
-            SearchItem searchItem = await GetAsync(() => spotify.SearchItemsAsync(searchAlbum, SearchType.Album));
+            SearchItem searchItem = await GetAsync(() => _spotify.SearchItemsAsync(searchAlbum, SearchType.Album));
 
             if (searchItem.Albums.Total == 0)
             {
@@ -87,7 +87,7 @@ namespace EduardoBotv2.Core.Modules.Spotify.Services
 
         public async Task GetArtist(EduardoContext context, string searchArtist)
         {
-            SearchItem searchItem = await GetAsync(() => spotify.SearchItemsAsync(searchArtist, SearchType.Artist));
+            SearchItem searchItem = await GetAsync(() => _spotify.SearchItemsAsync(searchArtist, SearchType.Artist));
 
             if (searchItem.Artists.Total == 0)
             {
@@ -120,7 +120,7 @@ namespace EduardoBotv2.Core.Modules.Spotify.Services
 
         public async Task GetPlaylist(EduardoContext context, string searchPlaylist)
         {
-            SearchItem searchItem = await GetAsync(() => spotify.SearchItemsAsync(searchPlaylist, SearchType.Playlist));
+            SearchItem searchItem = await GetAsync(() => _spotify.SearchItemsAsync(searchPlaylist, SearchType.Playlist));
 
             if (searchItem.Playlists.Total == 0)
             {
@@ -143,12 +143,12 @@ namespace EduardoBotv2.Core.Modules.Spotify.Services
         private async Task<T> GetAsync<T>(Func<Task<T>> func) where T : BasicModel
         {
             T result = await func();
-            if (result.HasError() && accessTokenErrorStatusCodes.Contains(result.Error.Status))
+            if (result.HasError() && _accessTokenErrorStatusCodes.Contains(result.Error.Status))
             {
-                AuthorizationCodeAuth auth = new AuthorizationCodeAuth(credentials.SpotifyClientId, credentials.SpotifyClientSecret, credentials.SpotifyRedirectUri, "");
-                Token token = await auth.RefreshToken(credentials.SpotifyRefreshToken);
-                spotify.AccessToken = token.AccessToken;
-                spotify.TokenType = token.TokenType;
+                AuthorizationCodeAuth auth = new AuthorizationCodeAuth(_credentials.SpotifyClientId, _credentials.SpotifyClientSecret, _credentials.SpotifyRedirectUri, "");
+                Token token = await auth.RefreshToken(_credentials.SpotifyRefreshToken);
+                _spotify.AccessToken = token.AccessToken;
+                _spotify.TokenType = token.TokenType;
             }
 
             return await func();

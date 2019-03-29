@@ -41,7 +41,7 @@ namespace EduardoBotv2.Core.Models
 
         public string SpotifyRedirectUri { get; set; }
 
-        public string AttachDbFilename { get; set; }
+        public string DbConnectionString { get; set; }
 
         public Credentials()
         {
@@ -85,7 +85,7 @@ namespace EduardoBotv2.Core.Models
             SpotifyClientSecret = data[nameof(SpotifyClientSecret)];
             SpotifyRedirectUri = data[nameof(SpotifyRedirectUri)];
 
-            AttachDbFilename = data[nameof(AttachDbFilename)];
+            DbConnectionString = data[nameof(DbConnectionString)];
         }
     }
 }

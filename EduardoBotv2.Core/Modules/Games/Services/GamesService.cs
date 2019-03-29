@@ -21,22 +21,22 @@ namespace EduardoBotv2.Core.Modules.Games.Services
     {
         private static readonly Random _prng = new Random();
 
-        private readonly PokemonData pokemonData;
-        private readonly EightBallData eightBallData;
+        private readonly PokemonData _pokemonData;
+        private readonly EightBallData _eightBallData;
 
-        private readonly IPokemonRepository pokemonRepository;
+        private readonly IPokemonRepository _pokemonRepository;
 
         public GamesService(IPokemonRepository pokemonRepository)
         {
-            pokemonData = JsonConvert.DeserializeObject<PokemonData>(File.ReadAllText("data/pokemon.json"));
-            eightBallData = JsonConvert.DeserializeObject<EightBallData>(File.ReadAllText("data/eightball.json"));
+            _pokemonData = JsonConvert.DeserializeObject<PokemonData>(File.ReadAllText("data/pokemon.json"));
+            _eightBallData = JsonConvert.DeserializeObject<EightBallData>(File.ReadAllText("data/eightball.json"));
 
-            this.pokemonRepository = pokemonRepository;
+            _pokemonRepository = pokemonRepository;
         }
 
-        public async Task GetPokemon(EduardoContext context)
+        public async Task GetPokemonAsync(EduardoContext context)
         {
-            int roll = new Random().Next(0, pokemonData.PokemonCount);
+            int roll = new Random().Next(0, _pokemonData.PokemonCount);
 
             IMessage waitingMessage = await context.Channel.SendMessageAsync($"{context.User.Username.Boldify()} is looking for a Pokemon...");
 
@@ -51,24 +51,23 @@ namespace EduardoBotv2.Core.Modules.Games.Services
                     await context.Channel.SendFileAsync(stream, $"{pokemonRoll.Name}.png", $"{context.User.Username.Boldify()} has found a wild {pokemonRoll.Name.UpperFirstChar().Boldify()}!");
                 }
 
-                await pokemonRepository.AddPokemonAsync(context.Message.Author.Id, (context.Message.Channel as SocketGuildChannel)?.Guild.Id ?? 0, pokemonRoll);
+                await _pokemonRepository.AddPokemonAsync(context.Message.Author.Id, (context.Message.Channel as SocketGuildChannel)?.Guild.Id ?? 0, pokemonRoll);
             } else
             {
                 await Logger.Log(new LogMessage(LogSeverity.Error, "Eduardo", $"Error fetching Pokemon with id {roll}"));
             }
         }
 
-        public async Task ShowInventory(EduardoContext context)
+        public async Task ShowInventoryAsync(EduardoContext context)
         {
-            // TODO: Rename to "pokemon"
-            Dictionary<PokemonSummary, int> pokemonInventory = await pokemonRepository.GetPokemonAsync(context.Message.Author.Id, (context.Message.Channel as SocketGuildChannel)?.Guild.Id ?? 0);
+            Dictionary<PokemonSummary, int> pokemonInventory = await _pokemonRepository.GetPokemonAsync(context.Message.Author.Id, (context.Message.Channel as SocketGuildChannel)?.Guild.Id ?? 0);
 
             if (pokemonInventory.Count > 0)
             {
                 List<Embed> pageEmbeds = new List<Embed>();
-                for (int i = 0; i < pokemonInventory.Count; i += pokemonData.MaxPokemonPerPage)
+                for (int i = 0; i < pokemonInventory.Count; i += _pokemonData.MaxPokemonPerPage)
                 {
-                    Dictionary<PokemonSummary, int> pokemonPage = pokemonInventory.Skip(i).Take(Math.Min(pokemonData.MaxPokemonPerPage, pokemonInventory.Count - i)).ToDictionary(x => x.Key, x => x.Value);
+                    Dictionary<PokemonSummary, int> pokemonPage = pokemonInventory.Skip(i).Take(Math.Min(_pokemonData.MaxPokemonPerPage, pokemonInventory.Count - i)).ToDictionary(x => x.Key, x => x.Value);
                     StringBuilder descriptionBuilder = new StringBuilder();
                     foreach ((PokemonSummary pokemon, int amount) in pokemonPage)
                     {
@@ -87,7 +86,7 @@ namespace EduardoBotv2.Core.Modules.Games.Services
                         Footer = new EmbedFooterBuilder
                         {
                             IconUrl = @"https://maxcdn.icons8.com/Share/icon/color/Gaming/pokeball1600.png",
-                            Text = $"Page {i / pokemonData.MaxPokemonPerPage + 1} of {Math.Ceiling(pokemonInventory.Count / (double)pokemonData.MaxPokemonPerPage)} | Pokemon via pokeapi.co"
+                            Text = $"Page {i / _pokemonData.MaxPokemonPerPage + 1} of {Math.Ceiling(pokemonInventory.Count / (double)_pokemonData.MaxPokemonPerPage)} | Pokemon via pokeapi.co"
                         }
                     }.Build());
                 }
@@ -113,7 +112,7 @@ namespace EduardoBotv2.Core.Modules.Games.Services
         public async Task DisplayEightBall(EduardoContext context, string question = null)
         {
             await context.Channel.TriggerTypingAsync();
-            string answer = eightBallData.Words[_prng.Next(0, eightBallData.Words.Count)];
+            string answer = _eightBallData.Words[_prng.Next(0, _eightBallData.Words.Count)];
             await context.Channel.SendMessageAsync($"{question} -- {answer}");
         }
     }

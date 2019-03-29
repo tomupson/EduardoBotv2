@@ -11,20 +11,20 @@ using Google.Apis.YouTube.v3.Data;
 
 namespace EduardoBotv2.Core.Modules.YouTube.Services
 {
-    public class YouTubeModuleService
+    public class YouTubeService
     {
-        private readonly Credentials credentials;
+        private readonly Credentials _credentials;
 
-        public YouTubeModuleService(Credentials credentials)
+        public YouTubeService(Credentials credentials)
         {
-            this.credentials = credentials;
+            _credentials = credentials;
         }
 
         public async Task SearchYouTube(EduardoContext context, string searchQuery = null)
         {
             if (searchQuery != null)
             {
-                SearchListResponse searchVideosResponse = await YouTubeHelper.SearchYouTubeAsync(credentials.GoogleYouTubeApiKey, "snippet", searchQuery, 5, YouTubeRequestType.Video);
+                SearchListResponse searchVideosResponse = await YouTubeHelper.SearchYouTubeAsync(_credentials.GoogleYouTubeApiKey, "snippet", searchQuery, 5, YouTubeRequestType.Video);
                 
                 List<Embed> pageEmbeds = searchVideosResponse.Items.Select((video, index) => new EmbedBuilder
                 {

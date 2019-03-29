@@ -192,7 +192,7 @@ namespace EduardoBotv2.Core.Modules.General.Services
         public async Task RoboMe(EduardoContext context, string username)
         {
             username = username.Replace(" ", "");
-            await context.Channel.SendMessageAsync($"**https://robohash.org/{username}**");
+            await context.Channel.SendMessageAsync($"https://robohash.org/{username}");
         }
     }
 }

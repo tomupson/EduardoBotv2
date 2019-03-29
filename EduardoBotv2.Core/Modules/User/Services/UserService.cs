@@ -16,6 +16,7 @@ namespace EduardoBotv2.Core.Modules.User.Services
             SocketUser targetSocketUser;
             SocketGuildUser targetGuildUser;
 
+
             if (user == null)
             {
                 targetSocketUser = context.User;
