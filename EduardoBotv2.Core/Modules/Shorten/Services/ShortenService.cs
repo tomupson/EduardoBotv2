@@ -5,10 +5,11 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Modules.Shorten.Helpers;
+using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Shorten.Services
 {
-    public class ShortenService
+    public class ShortenService : IEduardoService
     {
         private readonly Credentials _credentials;
 

@@ -1,12 +1,13 @@
 ﻿using System.Threading.Tasks;
 using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Modules.Imgur.Helpers;
+using EduardoBotv2.Core.Services;
 using Imgur.API.Models;
 using Imgur.API.Models.Impl;
 
 namespace EduardoBotv2.Core.Modules.Imgur.Services
 {
-    public class ImgurService
+    public class ImgurService : IEduardoService
     {
         private readonly Credentials _credentials;
 

@@ -5,14 +5,10 @@ using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Draw
 {
-    public class Draw : EduardoModule
+    public class Draw : EduardoModule<DrawService>
     {
-        private readonly DrawService _service;
-
         public Draw(DrawService service)
-        {
-            _service = service;
-        }
+            : base(service) { }
 
         [Command("draw")]
         [Summary("Draw an emoji, in emoji")]

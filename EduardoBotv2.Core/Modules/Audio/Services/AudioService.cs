@@ -15,12 +15,13 @@ using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Modules.Audio.Models;
 using EduardoBotv2.Core.Modules.YouTube.Helpers;
 using EduardoBotv2.Core.Modules.YouTube.Models;
+using EduardoBotv2.Core.Services;
 using Google.Apis.YouTube.v3.Data;
 using Newtonsoft.Json.Linq;
 
 namespace EduardoBotv2.Core.Modules.Audio.Services
 {
-    public class AudioService
+    public class AudioService : IEduardoService
     {
         private readonly Credentials _credentials;
 
@@ -331,36 +332,17 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
             return songJson.url ?? songJson.requested_formats[1]?.url ?? "";
         }
 
-        private static Embed BuildSongEmbed(SongInfo song)
-        {
-            return new EmbedBuilder
-            {
-                Title = song.Title,
-                Color = Color.Red,
-                Url = song.Url,
-                Fields = new List<EmbedFieldBuilder>
-                {
-                    new EmbedFieldBuilder
-                    {
-                        Name = "Video Description",
-                        Value = !string.IsNullOrEmpty(song.Description) ? song.Description.Length < Constants.MAX_DESCRIPTION_LENGTH ?
-                            song.Description :
-                            song.Description.Substring(0, Constants.MAX_DESCRIPTION_LENGTH) : "-"
-                    },
-                    new EmbedFieldBuilder
-                    {
-                        Name = "Requested by",
-                        Value = song.RequestedBy.Boldify()
-                    }
-                },
-                Footer = new EmbedFooterBuilder
-                {
-                    IconUrl = @"https://i.imgur.com/Fsaf4OW.png",
-                    Text = $"{song.TimePassed.ToDurationString()} / {song.Duration?.ToDurationString()}"
-                },
-                ThumbnailUrl = song.ThumbnailUrl
-            }.Build();
-        }
+        private static Embed BuildSongEmbed(SongInfo song) => new EmbedBuilder()
+            .WithTitle(song.Title)
+            .WithColor(Color.Red)
+            .WithThumbnailUrl(song.ThumbnailUrl)
+            .WithUrl(song.Url)
+            .AddField("Video Description", !string.IsNullOrEmpty(song.Description) ? song.Description.Length < Constants.MAX_DESCRIPTION_LENGTH ?
+                song.Description :
+                song.Description.Substring(0, Constants.MAX_DESCRIPTION_LENGTH) : "-")
+            .AddField("Requested by", song.RequestedBy.Boldify())
+            .WithFooter($"{song.TimePassed.ToDurationString()} / {song.Duration?.ToDurationString()}", @"https://i.imgur.com/Fsaf4OW.png")
+            .Build();
 
         private static unsafe void AdjustVolume(ref byte[] audioSamples, float volume)
         {

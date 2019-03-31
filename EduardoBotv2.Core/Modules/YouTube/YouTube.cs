@@ -6,22 +6,18 @@ using EduardoBotv2.Core.Services;
 namespace EduardoBotv2.Core.Modules.YouTube
 {
     [Group("youtube")]
-    public class YouTube : EduardoModule
+    [Name("YouTube")]
+    public class YouTube : EduardoModule<YouTubeService>
     {
-        private readonly YouTubeService _service;
-
         public YouTube(YouTubeService service)
-        {
-            _service = service;
-        }
+            : base(service) { }
 
         [Command("search")]
-        [Name("youtube search")]
         [Summary("Search YouTube for a video")]
         [Remarks("harlem shake compilation")]
         public async Task SearchCommand([Remainder, Summary("The search query. If left blank, fetches a random video")] string searchQuery = null)
         {
-            await _service.SearchYouTube(Context, searchQuery);
+            await _service.SearchYouTubeAsync(Context, searchQuery);
         }
     }
 }

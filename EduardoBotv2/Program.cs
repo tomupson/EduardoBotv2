@@ -5,7 +5,7 @@ namespace EduardoBotv2
 {
     public sealed class Program
     {
-        public static async Task Main(string[] args)
+        public static async Task Main()
         {
             await new EduardoBot().RunAsync();
         }

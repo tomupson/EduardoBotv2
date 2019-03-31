@@ -5,14 +5,10 @@ using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Memes
 {
-    public class Memes : EduardoModule
+    public class Memes : EduardoModule<MemesService>
     {
-        private readonly MemesService _service;
-
         public Memes(MemesService service)
-        {
-            _service = service;
-        }
+            : base(service) { }
 
         [Command("dank")]
         [Summary("Posts a random dank meme from hot posts on r/dankmemes")]

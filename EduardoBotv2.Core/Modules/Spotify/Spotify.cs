@@ -6,14 +6,11 @@ using EduardoBotv2.Core.Services;
 namespace EduardoBotv2.Core.Modules.Spotify
 {
     [Group("spotify")]
-    public class Spotify : EduardoModule
+    [Name("Spotify")]
+    public class Spotify : EduardoModule<SpotifyService>
     {
-        private readonly SpotifyService _service;
-
         public Spotify(SpotifyService service)
-        {
-            _service = service;
-        }
+            : base(service) { }
 
         [Command("song")]
         [Summary("Search spotify for a song")]

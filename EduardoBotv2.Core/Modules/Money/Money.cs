@@ -8,18 +8,14 @@ using EduardoBotv2.Core.Services;
 namespace EduardoBotv2.Core.Modules.Money
 {
     [Group("money")]
+    [Name("Money")]
     [Alias("bal", "balance")]
-    public class Money : EduardoModule
+    public class Money : EduardoModule<MoneyService>
     {
-        private readonly MoneyService _service;
-
         public Money(MoneyService service)
-        {
-            _service = service;
-        }
+            : base(service) { }
 
-        [Command]
-        [Name("money")]
+        [Command("")]
         [Summary("Show the balance of a user")]
         [Remarks("uppy")]
         public async Task ShowCommand([Summary("The user to get the balance of")] IGuildUser user = null)
@@ -28,10 +24,9 @@ namespace EduardoBotv2.Core.Modules.Money
         }
 
         [Command("set")]
-        [Name("money set")]
         [Summary("Set the money of a user")]
         [Remarks("uppy 1629")]
-        [RequireRole("Banker")]
+        //[RequireRole("Banker")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task SetCommand([Summary("The target user")] IGuildUser user, [Summary("The balance to set")] int amount)
         {
@@ -39,7 +34,6 @@ namespace EduardoBotv2.Core.Modules.Money
         }
 
         [Command("donate")]
-        [Name("money donate")]
         [Alias("give")]
         [Summary("Donate money to a user")]
         [Remarks("uppy 1443")]

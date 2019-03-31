@@ -6,21 +6,17 @@ using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Utility
 {
-    public class Utility : EduardoModule
+    public class Utility : EduardoModule<UtilityService>
     {
-        private readonly UtilityService _service;
-
         public Utility(UtilityService service)
-        {
-            _service = service;
-        }
+            : base(service) { }
 
         [Command("clear")]
         [Summary("Cleans messages")]
         [Remarks("10")]
         [RequireUserPermission(ChannelPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
-        public async Task CleanCommand([Summary("The number of messages to delete")] uint count)
+        public async Task CleanCommand([Summary("The number of messages to delete")] int count)
         {
             await _service.CleanMessages(Context, count);
         }

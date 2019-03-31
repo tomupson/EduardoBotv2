@@ -5,12 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Models;
+using EduardoBotv2.Core.Services;
 using RedditSharp;
 using RedditSharp.Things;
 
 namespace EduardoBotv2.Core.Modules.Memes.Services
 {
-    public class MemesService
+    public class MemesService : IEduardoService
     {
         private readonly Reddit _reddit;
         private readonly Random _rng;

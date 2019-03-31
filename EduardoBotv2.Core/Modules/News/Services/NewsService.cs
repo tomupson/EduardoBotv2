@@ -7,12 +7,13 @@ using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Modules.News.Models;
 using EduardoBotv2.Core.Modules.Shorten.Helpers;
+using EduardoBotv2.Core.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace EduardoBotv2.Core.Modules.News.Services
 {
-    public class NewsService
+    public class NewsService : IEduardoService
     {
         private readonly NewsData _newsData;
         private readonly Credentials _credentials;
@@ -53,24 +54,15 @@ namespace EduardoBotv2.Core.Modules.News.Services
                     });
                 }
 
-                EmbedBuilder builder = new EmbedBuilder
-                {
-                    Author = new EmbedAuthorBuilder
-                    {
-                        IconUrl = @"http://shmector.com/_ph/18/412122157.png",
-                        Name = $"Latest News from {source.Replace('-', ' ').ToUpper()}"
-                    },
-                    Color = Color.Blue,
-                    ThumbnailUrl = jResult["articles"][0]["urlToImage"].ToString(),
-                    Fields = headlines,
-                    Footer = new EmbedFooterBuilder
-                    {
-                        Text = "News via newsapi.org",
-                        IconUrl = @"https://pbs.twimg.com/profile_images/815237522641092609/6IeO3WLV.jpg"
-                    }
-                };
-
-                await context.Channel.SendMessageAsync(embed: builder.Build());
+                await context.Channel.SendMessageAsync(embed: new EmbedBuilder()
+                    .WithColor(Color.Blue)
+                    .WithAuthor($"Latest News from {source.Replace('-', ' ').ToUpper()}",
+                        @"http://shmector.com/_ph/18/412122157.png")
+                    .WithThumbnailUrl(jResult["articles"][0]["urlToImage"].ToString())
+                    .WithFields(headlines)
+                    .WithFooter("News via newsapi.org",
+                        @"https://pbs.twimg.com/profile_images/815237522641092609/6IeO3WLV.jpg")
+                    .Build());
             }
         }
 

@@ -13,11 +13,12 @@ using EduardoBotv2.Core.Modules.Games.Database;
 using EduardoBotv2.Core.Modules.Games.Helpers;
 using EduardoBotv2.Core.Modules.Games.Models;
 using EduardoBotv2.Core.Modules.Games.Models.Pokemon;
+using EduardoBotv2.Core.Services;
 using Newtonsoft.Json;
 
 namespace EduardoBotv2.Core.Modules.Games.Services
 {
-    public class GamesService
+    public class GamesService : IEduardoService
     {
         private static readonly Random _prng = new Random();
 
@@ -74,21 +75,14 @@ namespace EduardoBotv2.Core.Modules.Games.Services
                         descriptionBuilder.AppendFormat("{0} (x{1}){2}", pokemon.Name.UpperFirstChar(), amount, Environment.NewLine);
                     }
 
-                    pageEmbeds.Add(new EmbedBuilder
-                    {
-                        Author = new EmbedAuthorBuilder
-                        {
-                            IconUrl = context.User.GetAvatarUrl(),
-                            Name = $"{context.User.Username}'s Pokemon"
-                        },
-                        Color = new Color(255, 255, 0),
-                        Description = descriptionBuilder.ToString(),
-                        Footer = new EmbedFooterBuilder
-                        {
-                            IconUrl = @"https://maxcdn.icons8.com/Share/icon/color/Gaming/pokeball1600.png",
-                            Text = $"Page {i / _pokemonData.MaxPokemonPerPage + 1} of {Math.Ceiling(pokemonInventory.Count / (double)_pokemonData.MaxPokemonPerPage)} | Pokemon via pokeapi.co"
-                        }
-                    }.Build());
+                    pageEmbeds.Add(new EmbedBuilder()
+                        .WithColor(new Color(255, 255, 0))
+                        .WithAuthor($"{context.User.Username}'s Pokemon",
+                            context.User.GetAvatarUrl())
+                        .WithDescription(descriptionBuilder.ToString())
+                        .WithFooter($"Page {i / _pokemonData.MaxPokemonPerPage + 1} of {Math.Ceiling(pokemonInventory.Count / (double)_pokemonData.MaxPokemonPerPage)} | Pokemon via pokeapi.co",
+                            @"https://maxcdn.icons8.com/Share/icon/color/Gaming/pokeball1600.png")
+                        .Build());
                 }
                 
                 await context.SendMessageOrPaginatedAsync(new PaginatedMessage

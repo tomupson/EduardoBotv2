@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Discord;
 using EduardoBotv2.Core.Extensions;
 using EduardoBotv2.Core.Models;
+using EduardoBotv2.Core.Services;
 using SpotifyAPI.Web;
 using SpotifyAPI.Web.Auth;
 using SpotifyAPI.Web.Enums;
@@ -12,7 +13,7 @@ using SpotifyAPI.Web.Models;
 
 namespace EduardoBotv2.Core.Modules.Spotify.Services
 {
-    public class SpotifyService
+    public class SpotifyService : IEduardoService
     {
         private readonly Credentials _credentials;
         private readonly SpotifyWebAPI _spotify;
@@ -38,10 +39,8 @@ namespace EduardoBotv2.Core.Modules.Spotify.Services
 
             foreach (FullTrack track in searchItem.Tracks.Items)
             {
-                embeds.Add(new EmbedBuilder
-                {
-
-                }.Build());
+                embeds.Add(new EmbedBuilder()
+                    .Build());
             }
 
             await context.SendMessageOrPaginatedAsync(embeds);
@@ -60,26 +59,14 @@ namespace EduardoBotv2.Core.Modules.Spotify.Services
 
             foreach (SimpleAlbum album in searchItem.Albums.Items)
             {
-                embeds.Add(new EmbedBuilder
-                {
-                    Title = album.Name,
-                    Color = Color.DarkGreen,
-                    Fields = new List<EmbedFieldBuilder>
-                    {
-                        new EmbedFieldBuilder
-                        {
-                            Name = "Album Type",
-                            Value = album.AlbumType
-                        },
-                        new EmbedFieldBuilder
-                        {
-                            Name = "Released",
-                            Value = album.ReleaseDate
-                        }
-                    },
-                    ImageUrl = album.Images.Count > 0 ? album.Images[0].Url : "",
-                    Url = album.ExternalUrls["spotify"]
-                }.Build());
+                embeds.Add(new EmbedBuilder()
+                    .WithTitle(album.Name)
+                    .WithColor(Color.DarkGreen)
+                    .WithUrl(album.ExternalUrls["spotify"])
+                    .WithImageUrl(album.Images.Count > 0 ? album.Images[0].Url : "")
+                    .AddField("Album Type", album.AlbumType)
+                    .AddField("Released", album.ReleaseDate)
+                    .Build());
             }
 
             await context.SendMessageOrPaginatedAsync(embeds);
@@ -98,21 +85,13 @@ namespace EduardoBotv2.Core.Modules.Spotify.Services
 
             foreach (FullArtist artist in searchItem.Artists.Items)
             {
-                embeds.Add(new EmbedBuilder
-                {
-                    Title = artist.Name,
-                    Color = Color.DarkGreen,
-                    Fields = new List<EmbedFieldBuilder>
-                    {
-                        new EmbedFieldBuilder
-                        {
-                            Name = "Followers",
-                            Value = artist.Followers.Total
-                        }
-                    },
-                    ImageUrl = artist.Images.Count > 0 ? artist.Images[0].Url : "",
-                    Url = artist.ExternalUrls["spotify"]
-                }.Build());
+                embeds.Add(new EmbedBuilder()
+                    .WithTitle(artist.Name)
+                    .WithColor(Color.DarkGreen)
+                    .WithUrl(artist.ExternalUrls["spotify"])
+                    .WithImageUrl(artist.Images.Count > 0 ? artist.Images[0].Url : "")
+                    .AddField("Followers", artist.Followers.Total)
+                    .Build());
             }
 
             await context.SendMessageOrPaginatedAsync(embeds);
@@ -131,10 +110,8 @@ namespace EduardoBotv2.Core.Modules.Spotify.Services
 
             foreach (SimplePlaylist playlist in searchItem.Playlists.Items)
             {
-                embeds.Add(new EmbedBuilder
-                {
-
-                }.Build());
+                embeds.Add(new EmbedBuilder()
+                    .Build());
             }
 
             await context.SendMessageOrPaginatedAsync(embeds);

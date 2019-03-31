@@ -7,14 +7,11 @@ using Pubg.Net;
 namespace EduardoBotv2.Core.Modules.PUBG
 {
     [Group("pubg")]
-    public class Pubg : EduardoModule
+    [Name("PUBG")]
+    public class Pubg : EduardoModule<PubgService>
     {
-        private readonly PubgService _service;
-
         public Pubg(PubgService service)
-        {
-            _service = service;
-        }
+            : base(service) { }
 
         [Command("player")]
         [Summary("Get Player info for a user")]

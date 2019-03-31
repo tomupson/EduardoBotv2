@@ -6,14 +6,10 @@ using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Moderation
 {
-    public class Moderation : EduardoModule
+    public class Moderation : EduardoModule<ModerationService>
     {
-        private readonly ModerationService _service;
-
         public Moderation(ModerationService service)
-        {
-            _service = service;
-        }
+            : base(service) { }
 
         [Command("ban")]
         [Alias("banish", "hammer")]

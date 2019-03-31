@@ -15,6 +15,7 @@ using EduardoBotv2.Core.Modules.General.Services;
 using EduardoBotv2.Core.Modules.Imgur.Services;
 using EduardoBotv2.Core.Modules.Memes.Services;
 using EduardoBotv2.Core.Modules.Moderation.Services;
+using EduardoBotv2.Core.Modules.Money.Database;
 using EduardoBotv2.Core.Modules.Money.Services;
 using EduardoBotv2.Core.Modules.News.Services;
 using EduardoBotv2.Core.Modules.PUBG.Services;
@@ -74,7 +75,8 @@ namespace EduardoBotv2.Core
                 .AddSingleton<SpotifyService>()
                 .AddSingleton<PlaylistService>()
                 .AddSingleton<IPokemonRepository, DatabasePokemonRepository>()
-                .AddSingleton<IPlaylistRepository, DatabasePlaylistRepository>();
+                .AddSingleton<IPlaylistRepository, DatabasePlaylistRepository>()
+                .AddSingleton<IMoneyRepository, DatabaseMoneyRepository>();
 
             services.AddSingleton(new Reddit(new RefreshTokenWebAgent(_credentials.RedditRefreshToken, _credentials.RedditClientId, _credentials.RedditClientSecret, _credentials.RedditRedirectUri)));
 

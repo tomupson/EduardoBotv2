@@ -1,10 +1,11 @@
 ﻿using System.Threading.Tasks;
 using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Modules.Audio.Database.Playlist;
+using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Audio.Services
 {
-    public class PlaylistService
+    public class PlaylistService : IEduardoService
     {
         private readonly IPlaylistRepository _playlistRepository;
 

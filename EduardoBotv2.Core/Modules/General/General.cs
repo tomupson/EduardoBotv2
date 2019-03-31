@@ -5,14 +5,13 @@ using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.General
 {
-    public class General : EduardoModule
+    public class General : EduardoModule<GeneralService>
     {
-        private readonly GeneralService _service;
         private readonly CommandService _commandService;
 
         public General(GeneralService service, CommandService commandService)
+            : base(service)
         {
-            _service = service;
             _commandService = commandService;
         }
 
@@ -21,7 +20,7 @@ namespace EduardoBotv2.Core.Modules.General
         [Remarks("I am a bot!")]
         public async Task EchoCommand([Remainder, Summary("The text to echo")] string echo)
         {
-            await _service.EchoText(Context, echo);
+            await _service.EchoTextAsync(Context, echo);
         }
 
         [Command("help")]
@@ -30,7 +29,7 @@ namespace EduardoBotv2.Core.Modules.General
         [Remarks("money donate")]
         public async Task HelpCommand([Remainder] string commandOrModule = null)
         {
-            await _service.DisplayHelp(_commandService, Context, commandOrModule);
+            await _service.DisplayHelpAsync(_commandService, Context, commandOrModule);
         }
 
         [Command("ping")]

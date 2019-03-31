@@ -6,14 +6,10 @@ using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.User
 {
-    public class User : EduardoModule
+    public class User : EduardoModule<UserService>
     {
-        private readonly UserService _service;
-
         public User(UserService service)
-        {
-            _service = service;
-        }
+            : base(service) { }
 
         [Command("user")]
         [Summary("Fetch information about a user")]

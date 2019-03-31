@@ -4,16 +4,17 @@ using Discord;
 using Discord.Rest;
 using EduardoBotv2.Core.Extensions;
 using EduardoBotv2.Core.Models;
+using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Utility.Services
 {
-    public class UtilityService
+    public class UtilityService : IEduardoService
     {
-        public async Task CleanMessages(EduardoContext context, uint count)
+        public async Task CleanMessages(EduardoContext context, int count)
         {
             if (count <= 0) return;
 
-            IEnumerable<IMessage> messagesToDelete = await context.Channel.GetMessagesAsync((int)count + 1).FlattenAsync();
+            IEnumerable<IMessage> messagesToDelete = await context.Channel.GetMessagesAsync(count + 1).FlattenAsync();
             await ((ITextChannel) context.Channel).DeleteMessagesAsync(messagesToDelete);
             string plural = count > 1 ? "s" : "";
             RestUserMessage finishedMessage = await context.Channel.SendMessageAsync($"Successfully cleared {count} message{plural} :ok_hand:");

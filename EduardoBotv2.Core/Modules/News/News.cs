@@ -5,14 +5,10 @@ using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.News
 {
-    public class News : EduardoModule
+    public class News : EduardoModule<NewsService>
     {
-        private readonly NewsService _service;
-
         public News(NewsService service)
-        {
-            _service = service;
-        }
+            : base(service) { }
 
         [Command("news")]
         [Summary("Get the top 5 headlines from a specific news source")]

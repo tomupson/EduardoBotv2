@@ -5,21 +5,21 @@ using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Audio
 {
-    [Group("playlist")]
-    public class Playlist : EduardoModule
+    partial class Audio
     {
-        private readonly PlaylistService _service;
-
-        public Playlist(PlaylistService service)
+        [Group("playlist")]
+        [Name("Playlist")]
+        public class Playlist : EduardoModule<PlaylistService>
         {
-            _service = service;
-        }
+            public Playlist(PlaylistService service)
+                : base(service) { }
 
-        [Command("create")]
-        [Remarks("My Favourite Songs")]
-        public async Task CreatePlaylistCommand([Summary("The name of the playlist")] string playlistName)
-        {
-            await _service.CreatePlaylistAsync(Context, playlistName);
+            [Command("create")]
+            [Remarks("My Favourite Songs")]
+            public async Task CreatePlaylistCommand([Summary("The name of the playlist")] string playlistName)
+            {
+                await _service.CreatePlaylistAsync(Context, playlistName);
+            }
         }
     }
 }

@@ -5,13 +5,10 @@ using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Shorten
 {
-    public class Shorten : EduardoModule
+    public class Shorten : EduardoModule<ShortenService>
     {
-        private readonly ShortenService _service;
         public Shorten(ShortenService service)
-        {
-            _service = service;
-        }
+            : base(service) { }
 
         [Command("shorten")]
         [Summary("Shorten any url into a goo.gl link")]

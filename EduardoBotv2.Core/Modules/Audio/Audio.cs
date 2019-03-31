@@ -5,14 +5,10 @@ using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Audio
 {
-    public class Audio : EduardoModule
+    public partial class Audio : EduardoModule<AudioService>
     {
-        private readonly AudioService _service;
-
         public Audio(AudioService service)
-        {
-            _service = service;
-        }
+            : base(service) { }
 
         [Command("play", RunMode = RunMode.Async)]
         [Summary("Play an individual song, or the queue")]

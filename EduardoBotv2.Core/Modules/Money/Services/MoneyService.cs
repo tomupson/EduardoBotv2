@@ -2,21 +2,32 @@
 using Discord;
 using EduardoBotv2.Core.Extensions;
 using EduardoBotv2.Core.Models;
+using EduardoBotv2.Core.Modules.Money.Database;
+using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Money.Services
 {
-    public class MoneyService
+    public class MoneyService : IEduardoService
     {
         private static int money;
+
+        private readonly IMoneyRepository _moneyRepository;
+
+        public MoneyService(IMoneyRepository moneyRepository)
+        {
+            _moneyRepository = moneyRepository;
+        }
 
         public async Task ShowMoney(EduardoContext context, IGuildUser user)
         {
             if (user == null)
             {
-                await context.Channel.SendMessageAsync($"${money}"); // Get your own money.
+                //await _moneyRepository.GetMoneyAsync(context.User.Id);
+                await context.Channel.SendMessageAsync($"${money}");
             } else
             {
-                await context.Channel.SendMessageAsync($"${money}"); // Get money for a specific user
+                //await _moneyRepository.GetMoneyAsync(user.Id);
+                await context.Channel.SendMessageAsync($"${money}");
             }
         }
 

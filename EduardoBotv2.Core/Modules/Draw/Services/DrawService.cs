@@ -5,13 +5,14 @@ using System.Threading.Tasks;
 using Discord;
 using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Models;
+using EduardoBotv2.Core.Services;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
 namespace EduardoBotv2.Core.Modules.Draw.Services
 {
-    public class DrawService
+    public class DrawService : IEduardoService
     {
         private static readonly Dictionary<Color, string> _colourDictionary = new Dictionary<Color, string>
         {

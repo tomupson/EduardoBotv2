@@ -5,14 +5,10 @@ using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Games
 {
-    public class Games : EduardoModule
+    public class Games : EduardoModule<GamesService>
     {
-        private readonly GamesService _service;
-
         public Games(GamesService service)
-        {
-            _service = service;
-        }
+            : base(service) { }
 
         [Command("pokemon")]
         [Summary("Discover a wild Pokemon")]
