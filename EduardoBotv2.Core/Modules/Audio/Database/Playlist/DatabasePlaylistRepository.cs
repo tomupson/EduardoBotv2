@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 using EduardoBotv2.Core.Database;
 using EduardoBotv2.Core.Models;
+using EduardoBotv2.Core.Modules.Audio.Database.Playlist.Results;
 using EduardoBotv2.Core.Modules.Audio.Models;
 
 namespace EduardoBotv2.Core.Modules.Audio.Database.Playlist
@@ -17,24 +19,105 @@ namespace EduardoBotv2.Core.Modules.Audio.Database.Playlist
 
         public async Task<List<Models.Playlist>> GetPlaylistsAsync(long discordUserId)
         {
-            DataReader reader = new DataReader("PLAYLIST_GetPlaylists", _credentials.DbConnectionString);
-            reader.AddParameter("@DiscordUserId", discordUserId);
-            return await Task.FromResult(new List<Models.Playlist>());
+            AsyncDataReader dr = new AsyncDataReader("PLAYLIST_GetPlaylists", _credentials.DbConnectionString);
+            dr.AddParameter("@DiscordUserId", discordUserId);
+
+            List<Models.Playlist> playlists = new List<Models.Playlist>();
+            await dr.ExecuteReaderAsync(reader =>
+            {
+                playlists.Add(GetPlaylistFromReader(reader));
+
+                return Task.CompletedTask;
+            });
+
+            return playlists;
         }
 
-        public Task<Models.Playlist> GetPlaylistAsync(ulong discordUserId, string playlistName)
+        public async Task<Models.Playlist> GetPlaylistAsync(ulong discordUserId, string playlistName)
         {
-            return Task.FromResult(new Models.Playlist());
+            AsyncDataReader dr = new AsyncDataReader("PLAYLIST_GetPlaylist", _credentials.DbConnectionString);
+            dr.AddParameter("@DiscordUserId", discordUserId);
+            dr.AddParameter("@PlaylistName", playlistName);
+
+            Models.Playlist playlist = null;
+            await dr.ExecuteReaderAsync(reader =>
+            {
+                GetPlaylistWithSongsFromReader(reader, ref playlist);
+
+                return Task.CompletedTask;
+            });
+
+            return playlist;
         }
 
-        public Task AddSongToPlaylistAsync(long playlistId, SongInfo song)
+        public async Task<AddSongResult> AddSongToPlaylistAsync(ulong discordUserId, string playlistName, PlaylistSong song)
         {
-            return Task.CompletedTask;
+            AsyncDataReader dr = new AsyncDataReader("PLAYLIST_AddSong", _credentials.DbConnectionString);
+            dr.AddParameter("@DiscordUserId", discordUserId);
+            dr.AddParameter("@PlaylistName", playlistName);
+            dr.AddParameter("@SongName", song.Name);
+            dr.AddParameter("@SongUrl", song.Url);
+
+            AddSongResult result = (AddSongResult)await dr.ExecuteScalarAsync();
+
+            return result;
         }
 
-        public Task CreatePlaylistAsync(ulong discordUserId, string playlistName)
+        public async Task<RemoveSongResult> RemoveSongFromPlaylistAsync(ulong discordUserId, string playlistName, string songName)
         {
-            return Task.CompletedTask;
+            AsyncDataReader dr = new AsyncDataReader("PLAYLIST_RemoveSong", _credentials.DbConnectionString);
+            dr.AddParameter("@DiscordUserId", discordUserId);
+            dr.AddParameter("@PlaylistName", playlistName);
+            dr.AddParameter("@SongName", songName);
+
+            RemoveSongResult result = (RemoveSongResult)await dr.ExecuteScalarAsync();
+
+            return result;
         }
+
+        public async Task<RemoveSongResult> RemoveSongFromPlaylistByIndexAsync(ulong discordUserId, string playlistName, int index)
+        {
+            AsyncDataReader dr = new AsyncDataReader("PLAYLIST_RemoveSongByIndex", _credentials.DbConnectionString);
+            dr.AddParameter("@DiscordUserId", discordUserId);
+            dr.AddParameter("@PlaylistName", playlistName);
+            dr.AddParameter("@Index", index);
+
+            RemoveSongResult result = (RemoveSongResult)await dr.ExecuteScalarAsync();
+
+            return result;
+        }
+
+        public async Task<CreatePlaylistResult> CreatePlaylistAsync(ulong discordUserId, string playlistName)
+        {
+            AsyncDataReader dr = new AsyncDataReader("PLAYLIST_CreatePlaylist", _credentials.DbConnectionString);
+            dr.AddParameter("@DiscordUserId", discordUserId);
+            dr.AddParameter("@PlaylistName", playlistName);
+
+            CreatePlaylistResult result = (CreatePlaylistResult)await dr.ExecuteScalarAsync();
+
+            return result;
+        }
+
+        private static Models.Playlist GetPlaylistFromReader(IDataReader reader) => new Models.Playlist
+        {
+            Id = reader.GetInt64(reader.GetOrdinal("PLAYLIST_ID")),
+            Name = reader.GetString(reader.GetOrdinal("NAME"))
+        };
+
+        private static void GetPlaylistWithSongsFromReader(IDataReader reader, ref Models.Playlist playlist)
+        {
+            if (playlist == null)
+            {
+                playlist = GetPlaylistFromReader(reader);
+            }
+
+            playlist.Songs.Add(GetSongFromReader(reader));
+        }
+
+        private static PlaylistSong GetSongFromReader(IDataReader reader) => new PlaylistSong
+        {
+            Name = reader.GetString(reader.GetOrdinal("NAME")),
+            Id = reader.GetInt64(reader.GetOrdinal("SONG_ID"))
+        };
     }
 }

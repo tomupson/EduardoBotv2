@@ -18,7 +18,7 @@ namespace EduardoBotv2.Core.Modules.Games.Database
 
         public async Task<Dictionary<PokemonSummary, int>> GetPokemonAsync(ulong discordUserId, ulong guildId)
         {
-            DataReader dr = new DataReader("POKEMON_GetPokemonInventory", _connectionString);
+            AsyncDataReader dr = new AsyncDataReader("POKEMON_GetPokemonInventory", _connectionString);
             dr.AddParameter("@DiscordGuildId", (long)guildId);
             dr.AddParameter("@DiscordUserId", (long)discordUserId);
 
@@ -36,7 +36,7 @@ namespace EduardoBotv2.Core.Modules.Games.Database
 
         public async Task AddPokemonAsync(ulong discordUserId, ulong guildId, PokemonSummary pokemon)
         { 
-            DataReader dr = new DataReader("POKEMON_AddPokemonToInventory", _connectionString);
+            AsyncDataReader dr = new AsyncDataReader("POKEMON_AddPokemonToInventory", _connectionString);
             dr.AddParameter("@DiscordGuildId", (long)guildId);
             dr.AddParameter("@DiscordUserId", (long)discordUserId);
             dr.AddParameter("@PokemonNumber", pokemon.Id);

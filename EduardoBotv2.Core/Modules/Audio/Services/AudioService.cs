@@ -1,30 +1,24 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using Discord;
 using Discord.Audio;
 using EduardoBotv2.Core.Extensions;
 using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Modules.Audio.Models;
-using EduardoBotv2.Core.Modules.YouTube.Helpers;
-using EduardoBotv2.Core.Modules.YouTube.Models;
 using EduardoBotv2.Core.Services;
-using Google.Apis.YouTube.v3.Data;
-using Newtonsoft.Json.Linq;
+using YoutubeExplode;
+using YoutubeExplode.Models;
+using YoutubeExplode.Models.MediaStreams;
 
 namespace EduardoBotv2.Core.Modules.Audio.Services
 {
     public class AudioService : IEduardoService
     {
-        private readonly Credentials _credentials;
-
         private readonly ConcurrentDictionary<ulong, IAudioClient> _connectedChannels = new ConcurrentDictionary<ulong, IAudioClient>();
         private readonly List<SongInfo> _queue = new List<SongInfo>();
 
@@ -33,11 +27,6 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
         private CancellationTokenSource audioCts;
 
         private TaskCompletionSource<bool> PauseTaskSource { get; set; }
-
-        public AudioService(Credentials credentials)
-        {
-            _credentials = credentials;
-        }
 
         public async Task PlaySong(EduardoContext context, string input)
         {
@@ -94,10 +83,10 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
             if (requestedSong != null)
             {
                 _queue.Add(requestedSong);
-                await context.Channel.SendMessageAsync($"Added **{requestedSong.Title}** to the queue");
+                await context.Channel.SendMessageAsync($"Added {requestedSong.Name.Boldify()} to the queue");
             } else
             {
-                await context.Channel.SendMessageAsync($"Could not find video like \"{input}");
+                await context.Channel.SendMessageAsync($"Could not find video like \"{input}\"");
             }
         }
 
@@ -115,7 +104,7 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
             // Skip current song if queue is running and queueNum == 1?
 
             _queue.Remove(requestedSong);
-            await context.Channel.SendMessageAsync($"Removed {requestedSong.Title.Boldify()} from the queue");
+            await context.Channel.SendMessageAsync($"Removed {requestedSong.Name.Boldify()} from the queue");
         }
 
         public async Task Skip(EduardoContext context)
@@ -146,7 +135,7 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
 
         public void SetVolume(int newVolume)
         {
-            if (newVolume < 0 || volume > 100)
+            if (newVolume < 0 || newVolume > 100)
                 throw new ArgumentOutOfRangeException(nameof(newVolume));
 
             volume = (float) newVolume / 100;
@@ -170,7 +159,7 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
                 string queueInfo = "Queue:";
                 for (int i = 0; i < _queue.Count; i++)
                 {
-                    queueInfo += $"\n{i + 1}. {_queue[i].Title}";
+                    queueInfo += $"\n{i + 1}. {_queue[i].Name}";
                 }
 
                 await context.Channel.SendMessageAsync(queueInfo);
@@ -200,10 +189,10 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
             // Register connection in connected channels
             if (_connectedChannels.TryAdd(context.Guild.Id, audioClient))
             {
-                await Logger.Log(new LogMessage(LogSeverity.Info, "EduardoRemastered", $"Connected to voice channel on {context.Guild.Name}"));
+                await Logger.Log(new LogMessage(LogSeverity.Info, "Eduardov2", $"Connected to voice channel on {context.Guild.Name}"));
             } else
             {
-                await Logger.Log(new LogMessage(LogSeverity.Error, "EduardoRemastered", $"Failed to join voice channel on {context.Guild.Name}"));
+                await Logger.Log(new LogMessage(LogSeverity.Error, "Eduardov2", $"Failed to join voice channel on {context.Guild.Name}"));
             }
         }
 
@@ -215,7 +204,7 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
                 // Disconnect from connected channel
                 await client.StopAsync();
 
-                await Logger.Log(new LogMessage(LogSeverity.Debug, "EduardoRemastered", $"Disconncted from voice in {guild.Name}"));
+                await Logger.Log(new LogMessage(LogSeverity.Debug, "Eduardov2", $"Disconncted from voice in {guild.Name}"));
             }
         }
 
@@ -225,7 +214,7 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
 
             await ShowCurrentSong(context);
 
-            await Logger.Log(new LogMessage(LogSeverity.Debug, "EduardoRemastered", $"Starting playback of {song.Title} in {context.Guild.Name}"));
+            await Logger.Log(new LogMessage(LogSeverity.Debug, "Eduardov2", $"Starting playback of {song.Name} in {context.Guild.Name}"));
 
             SongBuffer songBuffer = null;
 
@@ -257,83 +246,41 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
             }
         }
 
-        private async Task<SongInfo> GetVideoInfo(EduardoContext context, string input)
+        private static async Task<SongInfo> GetVideoInfo(EduardoContext context, string input)
         {
-            string videoId = "";
-
-            List<string> validAuthorities = new List<string> {"youtube.com", "www.youtube.com", "youtu.be", "www.youtu.be"};
-
-            // Check if user input is any form of youtube url
-            if (validAuthorities.Any(input.ToLower().Contains))
+            Video video;
+            YoutubeClient client = new YoutubeClient();
+            if (!YoutubeClient.TryParseVideoId(input, out string videoId))
             {
-                Uri uri = new Uri(input);
-
-                if (validAuthorities.Contains(uri.Authority.ToLower()))
-                {
-                    // If so, get the video id query parameter using regex
-                    Regex idExtractionRegex = new Regex(Constants.YOUTUBE_LINK_REGEX, RegexOptions.Compiled);
-                    Match idMatch = idExtractionRegex.Match(uri.ToString());
-                    if (idMatch.Success)
-                    {
-                        videoId = idMatch.Groups[1].Value;
-                    }
-                }
+                IReadOnlyList<Video> videos = await client.SearchVideosAsync(input, 1);
+                video = videos.FirstOrDefault();
             } else
             {
-                // Otherwise, search youtube for the user input and get the video id that way
-                SearchListResponse response = await YouTubeHelper.SearchYouTubeAsync(_credentials.GoogleYouTubeApiKey, "snippet", input, 1, YouTubeRequestType.Video);
-
-                if (response.Items.Count > 0)
-                {
-                    videoId = response.Items[0].Id.VideoId;
-                } else return null;
+                video = await client.GetVideoAsync(videoId);
             }
 
-            // Get the video by the previously determined id
-            VideoListResponse getVideoResponse = await YouTubeHelper.GetVideoFromYouTubeAsync(_credentials.GoogleYouTubeApiKey, "snippet,contentDetails", videoId);
+            if (video == null) return null;
 
-            if (getVideoResponse.Items.Count == 0) return null;
+            MediaStreamInfoSet streamInfo = await client.GetVideoMediaStreamInfosAsync(video.Id);
+            AudioStreamInfo stream = streamInfo.Audio.OrderByDescending(a => a.Bitrate).FirstOrDefault();
 
-            string youtubeUrl = $"http://youtu.be/{videoId}";
+            if (stream == null) return null;
 
             return new SongInfo
             {
-                Title = getVideoResponse.Items[0].Snippet.Title,
-                Duration = XmlConvert.ToTimeSpan(getVideoResponse.Items[0].ContentDetails.Duration),
+                Name = video.Title,
+                Duration = video.Duration,
                 VideoId = videoId,
-                Url = youtubeUrl,
-                StreamUrl = GetStreamUrl(youtubeUrl),
+                Url = video.GetShortUrl(),
+                StreamUrl = stream.Url,
                 RequestedBy = context.User as IGuildUser,
-                Description = getVideoResponse.Items[0].Snippet.Description,
-                ThumbnailUrl = getVideoResponse.Items[0].Snippet.Thumbnails.Default__.Url
+                Description = video.Description,
+                ThumbnailUrl = video.Thumbnails.MediumResUrl
             };
-        }
-
-        private static string GetStreamUrl(string url)
-        {
-            // Use youtube-dl to get the url of the video stream, from the youtube url
-            Process youtubeDl = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "youtube-dl",
-                    Arguments = $"-j --geo-bypass --no-call-home {url}",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    CreateNoWindow = true,
-                    WorkingDirectory = Environment.CurrentDirectory
-                }
-            };
-
-            youtubeDl.Start();
-
-            string output = youtubeDl.StandardOutput.ReadToEnd();
-            dynamic songJson = JObject.Parse(output);
-            return songJson.url ?? songJson.requested_formats[1]?.url ?? "";
         }
 
         private static Embed BuildSongEmbed(SongInfo song) => new EmbedBuilder()
-            .WithTitle(song.Title)
+            .WithTitle(song.Name)
             .WithColor(Color.Red)
             .WithThumbnailUrl(song.ThumbnailUrl)
             .WithUrl(song.Url)

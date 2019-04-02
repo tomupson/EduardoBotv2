@@ -96,7 +96,7 @@ namespace EduardoBotv2.Core
                 await _client.LoginAsync(TokenType.Bot, _credentials.Token);
             } catch (HttpException e)
             {
-                await Logger.Log(new LogMessage(LogSeverity.Critical, "Eduardo", $"Failed to log in: {e.Message}"));
+                await Logger.Log(new LogMessage(LogSeverity.Critical, "Eduardov2", $"Failed to log in: {e.Message}"));
                 Console.ReadLine();
                 Environment.Exit(0);
             }

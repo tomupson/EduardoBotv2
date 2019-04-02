@@ -55,7 +55,7 @@ namespace EduardoBotv2.Core.Modules.Games.Services
                 await _pokemonRepository.AddPokemonAsync(context.Message.Author.Id, (context.Message.Channel as SocketGuildChannel)?.Guild.Id ?? 0, pokemonRoll);
             } else
             {
-                await Logger.Log(new LogMessage(LogSeverity.Error, "Eduardo", $"Error fetching Pokemon with id {roll}"));
+                await Logger.Log(new LogMessage(LogSeverity.Error, "Eduardov2", $"Error fetching Pokemon with id {roll}"));
             }
         }
 

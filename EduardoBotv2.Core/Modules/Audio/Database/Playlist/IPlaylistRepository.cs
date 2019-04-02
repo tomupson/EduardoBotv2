@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using EduardoBotv2.Core.Modules.Audio.Database.Playlist.Results;
 using EduardoBotv2.Core.Modules.Audio.Models;
 
 namespace EduardoBotv2.Core.Modules.Audio.Database.Playlist
@@ -10,8 +11,12 @@ namespace EduardoBotv2.Core.Modules.Audio.Database.Playlist
 
         Task<Models.Playlist> GetPlaylistAsync(ulong discordUserId, string playlistName);
 
-        Task AddSongToPlaylistAsync(long playlistId, SongInfo song);
+        Task<AddSongResult> AddSongToPlaylistAsync(ulong discordUserId, string playlistName, PlaylistSong song);
 
-        Task CreatePlaylistAsync(ulong discordUserId, string playlistName);
+        Task<RemoveSongResult> RemoveSongFromPlaylistAsync(ulong discordUserId, string playlistName, string songName);
+
+        Task<RemoveSongResult> RemoveSongFromPlaylistByIndexAsync(ulong discordUserId, string playlistName, int index);
+
+        Task<CreatePlaylistResult> CreatePlaylistAsync(ulong discordUserId, string playlistName);
     }
 }
