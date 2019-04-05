@@ -14,28 +14,28 @@ namespace EduardoBotv2.Core.Modules.Spotify
 
         [Command("song")]
         [Summary("Search spotify for a song")]
-        public async Task SongCommand([Remainder, Summary("The name of the song")] string searchSong)
+        public async Task SongCommand([Summary("The name of the song"), Remainder] string searchSong)
         {
             await _service.GetSong(Context, searchSong);
         }
 
         [Command("album")]
         [Summary("Search spotify for an artist")]
-        public async Task AlbumCommand([Remainder, Summary("The name of the album")] string album)
+        public async Task AlbumCommand([Summary("The name of the album"), Remainder] string album)
         {
             await _service.GetAlbum(Context, album);
         }
 
         [Command("artist")]
         [Summary("Search spotify for an artist")]
-        public async Task ArtistCommand([Remainder, Summary("The name of the artist")] string artist)
+        public async Task ArtistCommand([Summary("The name of the artist"), Remainder] string artist)
         {
             await _service.GetArtist(Context, artist);
         }
 
         [Command("playlist")]
         [Summary("Search spotify for a playlist")]
-        public async Task PlaylistCommand([Remainder, Summary("The name of the playlist")] string playlist)
+        public async Task PlaylistCommand([Summary("The name of the playlist"), Remainder] string playlist)
         {
             await _service.GetPlaylist(Context, playlist);
         }

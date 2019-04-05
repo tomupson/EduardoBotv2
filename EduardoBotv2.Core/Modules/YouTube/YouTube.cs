@@ -15,7 +15,7 @@ namespace EduardoBotv2.Core.Modules.YouTube
         [Command("search")]
         [Summary("Search YouTube for a video")]
         [Remarks("harlem shake compilation")]
-        public async Task SearchCommand([Remainder, Summary("The search query. If left blank, fetches a random video")] string searchQuery = null)
+        public async Task SearchCommand([Summary("The search query. If left blank, fetches a random video"), Remainder] string searchQuery = null)
         {
             await _service.SearchYouTubeAsync(Context, searchQuery);
         }

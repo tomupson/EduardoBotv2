@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -29,63 +30,85 @@ namespace EduardoBotv2.Core.Extensions
             }
         }
 
-        public static async Task SendPaginatedMessageAsync(this EduardoContext context, PaginatedMessage paginatedMsg)
+        public static Task SendPaginatedMessageAsync(this EduardoContext context, PaginatedMessage paginatedMsg)
         {
             if (paginatedMsg.Embeds.Count == 0)
             {
                 throw new ArgumentException("No pages provided");
             }
 
-            TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
-            CancellationTokenSource cts = new CancellationTokenSource(paginatedMsg.Timeout);
-            cts.Token.Register(() => tcs.TrySetResult(true));
-
-            string text = "";
             if (paginatedMsg.TimeoutBehaviour == TimeoutBehaviour.Delete)
             {
-                text = $"This message will automatically delete in {paginatedMsg.Timeout.TotalSeconds} seconds";
+                paginatedMsg.Text += $" This message will automatically delete in {paginatedMsg.Timeout.TotalSeconds} seconds";
             }
 
-            RestUserMessage message = await context.Channel.SendMessageAsync(text, embed: paginatedMsg.Embeds[paginatedMsg.CurrentIndex]);
-            await AddPaginationReactionsAsync(message);
-
-            ulong botUserId = context.Client.CurrentUser.Id;
-
-            async Task ProcessReactionAsync(Cacheable<IUserMessage, ulong> cachedReactionMessage, ISocketMessageChannel channel, SocketReaction reaction)
+            _ = Task.Run(async () =>
             {
-                IUserMessage reactionMessage = await cachedReactionMessage.GetOrDownloadAsync();
+                RestUserMessage message = await context.Channel.SendMessageAsync(paginatedMsg.Text, embed: paginatedMsg.Embeds[paginatedMsg.CurrentIndex]);
+                await AddPaginationReactionsAsync(message, paginatedMsg);
 
-                if (reactionMessage.Id == message.Id && reaction.User.Value.Id != botUserId)
+                TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+                CancellationTokenSource cts = new CancellationTokenSource(paginatedMsg.Timeout);
+                cts.Token.Register(() => tcs.TrySetResult(true));
+
+                bool customReactionChosen = false;
+
+                async Task ProcessReactionAsync(Cacheable<IUserMessage, ulong> cachedReactionMessage, ISocketMessageChannel channel, SocketReaction reaction)
                 {
-                    ProcessPaginationReaction(paginatedMsg, reaction.Emote, cts);
-                    await ChangePage(paginatedMsg, message, cts);
+                    if (cachedReactionMessage.Id == message.Id)
+                    {
+                        if (paginatedMsg.Reactions.Select(r => r.Emote).Contains(reaction.Emote))
+                        {
+                            paginatedMsg.Reactions.First(x => x.Emote.Name == reaction.Emote.Name)
+                                .ReactionChangedCallback(paginatedMsg.Embeds[paginatedMsg.CurrentIndex], cts);
+                            customReactionChosen = true;
+                        } else
+                        {
+                            ProcessPaginationReaction(paginatedMsg, reaction.Emote, cts);
+                        }
+
+                        await ChangePageIfRequired(paginatedMsg, message, cts);
+                    }
                 }
-            }
 
-            context.Client.ReactionAdded += ProcessReactionAsync;
-            context.Client.ReactionRemoved += ProcessReactionAsync;
+                context.Client.ReactionAdded += ProcessReactionAsync;
+                context.Client.ReactionRemoved += ProcessReactionAsync;
 
-            await tcs.Task;
+                await tcs.Task;
 
-            switch(paginatedMsg.TimeoutBehaviour)
-            {
-                case TimeoutBehaviour.Default:
-                case TimeoutBehaviour.Ignore:
-                    await message.RemoveAllReactionsAsync();
-                    break;
-                case TimeoutBehaviour.Delete:
-                    await message.DeleteAsync();
-                    break;
-            }
+                context.Client.ReactionAdded -= ProcessReactionAsync;
+                context.Client.ReactionRemoved -= ProcessReactionAsync;
+
+                switch (paginatedMsg.TimeoutBehaviour)
+                {
+                    case TimeoutBehaviour.Default:
+                    case TimeoutBehaviour.Ignore:
+                        await message.RemoveAllReactionsAsync();
+                        break;
+                    case TimeoutBehaviour.Delete:
+                        await message.DeleteAsync();
+                        break;
+                }
+
+                if (!customReactionChosen)
+                {
+                    paginatedMsg.TimeoutCallback?.Invoke();
+                }
+            });
+
+            return Task.CompletedTask;
         }
 
-        private static async Task AddPaginationReactionsAsync(IUserMessage message)
+        private static async Task AddPaginationReactionsAsync(IUserMessage message, PaginatedMessage paginatedMsg)
         {
-            const int delay = 1300; // Delay as to not reach the reaction limit.
             await message.AddReactionAsync(new Emoji("◀")); // :arrow_backward:
-            await Task.Delay(delay);
             await message.AddReactionAsync(new Emoji("❌")); // :x:
-            await Task.Delay(delay);
+
+            foreach (PaginatedMessageReaction customReaction in paginatedMsg.Reactions)
+            {
+                await message.AddReactionAsync(customReaction.Emote);
+            }
+
             await message.AddReactionAsync(new Emoji("▶")); // :arrow_forward:
         }
 
@@ -107,7 +130,7 @@ namespace EduardoBotv2.Core.Extensions
             }
         }
 
-        private static async Task ChangePage(PaginatedMessage paginatedMsg, IUserMessage message, CancellationTokenSource cts)
+        private static async Task ChangePageIfRequired(PaginatedMessage paginatedMsg, IUserMessage message, CancellationTokenSource cts)
         {
             if (!cts.IsCancellationRequested && paginatedMsg.CurrentIndex != paginatedMsg.PreviousIndex)
             {

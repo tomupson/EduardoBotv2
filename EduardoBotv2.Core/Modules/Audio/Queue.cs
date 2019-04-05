@@ -23,7 +23,7 @@ namespace EduardoBotv2.Core.Modules.Audio
 
             [Command("add")]
             [Summary("Add a song to the queue")]
-            public async Task AddCommand([Remainder, Summary("The url or name of the song to play")] string song)
+            public async Task AddCommand([Summary("The url or name of the song to play"), Remainder] string song)
             {
                 await _service.AddSongToQueue(Context, song);
             }

@@ -18,7 +18,7 @@ namespace EduardoBotv2.Core.Modules.General
         [Command("echo")]
         [Summary("Echo a message")]
         [Remarks("I am a bot!")]
-        public async Task EchoCommand([Remainder, Summary("The text to echo")] string echo)
+        public async Task EchoCommand([Summary("The text to echo"), Remainder] string echo)
         {
             await _service.EchoTextAsync(Context, echo);
         }
@@ -50,7 +50,7 @@ namespace EduardoBotv2.Core.Modules.General
         [Command("lmgtfy")]
         [Summary("Googles something for that special person who is crippled and can't do it themselves")]
         [Remarks("How do I use Eduardo Bot?")]
-        public async Task LetMeGoogleThatForYouCommand([Remainder, Summary("What you're searching for")] string searchQuery)
+        public async Task LetMeGoogleThatForYouCommand([Summary("What you're searching for"), Remainder] string searchQuery)
         {
             await _service.GoogleForYou(Context, searchQuery);
         }
@@ -58,7 +58,7 @@ namespace EduardoBotv2.Core.Modules.General
         [Command("urban")]
         [Summary("Look up word on Urban Dictionary")]
         [Remarks("Eduardo")]
-        public async Task UrbanCommand([Remainder, Summary("The words you want to look up")] string searchQuery)
+        public async Task UrbanCommand([Summary("The words you want to look up"), Remainder] string searchQuery)
         {
             await _service.SearchUrbanDictionary(Context, searchQuery);
         }
@@ -66,7 +66,7 @@ namespace EduardoBotv2.Core.Modules.General
         [Command("robome")]
         [Summary("Shows what you would look like as a robot")]
         [Remarks("Eduardo")]
-        public async Task RoboMeCommand([Remainder, Summary("Your name")] string name)
+        public async Task RoboMeCommand([Summary("Your name"), Remainder] string name)
         {
             await _service.RoboMe(Context, name);
         }

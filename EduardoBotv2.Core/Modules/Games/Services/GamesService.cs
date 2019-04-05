@@ -52,7 +52,8 @@ namespace EduardoBotv2.Core.Modules.Games.Services
                     await context.Channel.SendFileAsync(stream, $"{pokemonRoll.Name}.png", $"{context.User.Username.Boldify()} has found a wild {pokemonRoll.Name.UpperFirstChar().Boldify()}!");
                 }
 
-                await _pokemonRepository.AddPokemonAsync(context.Message.Author.Id, (context.Message.Channel as SocketGuildChannel)?.Guild.Id ?? 0, pokemonRoll);
+                await _pokemonRepository.AddPokemonAsync((long)context.Message.Author.Id,
+                    (long)((context.Message.Channel as SocketGuildChannel)?.Guild.Id ?? 0), pokemonRoll);
             } else
             {
                 await Logger.Log(new LogMessage(LogSeverity.Error, "Eduardov2", $"Error fetching Pokemon with id {roll}"));
@@ -61,14 +62,19 @@ namespace EduardoBotv2.Core.Modules.Games.Services
 
         public async Task ShowInventoryAsync(EduardoContext context)
         {
-            Dictionary<PokemonSummary, int> pokemonInventory = await _pokemonRepository.GetPokemonAsync(context.Message.Author.Id, (context.Message.Channel as SocketGuildChannel)?.Guild.Id ?? 0);
+            Dictionary<PokemonSummary, int> pokemonInventory = await _pokemonRepository.GetPokemonAsync((long)context.Message.Author.Id,
+                (long)((context.Message.Channel as SocketGuildChannel)?.Guild.Id ?? 0));
 
             if (pokemonInventory.Count > 0)
             {
                 List<Embed> pageEmbeds = new List<Embed>();
                 for (int i = 0; i < pokemonInventory.Count; i += _pokemonData.MaxPokemonPerPage)
                 {
-                    Dictionary<PokemonSummary, int> pokemonPage = pokemonInventory.Skip(i).Take(Math.Min(_pokemonData.MaxPokemonPerPage, pokemonInventory.Count - i)).ToDictionary(x => x.Key, x => x.Value);
+                    Dictionary<PokemonSummary, int> pokemonPage = pokemonInventory
+                        .Skip(i)
+                        .Take(Math.Min(_pokemonData.MaxPokemonPerPage, pokemonInventory.Count - i))
+                        .ToDictionary(x => x.Key, x => x.Value);
+
                     StringBuilder descriptionBuilder = new StringBuilder();
                     foreach ((PokemonSummary pokemon, int amount) in pokemonPage)
                     {

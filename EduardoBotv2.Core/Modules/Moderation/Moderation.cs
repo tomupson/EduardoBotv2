@@ -17,7 +17,7 @@ namespace EduardoBotv2.Core.Modules.Moderation
         [Remarks("uppy")]
         [RequireUserPermission(GuildPermission.BanMembers)]
         [RequireBotPermission(GuildPermission.BanMembers)]
-        public async Task BanCommand([Summary("User to ban")] IGuildUser user, [Remainder, Summary("Ban reason")] string reason = null)
+        public async Task BanCommand([Summary("User to ban")] IGuildUser user, [Summary("Ban reason"), Remainder] string reason = null)
         {
             await _service.BanUser(Context, user, reason);
         }
@@ -27,7 +27,7 @@ namespace EduardoBotv2.Core.Modules.Moderation
         [Remarks("uppy")]
         [RequireUserPermission(GuildPermission.KickMembers)]
         [RequireBotPermission(GuildPermission.KickMembers)]
-        public async Task KickCommand([Summary("User to kick")] IGuildUser user, [Remainder, Summary("Kick reason")] string reason = null)
+        public async Task KickCommand([Summary("User to kick")] IGuildUser user, [Summary("Kick reason"), Remainder] string reason = null)
         {
             await _service.KickUser(Context, user, reason);
         }

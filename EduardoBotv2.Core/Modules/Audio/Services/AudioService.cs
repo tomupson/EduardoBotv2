@@ -238,7 +238,7 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
                 }
             } catch (Exception ex)
             {
-                if (ex is OperationCanceledException ocEx && !ocEx.CancellationToken.IsCancellationRequested) throw;
+                if (ex is OperationCanceledException cancelledException && !cancelledException.CancellationToken.IsCancellationRequested) throw;
             } finally
             {
                 await discordStream.FlushAsync();
@@ -248,34 +248,29 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
 
         private static async Task<SongInfo> GetVideoInfo(EduardoContext context, string input)
         {
-            Video video;
-            YoutubeClient client = new YoutubeClient();
-            if (!YoutubeClient.TryParseVideoId(input, out string videoId))
-            {
-                IReadOnlyList<Video> videos = await client.SearchVideosAsync(input, 1);
-                video = videos.FirstOrDefault();
-            } else
-            {
-                video = await client.GetVideoAsync(videoId);
-            }
+            List<Video> videos = await VideoHelper.GetOrSearchVideoAsync(input);
 
-            if (video == null) return null;
+            if (videos == null || videos.Count == 0) return null;
 
-            MediaStreamInfoSet streamInfo = await client.GetVideoMediaStreamInfosAsync(video.Id);
+            Video chosenVideo = videos.FirstOrDefault();
+
+            if (chosenVideo == null) return null;
+
+            MediaStreamInfoSet streamInfo = await VideoHelper.GetMediaStreamInfoAsync(chosenVideo);
             AudioStreamInfo stream = streamInfo.Audio.OrderByDescending(a => a.Bitrate).FirstOrDefault();
 
             if (stream == null) return null;
 
             return new SongInfo
             {
-                Name = video.Title,
-                Duration = video.Duration,
-                VideoId = videoId,
-                Url = video.GetShortUrl(),
+                Name = chosenVideo.Title,
+                Duration = chosenVideo.Duration,
+                VideoId = chosenVideo.Id,
+                Url = chosenVideo.GetShortUrl(),
                 StreamUrl = stream.Url,
                 RequestedBy = context.User as IGuildUser,
-                Description = video.Description,
-                ThumbnailUrl = video.Thumbnails.MediumResUrl
+                Description = chosenVideo.Description,
+                ThumbnailUrl = chosenVideo.Thumbnails.MediumResUrl
             };
         }
 

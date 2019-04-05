@@ -15,7 +15,7 @@ namespace EduardoBotv2.Core.Modules.Imgur
         [Command("search")]
         [Summary("Search for an image on Imgur")]
         [Remarks("teddy bear")]
-        public async Task FindCommand([Remainder, Summary("The image to search for. Leaving blank will fetch a random image")] string searchQuery = null)
+        public async Task FindCommand([Summary("The image to search for. Leaving blank will fetch a random image"), Remainder] string searchQuery = null)
         {
             await _service.SearchImgur(Context, searchQuery);
         }

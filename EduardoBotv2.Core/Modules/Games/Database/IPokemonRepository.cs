@@ -6,8 +6,8 @@ namespace EduardoBotv2.Core.Modules.Games.Database
 {
     public interface IPokemonRepository
     {
-        Task<Dictionary<PokemonSummary, int>> GetPokemonAsync(ulong discordUserId, ulong guildId);
+        Task<Dictionary<PokemonSummary, int>> GetPokemonAsync(long discordUserId, long guildId);
 
-        Task AddPokemonAsync(ulong discordUserId, ulong guildId, PokemonSummary pokemon);
+        Task AddPokemonAsync(long discordUserId, long guildId, PokemonSummary pokemon);
     }
 }

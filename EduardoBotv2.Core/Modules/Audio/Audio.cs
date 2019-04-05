@@ -13,7 +13,7 @@ namespace EduardoBotv2.Core.Modules.Audio
         [Command("play", RunMode = RunMode.Async)]
         [Summary("Play an individual song, or the queue")]
         [Remarks("despacito 2")]
-        public async Task PlayCommand([Remainder, Summary("The url or name of the song to play, or empty for the queue")] string url = null)
+        public async Task PlayCommand([Summary("The url or name of the song to play, or empty for the queue"), Remainder] string url = null)
         {
             if (string.IsNullOrWhiteSpace(url))
             {

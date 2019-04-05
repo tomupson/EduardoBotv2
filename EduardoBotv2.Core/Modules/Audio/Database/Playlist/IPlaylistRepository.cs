@@ -9,14 +9,16 @@ namespace EduardoBotv2.Core.Modules.Audio.Database.Playlist
     {
         Task<List<Models.Playlist>> GetPlaylistsAsync(long discordUserId);
 
-        Task<Models.Playlist> GetPlaylistAsync(ulong discordUserId, string playlistName);
+        Task<Models.Playlist> GetPlaylistAsync(long discordUserId, string playlistName);
 
-        Task<AddSongResult> AddSongToPlaylistAsync(ulong discordUserId, string playlistName, PlaylistSong song);
+        Task<AddSongResult> AddSongToPlaylistAsync(long discordUserId, string playlistName, PlaylistSong song);
 
-        Task<RemoveSongResult> RemoveSongFromPlaylistAsync(ulong discordUserId, string playlistName, string songName);
+        Task<RemoveSongResult> RemoveSongFromPlaylistAsync(long discordUserId, string playlistName, string songName);
 
-        Task<RemoveSongResult> RemoveSongFromPlaylistByIndexAsync(ulong discordUserId, string playlistName, int index);
+        Task<RemoveSongResult> RemoveSongFromPlaylistByIndexAsync(long discordUserId, string playlistName, int index);
 
-        Task<CreatePlaylistResult> CreatePlaylistAsync(ulong discordUserId, string playlistName);
+        Task<CreatePlaylistResult> CreatePlaylistAsync(long discordUserId, string playlistName);
+
+        Task<DeletePlaylistResult> DeletePlaylistAsync(long discordUserId, string playlistName);
     }
 }
