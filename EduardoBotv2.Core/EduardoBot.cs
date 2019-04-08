@@ -9,10 +9,11 @@ using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Modules.Audio.Database.Playlist;
 using EduardoBotv2.Core.Modules.Audio.Services;
 using EduardoBotv2.Core.Modules.Draw.Services;
-using EduardoBotv2.Core.Modules.Games.Database;
+using EduardoBotv2.Core.Modules.Games.Database.Pokemon;
 using EduardoBotv2.Core.Modules.Games.Services;
 using EduardoBotv2.Core.Modules.General.Services;
 using EduardoBotv2.Core.Modules.Github.Services;
+using EduardoBotv2.Core.Modules.Help.Services;
 using EduardoBotv2.Core.Modules.Imgur.Services;
 using EduardoBotv2.Core.Modules.Memes.Services;
 using EduardoBotv2.Core.Modules.Moderation.Services;
@@ -76,6 +77,8 @@ namespace EduardoBotv2.Core
                 .AddSingleton<SpotifyService>()
                 .AddSingleton<PlaylistService>()
                 .AddSingleton<GithubService>()
+                .AddSingleton<PokemonService>()
+                .AddSingleton<HelpService>()
                 .AddSingleton<IPokemonRepository, DatabasePokemonRepository>()
                 .AddSingleton<IPlaylistRepository, DatabasePlaylistRepository>()
                 .AddSingleton<IMoneyRepository, DatabaseMoneyRepository>();

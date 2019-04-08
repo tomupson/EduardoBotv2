@@ -11,7 +11,6 @@ using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Modules.Audio.Models;
 using EduardoBotv2.Core.Services;
-using YoutubeExplode;
 using YoutubeExplode.Models;
 using YoutubeExplode.Models.MediaStreams;
 

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using EduardoBotv2.Core.Modules.Games.Models.Pokemon;
 
-namespace EduardoBotv2.Core.Modules.Games.Database
+namespace EduardoBotv2.Core.Modules.Games.Database.Pokemon
 {
     public interface IPokemonRepository
     {

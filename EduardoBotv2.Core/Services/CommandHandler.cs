@@ -27,7 +27,7 @@ namespace EduardoBotv2.Core.Services
         public async Task InitializeAsync(IServiceProvider provider)
         {
             serviceProvider = provider;
-            await _commandService.AddModulesAsync(GetType().GetTypeInfo().Assembly, provider);
+            await _commandService.AddModulesAsync(GetType().GetTypeInfo().Assembly, serviceProvider);
         }
 
         private async Task OnMessageReceviedAsync(SocketMessage sm)
@@ -49,7 +49,8 @@ namespace EduardoBotv2.Core.Services
                         await context.Channel.SendMessageAsync($"Incorrect command usage. Use `{Constants.CMD_PREFIX}help <command>` to show usage".Boldify());
                     } else
                     {
-                        await context.Channel.SendMessageAsync(result.ErrorReason);
+                        Console.WriteLine(result.ErrorReason);
+                        await context.Channel.SendMessageAsync("Something went wrong while executing that command...");
                     }
                 }
             }

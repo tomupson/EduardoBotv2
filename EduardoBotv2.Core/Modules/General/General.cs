@@ -7,13 +7,8 @@ namespace EduardoBotv2.Core.Modules.General
 {
     public class General : EduardoModule<GeneralService>
     {
-        private readonly CommandService _commandService;
-
-        public General(GeneralService service, CommandService commandService)
-            : base(service)
-        {
-            _commandService = commandService;
-        }
+        public General(GeneralService service)
+            : base(service) { }
 
         [Command("echo")]
         [Summary("Echo a message")]
@@ -21,15 +16,6 @@ namespace EduardoBotv2.Core.Modules.General
         public async Task EchoCommand([Summary("The text to echo"), Remainder] string echo)
         {
             await _service.EchoTextAsync(Context, echo);
-        }
-
-        [Command("help")]
-        [Alias("command")]
-        [Summary("View usage information about a command")]
-        [Remarks("money donate")]
-        public async Task HelpCommand([Remainder] string commandOrModule = null)
-        {
-            await _service.DisplayHelpAsync(_commandService, Context, commandOrModule);
         }
 
         [Command("ping")]

@@ -26,7 +26,7 @@ namespace EduardoBotv2.Core.Modules.Spotify.Services
             _credentials = credentials;
         }
 
-        public async Task GetSong(EduardoContext context, string searchSong)
+        public async Task GetSongAsync(EduardoContext context, string searchSong)
         {
             SearchItem searchItem = await GetAsync(() => _spotify.SearchItemsAsync(searchSong, SearchType.Track));
 
@@ -40,13 +40,21 @@ namespace EduardoBotv2.Core.Modules.Spotify.Services
             foreach (FullTrack track in searchItem.Tracks.Items)
             {
                 embeds.Add(new EmbedBuilder()
+                    .WithTitle(track.Name)
+                    .WithColor(Color.DarkGreen)
+                    .WithUrl(track.ExternUrls["spotify"])
+                    .WithImageUrl(track.Album.Images.Count > 0 ? track.Album.Images[0].Url : "")
+                    .AddField("Duration", TimeSpan.FromMilliseconds(track.DurationMs).ToString(@"mm\:ss"))
+                    .AddField("Album", $"{track.Album.Name} - {track.Album.AlbumType}")
+                    .AddField("Released", track.Album.ReleaseDate)
+                    .AddField("Explcit", track.Explicit ? "Yes": "No")
                     .Build());
             }
 
             await context.SendMessageOrPaginatedAsync(embeds);
         }
 
-        public async Task GetAlbum(EduardoContext context, string searchAlbum)
+        public async Task GetAlbumAsync(EduardoContext context, string searchAlbum)
         {
             SearchItem searchItem = await GetAsync(() => _spotify.SearchItemsAsync(searchAlbum, SearchType.Album));
 
@@ -72,7 +80,7 @@ namespace EduardoBotv2.Core.Modules.Spotify.Services
             await context.SendMessageOrPaginatedAsync(embeds);
         }
 
-        public async Task GetArtist(EduardoContext context, string searchArtist)
+        public async Task GetArtistAsync(EduardoContext context, string searchArtist)
         {
             SearchItem searchItem = await GetAsync(() => _spotify.SearchItemsAsync(searchArtist, SearchType.Artist));
 

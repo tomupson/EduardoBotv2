@@ -2,14 +2,12 @@
 using Discord;
 using Discord.Commands;
 using EduardoBotv2.Core.Modules.Money.Services;
-using EduardoBotv2.Core.Preconditions;
 using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Money
 {
     [Group("money")]
     [Name("Money")]
-    [Alias("bal", "balance")]
     public class Money : EduardoModule<MoneyService>
     {
         public Money(MoneyService service)

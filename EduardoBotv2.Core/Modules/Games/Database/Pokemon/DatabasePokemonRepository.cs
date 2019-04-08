@@ -5,7 +5,7 @@ using EduardoBotv2.Core.Database;
 using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Modules.Games.Models.Pokemon;
 
-namespace EduardoBotv2.Core.Modules.Games.Database
+namespace EduardoBotv2.Core.Modules.Games.Database.Pokemon
 {
     public class DatabasePokemonRepository : IPokemonRepository
     {

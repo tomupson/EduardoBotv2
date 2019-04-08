@@ -5,25 +5,10 @@ using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Games
 {
-    public class Games : EduardoModule<GamesService>
+    public partial class Games : EduardoModule<GamesService>
     {
         public Games(GamesService service)
             : base(service) { }
-
-        [Command("pokemon")]
-        [Summary("Discover a wild Pokemon")]
-        public async Task PokemonCommand()
-        {
-            await _service.GetPokemonAsync(Context);
-        }
-
-        [Command("inventory")]
-        [Alias("inv")]
-        [Summary("View your Pokemon")]
-        public async Task InventoryCommand()
-        {
-            await _service.ShowInventoryAsync(Context);
-        }
 
         [Command("coin")]
         [Alias("toss")]
