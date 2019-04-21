@@ -27,7 +27,7 @@ namespace EduardoBotv2.Core.Modules.Moderation
         [Remarks("uppy")]
         [RequireUserPermission(GuildPermission.KickMembers)]
         [RequireBotPermission(GuildPermission.KickMembers)]
-        public async Task KickCommand([Summary("User to kick")] IGuildUser user, [Summary("Kick reason"), Remainder] string reason = null)
+        public async Task KickCommand([Summary("User to kick")] IGuildUser user, [Summary("Kick reason"), Remainder] string reason = "Kicked by a moderator")
         {
             await _service.KickUser(Context, user, reason);
         }
