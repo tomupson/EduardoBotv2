@@ -3,14 +3,13 @@ using Discord;
 using EduardoBotv2.Core.Extensions;
 using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Modules.Money.Database;
+using EduardoBotv2.Core.Modules.Money.Database.Results;
 using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Money.Services
 {
     public class MoneyService : IEduardoService
     {
-        private static int money;
-
         private readonly IMoneyRepository _moneyRepository;
 
         public MoneyService(IMoneyRepository moneyRepository)
@@ -20,27 +19,49 @@ namespace EduardoBotv2.Core.Modules.Money.Services
 
         public async Task ShowMoney(EduardoContext context, IGuildUser user)
         {
-            if (user == null)
-            {
-                //await _moneyRepository.GetMoneyAsync(context.User.Id);
-                await context.Channel.SendMessageAsync($"${money}");
-            } else
-            {
-                //await _moneyRepository.GetMoneyAsync(user.Id);
-                await context.Channel.SendMessageAsync($"${money}");
-            }
+            (string username, long userId) = user == null ?
+                (context.User.Username, (long)context.User.Id) :
+                (user.Username, (long)user.Id);
+
+            int money = await _moneyRepository.GetMoneyAsync(userId, (long)context.Guild.Id);
+
+            await context.Channel.SendMessageAsync($"{Format.Bold(username)} has ${money}");
         }
 
-        public async Task SetMoney(EduardoContext context, IGuildUser user, int amount)
+        public async Task SetMoney(EduardoContext context, IGuildUser user, int money)
         {
-            money = amount;
-            await context.Channel.SendMessageAsync($"Set the balance of {user.Mention} to {amount}");
+            await _moneyRepository.SetMoneyAsync((long)user.Id, (long)context.Guild.Id, money);
+            await context.Channel.SendMessageAsync($"Set the balance of {user.Mention} to ${money}");
         }
 
         public async Task DonateMoney(EduardoContext context, IGuildUser user, int amount)
         {
-            money += amount;
-            await context.Channel.SendMessageAsync($"{context.User.Username.Boldify()} has donated ${amount.Boldify()} to {user.Username.Boldify()}");
+            if (context.User.Id == user.Id)
+            {
+                await context.Channel.SendMessageAsync("Cannot donate money to yourself!");
+                return;
+            }
+
+            if (amount <= 0)
+            {
+                await context.Channel.SendMessageAsync("Please enter a valid amount to donate. Value must be positive and greater than 0");
+                return;
+            }
+
+            DonateMoneyResult result = await _moneyRepository.DonateMoneyAsync((long)user.Id, (long)context.User.Id, (long)context.Guild.Id, amount);
+
+            switch (result)
+            {
+                case DonateMoneyResult.NotEnoughMoney:
+                    await context.Channel.SendMessageAsync("You do not have enough money to donate to this person");
+                    break;
+                case DonateMoneyResult.TransactionFailed:
+                    await context.Channel.SendMessageAsync("Failed to donate money");
+                    break;
+                default:
+                    await context.Channel.SendMessageAsync($"{Format.Bold(context.User.Username)} has donated ${Format.Bold(amount.ToString())} to {Format.Bold(user.Username)}");
+                    break;
+            }
         }
     }
 }

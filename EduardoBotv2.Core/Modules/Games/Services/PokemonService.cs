@@ -31,7 +31,7 @@ namespace EduardoBotv2.Core.Modules.Games.Services
         {
             int roll = new Random().Next(0, _pokemonData.PokemonCount);
 
-            IMessage waitingMessage = await context.Channel.SendMessageAsync($"{context.User.Username.Boldify()} is looking for a Pokemon...");
+            IMessage waitingMessage = await context.Channel.SendMessageAsync($"{Format.Bold(context.User.Username)} is looking for a Pokemon...");
 
             Pokemon pokemonRoll = await PokemonHelper.GetPokemonFromApiAsync(roll + 1);
 
@@ -41,7 +41,7 @@ namespace EduardoBotv2.Core.Modules.Games.Services
             {
                 using (Stream stream = await NetworkHelper.GetStreamAsync(pokemonRoll.Sprites.FrontDefaultSpriteUrl))
                 {
-                    await context.Channel.SendFileAsync(stream, $"{pokemonRoll.Name}.png", $"{context.User.Username.Boldify()} has found a wild {pokemonRoll.Name.UpperFirstChar().Boldify()}!");
+                    await context.Channel.SendFileAsync(stream, $"{pokemonRoll.Name}.png", $"{Format.Bold(context.User.Username)} has found a wild {Format.Bold(pokemonRoll.Name.UpperFirstChar())}!");
                 }
 
                 await _pokemonRepository.AddPokemonAsync((long)context.Message.Author.Id,

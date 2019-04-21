@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using EduardoBotv2.Core.Extensions;
@@ -46,7 +47,7 @@ namespace EduardoBotv2.Core.Services
                 {
                     if (result.Error == CommandError.BadArgCount)
                     {
-                        await context.Channel.SendMessageAsync($"Incorrect command usage. Use `{Constants.CMD_PREFIX}help <command>` to show usage".Boldify());
+                        await context.Channel.SendMessageAsync(Format.Bold($"Incorrect command usage. Use `{Constants.CMD_PREFIX}help <command>` to show usage"));
                     } else
                     {
                         Console.WriteLine(result.ErrorReason);

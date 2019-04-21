@@ -41,10 +41,9 @@ namespace EduardoBotv2.Core.Modules.Audio
 
         [Command("volume")]
         [Summary("Change the volume of the current song")]
-        public Task VolumeCommand([Summary("The new volume")] int volume)
+        public async Task VolumeCommand([Summary("The new volume")] int volume)
         {
-            _service.SetVolume(volume);
-            return Task.CompletedTask;
+            await _service.SetVolume(Context, volume);
         }
 
         [Command("pause")]

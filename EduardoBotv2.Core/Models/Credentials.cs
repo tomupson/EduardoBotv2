@@ -13,8 +13,6 @@ namespace EduardoBotv2.Core.Models
 
         public ulong[] OwnerIds { get; set; }
 
-        public string GoogleYouTubeApiKey { get; set; }
-
         public string GoogleShortenerApiKey { get; set; }
 
         public string ImgurClientId { get; set; }
@@ -65,7 +63,6 @@ namespace EduardoBotv2.Core.Models
 
             OwnerIds = data.GetSection(nameof(OwnerIds)).GetChildren().Select(id => ulong.Parse(id.Value)).ToArray();
 
-            GoogleYouTubeApiKey = data[nameof(GoogleYouTubeApiKey)];
             GoogleShortenerApiKey = data[nameof(GoogleShortenerApiKey)];
 
             ImgurClientId = data[nameof(ImgurClientId)];

@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Rest;
 using EduardoBotv2.Core.Extensions;
 using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Services;
+using Format = Discord.Format;
 
 namespace EduardoBotv2.Core.Modules.Utility.Services
 {
@@ -24,7 +26,7 @@ namespace EduardoBotv2.Core.Modules.Utility.Services
 
         public async Task DisplayInvite(EduardoContext context)
         {
-            await context.Channel.SendMessageAsync($"{context.User.Mention.Boldify()}, you can invite me to your server with this link!:\nhttps://discordapp.com/oauth2/authorize?client_id=360500527869460480&scope=bot&permissions=8");
+            await context.Channel.SendMessageAsync($"{Format.Bold(context.User.Mention)}, you can invite me to your server with this link!:\n{Format.EscapeUrl("https://discordapp.com/oauth2/authorize?client_id=360500527869460480&scope=bot&permissions=8")}");
         }
     }
 }

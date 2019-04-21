@@ -82,7 +82,7 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
             if (requestedSong != null)
             {
                 _queue.Add(requestedSong);
-                await context.Channel.SendMessageAsync($"Added {requestedSong.Name.Boldify()} to the queue");
+                await context.Channel.SendMessageAsync($"Added {Format.Bold(requestedSong.Name)} to the queue");
             } else
             {
                 await context.Channel.SendMessageAsync($"Could not find video like \"{input}\"");
@@ -103,7 +103,7 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
             // Skip current song if queue is running and queueNum == 1?
 
             _queue.Remove(requestedSong);
-            await context.Channel.SendMessageAsync($"Removed {requestedSong.Name.Boldify()} from the queue");
+            await context.Channel.SendMessageAsync($"Removed {Format.Bold(requestedSong.Name)} from the queue");
         }
 
         public async Task Skip(EduardoContext context)
@@ -132,10 +132,13 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
             _queue.Clear();
         }
 
-        public void SetVolume(int newVolume)
+        public async Task SetVolume(EduardoContext context, int newVolume)
         {
             if (newVolume < 0 || newVolume > 100)
-                throw new ArgumentOutOfRangeException(nameof(newVolume));
+            {
+                await context.Channel.SendMessageAsync("Volume must be between 0 and 100");
+                return;
+            }
 
             volume = (float) newVolume / 100;
         }
@@ -143,8 +146,9 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
         public void TogglePause()
         {
             if (PauseTaskSource == null)
+            {
                 PauseTaskSource = new TaskCompletionSource<bool>();
-            else
+            } else
             {
                 PauseTaskSource?.TrySetResult(true);
                 PauseTaskSource = null;
@@ -164,7 +168,7 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
                 await context.Channel.SendMessageAsync(queueInfo);
             } else
             {
-                await context.Channel.SendMessageAsync($"There are no songs in the queue! Use {$"`{Constants.CMD_PREFIX}queue add <song>`".Boldify()} to add a song to the queue");
+                await context.Channel.SendMessageAsync($"There are no songs in the queue! Use {Format.Bold($"`{Constants.CMD_PREFIX}queue add <song>`")} to add a song to the queue");
             }
         }
 
@@ -269,7 +273,7 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
                 StreamUrl = stream.Url,
                 RequestedBy = context.User as IGuildUser,
                 Description = chosenVideo.Description,
-                ThumbnailUrl = chosenVideo.Thumbnails.MediumResUrl
+                ThumbnailUrl = chosenVideo.Thumbnails.StandardResUrl
             };
         }
 
@@ -281,7 +285,7 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
             .AddField("Video Description", !string.IsNullOrEmpty(song.Description) ? song.Description.Length < Constants.MAX_DESCRIPTION_LENGTH ?
                 song.Description :
                 song.Description.Substring(0, Constants.MAX_DESCRIPTION_LENGTH) : "-")
-            .AddField("Requested by", song.RequestedBy.Boldify())
+            .AddField("Requested by", Format.Bold(song.RequestedBy.Username))
             .WithFooter($"{song.TimePassed.ToDurationString()} / {song.Duration?.ToDurationString()}", @"https://i.imgur.com/Fsaf4OW.png")
             .Build();
 
@@ -292,13 +296,11 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
             // 16-bit precision for the multiplication
             int volumeFixed = (int) Math.Round(volume * 65536d);
 
-            int count = audioSamples.Length / 2;
-
             fixed (byte* srcBytes = audioSamples)
             {
                 short* src = (short*) srcBytes;
 
-                for (int i = count; i != 0; i--, src++)
+                for (int i = 0; i < audioSamples.Length / sizeof(short); i++, src++)
                 {
                     *src = (short) ((*src * volumeFixed) >> 16);
                 }

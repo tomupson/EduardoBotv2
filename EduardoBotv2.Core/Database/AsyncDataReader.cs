@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
@@ -26,7 +27,7 @@ namespace EduardoBotv2.Core.Database
 
         public void ClearParameters() => _parameters.Clear();
 
-        public async Task ExecuteReaderAsync(ProcessRecordAsyncDelegate processor)
+        public async Task ExecuteReaderAsync(ProcessRecordAsyncDelegate processor, bool withTransaction = false)
         {
             using (SqlConnection conn = new SqlConnection(ConnectionString))
             {
@@ -34,11 +35,26 @@ namespace EduardoBotv2.Core.Database
 
                 using (SqlCommand cmd = SetupCommand(new SqlCommand(StoredProcedure, conn)))
                 {
-                    IDataReader reader = await cmd.ExecuteReaderAsync();
-
-                    while (reader.Read())
+                    SqlTransaction transaction = null;
+                    try
                     {
-                        await processor(reader);
+                        if (withTransaction)
+                        {
+                            transaction = conn.BeginTransaction("DefaultTransaction");
+                            cmd.Transaction = transaction;
+                        }
+
+                        IDataReader reader = await cmd.ExecuteReaderAsync();
+
+                        transaction?.Commit();
+
+                        while (reader.Read())
+                        {
+                            await processor(reader);
+                        }
+                    } catch
+                    {
+                        transaction?.Rollback();
                     }
                 }
             }
@@ -57,7 +73,7 @@ namespace EduardoBotv2.Core.Database
             }
         }
 
-        public async Task<object> ExecuteScalarAsync()
+        public async Task<object> ExecuteScalarAsync(bool withTransaction = false)
         {
             using (SqlConnection conn = new SqlConnection(ConnectionString))
             {
@@ -65,7 +81,23 @@ namespace EduardoBotv2.Core.Database
 
                 using (SqlCommand cmd = SetupCommand(new SqlCommand(StoredProcedure, conn)))
                 {
-                    return await cmd.ExecuteScalarAsync();
+                    SqlTransaction transaction = null;
+                    try
+                    {
+                        if (withTransaction)
+                        {
+                            transaction = conn.BeginTransaction("DefaultTransaction");
+                            cmd.Transaction = transaction;
+                        }
+
+                        object result = await cmd.ExecuteScalarAsync();
+                        transaction?.Commit();
+                        return result;
+                    } catch
+                    {
+                        transaction?.Rollback();
+                        throw;
+                    }
                 }
             }
         }

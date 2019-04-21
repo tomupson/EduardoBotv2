@@ -4,6 +4,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Modules.Audio.Database.Playlist;
@@ -37,10 +38,12 @@ namespace EduardoBotv2.Core
     {
         private readonly DiscordSocketClient _client;
         private readonly Models.Credentials _credentials;
+        private readonly CancellationToken _appCancellationToken;
 
-        public EduardoBot()
+        public EduardoBot(CancellationToken cancelToken = new CancellationToken())
         {
             _credentials = new Models.Credentials();
+            _appCancellationToken = cancelToken;
 
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
@@ -109,7 +112,7 @@ namespace EduardoBotv2.Core
             await _client.SetGameAsync("chat", "", ActivityType.Listening);
             await _client.SetStatusAsync(UserStatus.DoNotDisturb);
 
-            await Task.Delay(-1);
+            await Task.Delay(-1, _appCancellationToken);
         }
 
         public void Dispose()

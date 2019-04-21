@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Rest;
-using EduardoBotv2.Core.Extensions;
 using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Modules.General.Models;
@@ -48,7 +47,7 @@ namespace EduardoBotv2.Core.Modules.General.Services
 
         public async Task GoogleForYou(EduardoContext context, string searchQuery)
         {
-            await context.Channel.SendMessageAsync($"{"Your special URL: ".Boldify()}<http://lmgtfy.com/?q={ Uri.EscapeUriString(searchQuery) }>");
+            await context.Channel.SendMessageAsync($"Your special URL: {Format.EscapeUrl($"http://lmgtfy.com/?q={Uri.EscapeUriString(searchQuery)}")}");
         }
 
         public async Task SearchUrbanDictionary(EduardoContext context, string searchQuery)
@@ -58,7 +57,7 @@ namespace EduardoBotv2.Core.Modules.General.Services
 
             if (!data.List.Any())
             {
-                await context.Channel.SendMessageAsync($"Couldn't find anything related to {searchQuery}".Boldify());
+                await context.Channel.SendMessageAsync(Format.Bold($"Couldn't find anything related to {searchQuery}"));
                 return;
             }
 
