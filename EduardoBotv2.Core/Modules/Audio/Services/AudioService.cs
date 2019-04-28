@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Audio;
+using Discord.Rest;
 using EduardoBotv2.Core.Extensions;
 using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Models;
@@ -192,10 +193,10 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
             // Register connection in connected channels
             if (_connectedChannels.TryAdd(context.Guild.Id, audioClient))
             {
-                await Logger.Log(new LogMessage(LogSeverity.Info, "Eduardov2", $"Connected to voice channel on {context.Guild.Name}"));
+                await Logger.Log($"Connected to voice channel on {context.Guild.Name}", LogSeverity.Info);
             } else
             {
-                await Logger.Log(new LogMessage(LogSeverity.Error, "Eduardov2", $"Failed to join voice channel on {context.Guild.Name}"));
+                await Logger.Log($"Failed to join voice channel on {context.Guild.Name}", LogSeverity.Error);
             }
         }
 
@@ -207,7 +208,7 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
                 // Disconnect from connected channel
                 await client.StopAsync();
 
-                await Logger.Log(new LogMessage(LogSeverity.Debug, "Eduardov2", $"Disconncted from voice in {guild.Name}"));
+                await Logger.Log($"Disconncted from voice in {guild.Name}", LogSeverity.Debug);
             }
         }
 
@@ -217,16 +218,24 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
 
             await ShowCurrentSong(context);
 
-            await Logger.Log(new LogMessage(LogSeverity.Debug, "Eduardov2", $"Starting playback of {song.Name} in {context.Guild.Name}"));
+            await Logger.Log($"Starting playback of {song.Name} in {context.Guild.Name}", LogSeverity.Debug);
 
             SongBuffer songBuffer = null;
 
             try
             {
                 songBuffer = new SongBuffer(song.StreamUrl);
-                songBuffer.StartBuffering();
+                songBuffer.StartBuffering(audioCts.Token);
 
-                await Task.WhenAny(Task.Delay(10000), songBuffer.PrebufferingCompleted.Task);
+                RestUserMessage message = await context.Channel.SendMessageAsync("Video is buffering, please wait a moment...");
+
+                await songBuffer.PrebufferingCompleted.Task;
+
+                await message.DeleteAsync();
+
+                //await Task.WhenAny(Task.Delay(10000), songBuffer.PrebufferingCompleted.Task);
+
+                if (audioCts.IsCancellationRequested) return;
 
                 while (true)
                 {

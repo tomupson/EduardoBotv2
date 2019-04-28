@@ -24,6 +24,7 @@ namespace EduardoBotv2.Core.Modules.Money.Database
             await dr.ExecuteReaderAsync(reader =>
             {
                 money = reader.GetInt32(reader.GetOrdinal("MONEY"));
+
                 return Task.CompletedTask;
             });
 

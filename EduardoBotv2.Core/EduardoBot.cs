@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using EduardoBotv2.Core.Database;
 using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Modules.Audio.Database.Playlist;
 using EduardoBotv2.Core.Modules.Audio.Services;
@@ -13,7 +14,6 @@ using EduardoBotv2.Core.Modules.Draw.Services;
 using EduardoBotv2.Core.Modules.Games.Database.Pokemon;
 using EduardoBotv2.Core.Modules.Games.Services;
 using EduardoBotv2.Core.Modules.General.Services;
-using EduardoBotv2.Core.Modules.Github.Services;
 using EduardoBotv2.Core.Modules.Help.Services;
 using EduardoBotv2.Core.Modules.Imgur.Services;
 using EduardoBotv2.Core.Modules.Memes.Services;
@@ -40,7 +40,7 @@ namespace EduardoBotv2.Core
         private readonly Models.Credentials _credentials;
         private readonly CancellationToken _appCancellationToken;
 
-        public EduardoBot(CancellationToken cancelToken = new CancellationToken())
+        public EduardoBot(CancellationToken cancelToken = default)
         {
             _credentials = new Models.Credentials();
             _appCancellationToken = cancelToken;
@@ -62,6 +62,7 @@ namespace EduardoBotv2.Core
                 .AddSingleton(_credentials)
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandler>()
+                .AddSingleton<GuildHandler>()
                 .AddSingleton<AudioService>()
                 .AddSingleton<MemesService>()
                 .AddSingleton<DrawService>()
@@ -79,12 +80,12 @@ namespace EduardoBotv2.Core
                 .AddSingleton<SpotifyWebAPI>()
                 .AddSingleton<SpotifyService>()
                 .AddSingleton<PlaylistService>()
-                .AddSingleton<GithubService>()
                 .AddSingleton<PokemonService>()
                 .AddSingleton<HelpService>()
                 .AddSingleton<IPokemonRepository, DatabasePokemonRepository>()
                 .AddSingleton<IPlaylistRepository, DatabasePlaylistRepository>()
-                .AddSingleton<IMoneyRepository, DatabaseMoneyRepository>();
+                .AddSingleton<IMoneyRepository, DatabaseMoneyRepository>()
+                .AddSingleton<IGuildRepository, DatabaseGuildRepository>();
 
             services.AddSingleton(new Reddit(new RefreshTokenWebAgent(_credentials.RedditRefreshToken, _credentials.RedditClientId, _credentials.RedditClientSecret, _credentials.RedditRedirectUri)));
 
@@ -102,7 +103,7 @@ namespace EduardoBotv2.Core
                 await _client.LoginAsync(TokenType.Bot, _credentials.Token);
             } catch (HttpException e)
             {
-                await Logger.Log(new LogMessage(LogSeverity.Critical, "Eduardov2", $"Failed to log in: {e.Message}"));
+                await Logger.Log("Failed to log in", e, LogSeverity.Critical);
                 Console.ReadLine();
                 Environment.Exit(0);
             }

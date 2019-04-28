@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EduardoBotv2.Core.Modules.Audio.Models
@@ -40,13 +41,14 @@ namespace EduardoBotv2.Core.Modules.Audio.Models
             PrebufferingCompleted = new TaskCompletionSource<bool>();
         }
 
-        public void StartBuffering()
+        public void StartBuffering(CancellationToken cancelToken)
         {
+            cancelToken.Register(() => PrebufferingCompleted.SetResult(true));
             Task.Run(async () =>
             {
                 byte[] output = new byte[38400];
                 int read;
-                while (!stopped && (read = await _stream.ReadAsync(output, 0, 38400).ConfigureAwait(false)) > 0)
+                while (!stopped && (read = await _stream.ReadAsync(output, 0, 38400, cancelToken).ConfigureAwait(false)) > 0)
                 {
                     while (_buffer.Length - ContentLength <= read)
                     {
@@ -56,12 +58,12 @@ namespace EduardoBotv2.Core.Modules.Audio.Models
                             PrebufferingCompleted.SetResult(true);
                         }
 
-                        await Task.Delay(100).ConfigureAwait(false);
+                        await Task.Delay(100, cancelToken).ConfigureAwait(false);
                     }
 
                     Write(output, read);
                 }
-            });
+            }, cancelToken);
         }
 
         public ReadOnlySpan<byte> Read(int count)

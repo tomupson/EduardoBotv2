@@ -8,7 +8,7 @@ namespace EduardoBotv2.Core.Modules.Moderation.Services
 {
     public class ModerationService : IEduardoService
     {
-        public async Task BanUser(EduardoContext context, IGuildUser banUser, string reason = null)
+        public async Task BanUser(EduardoContext context, IGuildUser banUser, string reason)
         {
             try
             {

@@ -46,7 +46,7 @@ namespace EduardoBotv2.Core.Models
             string credentialsFilePath = Path.Combine(Directory.GetCurrentDirectory(), "credentials.json");
             if (!File.Exists(credentialsFilePath))
             {
-                Logger.Log(new LogMessage(LogSeverity.Critical, "Eduardov2", "credentials.json is missing"));
+                Logger.Log("credentials.json is missing", LogSeverity.Critical);
             }
 
             ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
@@ -57,7 +57,7 @@ namespace EduardoBotv2.Core.Models
             Token = data[nameof(Token)];
             if (string.IsNullOrWhiteSpace(Token))
             {
-                Logger.Log(new LogMessage(LogSeverity.Critical, "Eduardov2", "Token is missing from credentials.json"));
+                Logger.Log("Token is missing from credentials.json", LogSeverity.Critical);
                 Environment.Exit(0);
             }
 
