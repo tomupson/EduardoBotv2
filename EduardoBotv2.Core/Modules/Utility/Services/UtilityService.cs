@@ -26,7 +26,7 @@ namespace EduardoBotv2.Core.Modules.Utility.Services
 
         public async Task DisplayInvite(EduardoContext context)
         {
-            await context.Channel.SendMessageAsync($"{Format.Bold(context.User.Mention)}, you can invite me to your server with this link!:\n{Format.EscapeUrl("https://discordapp.com/oauth2/authorize?client_id=360500527869460480&scope=bot&permissions=8")}");
+            await context.Channel.SendMessageAsync($"{Format.Bold(context.User.Mention)}, you can invite me to your server with this link!:\n{Format.EscapeUrl("https://discordapp.com/oauth2/authorize?client_id=488384686826192916&scope=bot&permissions=8")}");
         }
     }
 }
