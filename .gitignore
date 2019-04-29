@@ -307,3 +307,4 @@ publish.bat
 debug.json
 youtube-dl.exe
 ffmpeg.exe
+build/
