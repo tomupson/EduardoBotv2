@@ -1,12 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Rest;
-using EduardoBotv2.Core.Extensions;
 using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Services;
-using Format = Discord.Format;
 
 namespace EduardoBotv2.Core.Modules.Utility.Services
 {

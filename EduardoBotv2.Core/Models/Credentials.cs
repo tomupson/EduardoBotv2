@@ -43,14 +43,13 @@ namespace EduardoBotv2.Core.Models
 
         public Credentials()
         {
-            string credentialsFilePath = Path.Combine(Directory.GetCurrentDirectory(), "credentials.json");
-            if (!File.Exists(credentialsFilePath))
+            if (!File.Exists("credentials.json"))
             {
                 Logger.Log("credentials.json is missing", LogSeverity.Critical);
             }
 
             ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddJsonFile(credentialsFilePath);
+            configurationBuilder.AddJsonFile("credentials.json");
 
             IConfigurationRoot data = configurationBuilder.Build();
 
