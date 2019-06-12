@@ -53,6 +53,7 @@ namespace EduardoBotv2.Core
             });
 
             _client.Log += Logger.Log;
+            _client.Ready += ClientReady;
         }
 
         public async Task RunAsync()
@@ -107,13 +108,17 @@ namespace EduardoBotv2.Core
                 Console.ReadLine();
                 Environment.Exit(0);
             }
-            
+
             await _client.StartAsync();
 
-            await _client.SetGameAsync("chat", "", ActivityType.Listening);
             await _client.SetStatusAsync(UserStatus.DoNotDisturb);
 
             await Task.Delay(-1, _appCancellationToken);
+        }
+
+        private async Task ClientReady()
+        {
+            await _client.SetGameAsync($"chat in {_client.Guilds.Count} servers.", "", ActivityType.Listening);
         }
 
         public void Dispose()
