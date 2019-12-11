@@ -39,14 +39,14 @@ namespace EduardoBotv2.Core.Modules.Games.Services
 
             if (pokemonRoll.Id != 0)
             {
-                using (Stream stream = await NetworkHelper.GetStreamAsync(pokemonRoll.Sprites.FrontDefaultSpriteUrl))
-                {
-                    await context.Channel.SendFileAsync(stream, $"{pokemonRoll.Name}.png", $"{Format.Bold(context.User.Username)} has found a wild {Format.Bold(pokemonRoll.Name.UpperFirstChar())}!");
-                }
+                using Stream stream = await NetworkHelper.GetStreamAsync(pokemonRoll.Sprites.FrontDefaultSpriteUrl);
+
+                await context.Channel.SendFileAsync(stream, $"{pokemonRoll.Name}.png", $"{Format.Bold(context.User.Username)} has found a wild {Format.Bold(pokemonRoll.Name.UpperFirstChar())}!");
 
                 await _pokemonRepository.AddPokemonAsync((long)context.Message.Author.Id,
                     (long)((context.Message.Channel as SocketGuildChannel)?.Guild.Id ?? 0), pokemonRoll);
-            } else
+            }
+            else
             {
                 await Logger.Log($"Error fetching Pokemon with id {roll}", LogSeverity.Error);
             }
@@ -60,6 +60,7 @@ namespace EduardoBotv2.Core.Modules.Games.Services
             if (pokemonInventory.Count > 0)
             {
                 List<Embed> pageEmbeds = new List<Embed>();
+
                 for (int i = 0; i < pokemonInventory.Count; i += _pokemonData.MaxPokemonPerPage)
                 {
                     List<KeyValuePair<PokemonSummary, int>> pokemonPage = pokemonInventory
@@ -82,7 +83,8 @@ namespace EduardoBotv2.Core.Modules.Games.Services
                     Timeout = TimeSpan.FromSeconds(Constants.PAGINATION_TIMEOUT_SECONDS),
                     TimeoutBehaviour = TimeoutBehaviour.Delete
                 });
-            } else
+            }
+            else
             {
                 await context.Channel.SendMessageAsync($"{context.User.Mention} You don't have any Pokemon! Use `{Constants.CMD_PREFIX}pokemon` to find a wild Pokemon!");
             }

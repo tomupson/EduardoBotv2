@@ -3,9 +3,12 @@ using EduardoBotv2.Core;
 
 namespace EduardoBotv2
 {
-    public sealed class Program
+    internal sealed class Program
     {
-        public static async Task Main() =>
-             await new EduardoBot().RunAsync();
+        private static async Task Main()
+        {
+            using EduardoBot bot = new EduardoBot();
+            await bot.RunAsync();
+        }
     }
 }

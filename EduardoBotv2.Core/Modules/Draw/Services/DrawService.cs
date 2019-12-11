@@ -49,10 +49,7 @@ namespace EduardoBotv2.Core.Modules.Draw.Services
 
             string previousName = context.Client.CurrentUser.Username;
             IGuildUser user = await ((IGuild)context.Guild).GetUserAsync(context.Client.CurrentUser.Id);
-            await user.ModifyAsync(x =>
-            {
-                x.Nickname = "----";
-            });
+            await user.ModifyAsync(usr => usr.Nickname = "----");
 
             List<string> blocks = await GetBlocksAsync(url, size);
 
@@ -61,10 +58,7 @@ namespace EduardoBotv2.Core.Modules.Draw.Services
                 await context.Channel.SendMessageAsync(block);
             }
 
-            await user.ModifyAsync(x =>
-            {
-                x.Nickname = previousName;
-            });
+            await user.ModifyAsync(usr => usr.Nickname = previousName);
         }
 
         private static async Task<List<string>> GetBlocksAsync(string url, int size)
@@ -97,7 +91,7 @@ namespace EduardoBotv2.Core.Modules.Draw.Services
                         continue;
                     }
 
-                    block += string.Join("", firstLine ? lineEmojis.Skip(1) : lineEmojis) + "\n";
+                    block += string.Concat(firstLine ? lineEmojis.Skip(1) : lineEmojis) + "\n";
                     firstLine = false;
                 }
             }

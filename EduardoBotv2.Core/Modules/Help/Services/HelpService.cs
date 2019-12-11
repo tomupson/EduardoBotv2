@@ -28,7 +28,8 @@ namespace EduardoBotv2.Core.Modules.Help.Services
                 {
                     Text = "Use 'help <module>' to get help with a module."
                 };
-            } else
+            }
+            else
             {
                 ModuleInfo matchingModule = commandService.Modules.FirstOrDefault(m => string.Equals(m.Name, commandOrModule, StringComparison.CurrentCultureIgnoreCase));
                 if (matchingModule == null)
@@ -107,19 +108,13 @@ namespace EduardoBotv2.Core.Modules.Help.Services
 
             foreach (ParameterInfo param in command.Parameters)
             {
-                if (param.IsOptional)
+                output.Append(param switch
                 {
-                    output.Append($"[{param.Name} = {param.DefaultValue}] ");
-                } else if (param.IsMultiple)
-                {
-                    output.Append($"|{param.Name}| ");
-                } else if (param.IsRemainder)
-                {
-                    output.Append($"...{param.Name} ");
-                } else
-                {
-                    output.Append($"<{param.Name}> ");
-                }
+                    { IsOptional: true } => $"[{param.Name} = {param.DefaultValue}] ",
+                    { IsMultiple: true } => $"|{param.Name}| ",
+                    { IsRemainder: true } => $"...{param.Name} ",
+                    _ => $"<{param.Name}> "
+                });
             }
 
             return output.ToString();
@@ -136,6 +131,7 @@ namespace EduardoBotv2.Core.Modules.Help.Services
         public string GetPrefix(ModuleInfo module)
         {
             string output = "";
+
             if (module.Parent != null)
             {
                 output = $"{GetPrefix(module.Parent)}{output}";

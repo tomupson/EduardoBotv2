@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Discord;
-using EduardoBotv2.Core.Extensions;
 using EduardoBotv2.Core.Models;
 using EduardoBotv2.Core.Modules.Money.Database;
 using EduardoBotv2.Core.Modules.Money.Database.Results;
@@ -50,18 +49,12 @@ namespace EduardoBotv2.Core.Modules.Money.Services
 
             DonateMoneyResult result = await _moneyRepository.DonateMoneyAsync((long)user.Id, (long)context.User.Id, (long)context.Guild.Id, amount);
 
-            switch (result)
+            await context.Channel.SendMessageAsync(result switch
             {
-                case DonateMoneyResult.NotEnoughMoney:
-                    await context.Channel.SendMessageAsync("You do not have enough money to donate to this person");
-                    break;
-                case DonateMoneyResult.TransactionFailed:
-                    await context.Channel.SendMessageAsync("Failed to donate money");
-                    break;
-                default:
-                    await context.Channel.SendMessageAsync($"{Format.Bold(context.User.Username)} has donated ${Format.Bold(amount.ToString())} to {Format.Bold(user.Username)}");
-                    break;
-            }
+                DonateMoneyResult.NotEnoughMoney => "You do not have enough money to donate to this person",
+                DonateMoneyResult.TransactionFailed => "Failed to donate money",
+                _ => $"{Format.Bold(context.User.Username)} has donated ${Format.Bold(amount.ToString())} to {Format.Bold(user.Username)}"
+            });
         }
     }
 }

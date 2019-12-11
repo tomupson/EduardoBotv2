@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Discord;
+using EduardoBotv2.Core.Helpers;
 
 namespace EduardoBotv2.Core.Modules.Audio.Models
 {
@@ -18,13 +20,12 @@ namespace EduardoBotv2.Core.Modules.Audio.Models
         public TaskCompletionSource<bool> PrebufferingCompleted { get; }
 
         public int ReadPosition { get; private set; }
+
         public int WritePosition { get; private set; }
 
         public int ContentLength => WritePosition >= ReadPosition
             ? WritePosition - ReadPosition
             : _buffer.Length - ReadPosition + WritePosition;
-
-        public int FreeSpace => _buffer.Length - ContentLength;
 
         public SongBuffer(string songUrl, int bufferSize = 0)
         {
@@ -43,11 +44,19 @@ namespace EduardoBotv2.Core.Modules.Audio.Models
 
         public void StartBuffering(CancellationToken cancelToken)
         {
-            cancelToken.Register(() => PrebufferingCompleted.SetResult(true));
+            cancelToken.Register(() =>
+            {
+                if (!prebuffered)
+                {
+                    PrebufferingCompleted.SetResult(true);
+                }
+            });
+
             Task.Run(async () =>
             {
                 byte[] output = new byte[38400];
-                int read;
+                int read = 0;
+
                 while (!stopped && (read = await _stream.ReadAsync(output, 0, 38400, cancelToken).ConfigureAwait(false)) > 0)
                 {
                     while (_buffer.Length - ContentLength <= read)
@@ -72,15 +81,19 @@ namespace EduardoBotv2.Core.Modules.Audio.Models
             int wp = WritePosition;
 
             if (ContentLength == 0)
+            {
                 return ReadOnlySpan<byte>.Empty;
+            }
 
             if (wp > ReadPosition || ReadPosition + toRead <= _buffer.Length)
             {
                 Span<byte> toReturn = ((Span<byte>)_buffer).Slice(ReadPosition, toRead);
                 ReadPosition += toRead;
                 return toReturn;
-            } else
+            }
+            else
             {
+                // In case buffer wraps
                 byte[] toReturn = new byte[toRead];
                 int toEnd = _buffer.Length - ReadPosition;
                 Buffer.BlockCopy(_buffer, ReadPosition, toReturn, 0, toEnd);
@@ -94,11 +107,22 @@ namespace EduardoBotv2.Core.Modules.Audio.Models
 
         public void Dispose()
         {
-            _process.StandardOutput.Dispose();
+            try
+            {
+                _process.StandardOutput.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Error disposing stdout", ex, LogSeverity.Error);
+            }
 
             if (!_process.HasExited)
             {
-                _process.Kill();
+                try
+                {
+                    _process.Kill();
+                }
+                catch { }
             }
 
             stopped = true;
@@ -115,6 +139,7 @@ namespace EduardoBotv2.Core.Modules.Audio.Models
                 return;
             }
 
+            // In case buffer needs to wrap
             int wroteNormally = _buffer.Length - WritePosition;
             Buffer.BlockCopy(input, 0, _buffer, WritePosition, wroteNormally);
             int wroteFromStart = writeCount - wroteNormally;
@@ -125,7 +150,7 @@ namespace EduardoBotv2.Core.Modules.Audio.Models
         private static Process CreateFfmpegProcess(string url) => Process.Start(new ProcessStartInfo
         {
             FileName = "ffmpeg",
-            Arguments = $"-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -err_detect ignore_err -i \"{url}\" -vol 100 -f s16le -ar 48000 -vn -ac 2 pipe:1 -loglevel error",
+            Arguments = $"-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -err_detect ignore_err -i {url} -f s16le -ar 48000 -vn -ac 2 pipe:1 -loglevel error",
             UseShellExecute = false,
             RedirectStandardOutput = true,
             CreateNoWindow = true,

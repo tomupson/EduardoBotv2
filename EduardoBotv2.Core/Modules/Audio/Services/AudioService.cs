@@ -19,14 +19,16 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
 {
     public class AudioService : IEduardoService
     {
+        private const int FrameBytes = 3840;
+        private const float Milliseconds = 20.0f;
+
         private readonly ConcurrentDictionary<ulong, IAudioClient> _connectedChannels = new ConcurrentDictionary<ulong, IAudioClient>();
-        private readonly List<SongInfo> _queue = new List<SongInfo>();
+        private readonly ConcurrentDictionary<ulong, List<SongInfo>> _queues = new ConcurrentDictionary<ulong, List<SongInfo>>();
 
         private float volume = 1.0f;
         private CancellationTokenSource queueCts;
         private CancellationTokenSource audioCts;
-
-        private TaskCompletionSource<bool> PauseTaskSource { get; set; }
+        private TaskCompletionSource<bool> pauseTaskSource;
 
         public async Task PlaySong(EduardoContext context, string input)
         {
@@ -36,9 +38,12 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
             {
                 audioCts?.Cancel();
                 queueCts?.Cancel();
-                _queue.Insert(0, song);
+
+                GetGuildQueue(context.Guild.Id).Insert(0, song);
+
                 await StartQueue(context);
-            } else
+            }
+            else
             {
                 await context.Channel.SendMessageAsync($"Could not find video like \"{input}\"");
             }
@@ -47,7 +52,9 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
         public async Task StartQueue(EduardoContext context)
         {
             queueCts = new CancellationTokenSource();
-            if (_queue.Count == 0)
+            List<SongInfo> guildQueue = GetGuildQueue(context.Guild.Id);
+
+            if (guildQueue.Count == 0)
             {
                 await context.Channel.SendMessageAsync($"There are no songs in the queue! Use `{Constants.CMD_PREFIX}queue add <song>` to add items to the queue");
                 return;
@@ -57,13 +64,11 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
 
             if (_connectedChannels.TryGetValue(context.Guild.Id, out IAudioClient client))
             {
-                using (AudioOutStream stream = client.CreatePCMStream(AudioApplication.Music, bufferMillis: 1))
+                using AudioOutStream stream = client.CreatePCMStream(AudioApplication.Music, bufferMillis: 1);
+
+                while (guildQueue.Count > 0 && !queueCts.IsCancellationRequested)
                 {
-                    while (_queue.Count > 0 && !queueCts.IsCancellationRequested)
-                    {
-                        await SendAudioAsync(context, _queue[0], stream);
-                        _queue.RemoveAt(0);
-                    }
+                    await SendAudioAsync(context, guildQueue.First(), stream);
                 }
             }
 
@@ -82,9 +87,10 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
 
             if (requestedSong != null)
             {
-                _queue.Add(requestedSong);
+                GetGuildQueue(context.Guild.Id).Add(requestedSong);
                 await context.Channel.SendMessageAsync($"Added {Format.Bold(requestedSong.Name)} to the queue");
-            } else
+            }
+            else
             {
                 await context.Channel.SendMessageAsync($"Could not find video like \"{input}\"");
             }
@@ -92,24 +98,27 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
 
         public async Task RemoveSongFromQueue(EduardoContext context, int queueNum)
         {
-            if (queueNum < 1 || queueNum > _queue.Count) return;
+            List<SongInfo> guildQueue = GetGuildQueue(context.Guild.Id);
+
+            if (queueNum < 1 || queueNum > guildQueue.Count)
+            {
+                return;
+            }
 
             if (queueNum == 1)
             {
                 await Skip(context);
             }
 
-            SongInfo requestedSong = _queue[queueNum - 1];
+            SongInfo requestedSong = guildQueue[queueNum - 1];
+            guildQueue.RemoveAt(queueNum - 1);
 
-            // Skip current song if queue is running and queueNum == 1?
-
-            _queue.Remove(requestedSong);
             await context.Channel.SendMessageAsync($"Removed {Format.Bold(requestedSong.Name)} from the queue");
         }
 
         public async Task Skip(EduardoContext context)
         {
-            if (_queue.Count > 0)
+            if (GetGuildQueue(context.Guild.Id).Any())
             {
                 IUserMessage skipMessage = await context.Channel.SendMessageAsync("Skipping song...");
                 audioCts?.Cancel();
@@ -119,19 +128,19 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
 
         public async Task ShowCurrentSong(EduardoContext context)
         {
-            if (_queue.Count > 0 && !(audioCts.IsCancellationRequested || queueCts.IsCancellationRequested))
+            List<SongInfo> guildQueue = GetGuildQueue(context.Guild.Id);
+
+            if (guildQueue.Any() && !(audioCts.IsCancellationRequested || queueCts.IsCancellationRequested))
             {
-                await context.Channel.SendMessageAsync("Currently playing:", false, BuildSongEmbed(_queue[0]));
-            } else
+                await context.Channel.SendMessageAsync("Currently playing:", false, BuildSongEmbed(guildQueue.First()));
+            }
+            else
             {
                 await context.Channel.SendMessageAsync("There is no song playing");
             }
         }
 
-        public void ClearQueue()
-        {
-            _queue.Clear();
-        }
+        public void ClearQueue(EduardoContext context) => GetGuildQueue(context.Guild.Id).Clear();
 
         public async Task SetVolume(EduardoContext context, int newVolume)
         {
@@ -146,28 +155,32 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
 
         public void TogglePause()
         {
-            if (PauseTaskSource == null)
+            if (pauseTaskSource == null)
             {
-                PauseTaskSource = new TaskCompletionSource<bool>();
-            } else
+                pauseTaskSource = new TaskCompletionSource<bool>();
+            }
+            else
             {
-                PauseTaskSource?.TrySetResult(true);
-                PauseTaskSource = null;
+                pauseTaskSource?.TrySetResult(true);
+                pauseTaskSource = null;
             }
         }
 
         public async Task ViewQueue(EduardoContext context)
         {
-            if (_queue.Count > 0)
+            List<SongInfo> guildQueue = GetGuildQueue(context.Guild.Id);
+
+            if (guildQueue.Any())
             {
                 string queueInfo = "Queue:";
-                for (int i = 0; i < _queue.Count; i++)
+                for (int queueIndex = 0; queueIndex < guildQueue.Count; queueIndex++)
                 {
-                    queueInfo += $"\n{i + 1}. {_queue[i].Name}";
+                    queueInfo += $"\n{queueIndex + 1}. {guildQueue[queueIndex].Name}";
                 }
 
                 await context.Channel.SendMessageAsync(queueInfo);
-            } else
+            }
+            else
             {
                 await context.Channel.SendMessageAsync($"There are no songs in the queue! Use {Format.Bold($"`{Constants.CMD_PREFIX}queue add <song>`")} to add a song to the queue");
             }
@@ -179,7 +192,10 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
             IVoiceChannel target = (context.User as IVoiceState)?.VoiceChannel;
 
             // Don't join audio if not correct guild.
-            if (target?.Guild.Id != context.Guild.Id) return;
+            if (target?.Guild.Id != context.Guild.Id)
+            {
+                return;
+            }
 
             // Leave current audio channel on guild (if any)
             if (_connectedChannels.ContainsKey(context.Guild.Id))
@@ -194,7 +210,8 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
             if (_connectedChannels.TryAdd(context.Guild.Id, audioClient))
             {
                 await Logger.Log($"Connected to voice channel on {context.Guild.Name}", LogSeverity.Info);
-            } else
+            }
+            else
             {
                 await Logger.Log($"Failed to join voice channel on {context.Guild.Name}", LogSeverity.Error);
             }
@@ -207,6 +224,8 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
             {
                 // Disconnect from connected channel
                 await client.StopAsync();
+
+                client.Dispose();
 
                 await Logger.Log($"Disconncted from voice in {guild.Name}", LogSeverity.Debug);
             }
@@ -235,23 +254,35 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
 
                 //await Task.WhenAny(Task.Delay(10000), songBuffer.PrebufferingCompleted.Task);
 
-                if (audioCts.IsCancellationRequested) return;
+                if (audioCts.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                int bytesSent = 0;
 
                 while (true)
                 {
-                    byte[] buffer = songBuffer.Read(3840).ToArray();
-                    if (buffer.Length == 0) break;
+                    byte[] buffer = songBuffer.Read(FrameBytes).ToArray();
 
-                    AdjustVolume(ref buffer, volume);
+                    if (buffer.Length == 0)
+                    {
+                        break;
+                    }
+
+                    AdjustVolume(buffer, volume);
 
                     await discordStream.WriteAsync(buffer, 0, buffer.Length, audioCts.Token);
 
-                    await (PauseTaskSource?.Task ?? Task.CompletedTask);
+                    bytesSent += buffer.Length;
+
+                    song.CurrentTime = TimeSpan.FromSeconds(bytesSent / (float)FrameBytes / (1000 / Milliseconds));
+
+                    await (pauseTaskSource?.Task ?? Task.CompletedTask);
                 }
-            } catch (Exception ex)
-            {
-                if (ex is OperationCanceledException cancelledException && !cancelledException.CancellationToken.IsCancellationRequested) throw;
-            } finally
+            }
+            catch (Exception ex) when (!(ex is OperationCanceledException cancelledException) || cancelledException.CancellationToken.IsCancellationRequested) { }
+            finally
             {
                 await discordStream.FlushAsync();
                 songBuffer?.Dispose();
@@ -262,16 +293,25 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
         {
             List<Video> videos = await VideoHelper.GetOrSearchVideoAsync(input);
 
-            if (videos == null || videos.Count == 0) return null;
+            if (videos == null || videos.Count == 0)
+            {
+                return null;
+            }
 
             Video chosenVideo = videos.FirstOrDefault();
 
-            if (chosenVideo == null) return null;
+            if (chosenVideo == null)
+            {
+                return null;
+            }
 
             MediaStreamInfoSet streamInfo = await VideoHelper.GetMediaStreamInfoAsync(chosenVideo);
             AudioStreamInfo stream = streamInfo.Audio.OrderByDescending(a => a.Bitrate).FirstOrDefault();
 
-            if (stream == null) return null;
+            if (stream == null)
+            {
+                return null;
+            }
 
             return new SongInfo
             {
@@ -295,12 +335,15 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
                 song.Description :
                 song.Description.Substring(0, Constants.MAX_DESCRIPTION_LENGTH) : "-")
             .AddField("Requested by", Format.Bold(song.RequestedBy.Username))
-            .WithFooter($"{song.TimePassed.ToDurationString()} / {song.Duration?.ToDurationString()}", @"https://i.imgur.com/Fsaf4OW.png")
+            .WithFooter($"{song.CurrentTime.ToDurationString()} / {song.Duration.ToDurationString()}", "https://i.imgur.com/Fsaf4OW.png")
             .Build();
 
-        private static unsafe void AdjustVolume(ref byte[] audioSamples, float volume)
+        private static unsafe void AdjustVolume(byte[] audioSamples, float volume)
         {
-            if (Math.Abs(volume - 1f) < 0.0001f) return;
+            if (Math.Abs(volume - 1f) < 0.0001f)
+            {
+                return;
+            }
 
             // 16-bit precision for the multiplication
             int volumeFixed = (int) Math.Round(volume * 65536d);
@@ -314,6 +357,12 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
                     *src = (short) ((*src * volumeFixed) >> 16);
                 }
             }
+        }
+
+        private List<SongInfo> GetGuildQueue(ulong guildId)
+        {
+            _queues.TryGetValue(guildId, out List<SongInfo> queue);
+            return queue ?? (_queues[guildId] = new List<SongInfo>());
         }
     }
 }

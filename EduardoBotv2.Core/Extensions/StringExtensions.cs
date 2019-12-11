@@ -21,5 +21,7 @@
 
             return new string(chars);
         }
+
+        public static string ToRegionalLetterEmoji(this char letter) => $"\ud83c{(char)('\udde6' + (letter - 65))}";
     }
 }

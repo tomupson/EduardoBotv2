@@ -35,10 +35,8 @@ namespace EduardoBotv2.Core.Modules.Memes.Services
 
             Post randomPost = posts[_rng.Next(0, posts.Count)];
 
-            using (Stream stream = await NetworkHelper.GetStreamAsync(randomPost.Url.AbsoluteUri))
-            {
-                await context.Channel.SendFileAsync(stream, $"{randomPost.Title}.png");
-            }
+            using Stream stream = await NetworkHelper.GetStreamAsync(randomPost.Url.AbsoluteUri);
+            await context.Channel.SendFileAsync(stream, $"{randomPost.Title}.png");
         }
     }
 }

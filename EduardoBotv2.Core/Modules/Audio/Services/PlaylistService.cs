@@ -25,7 +25,10 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
 
         public async Task ViewPlaylistAsync(EduardoContext context, string playlistName)
         {
-            if (string.IsNullOrWhiteSpace(playlistName)) return;
+            if (string.IsNullOrWhiteSpace(playlistName))
+            {
+                return;
+            }
 
             Models.Playlist playlist = await _playlistRepository.GetPlaylistAsync((long)context.User.Id, playlistName);
 
@@ -44,7 +47,8 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
             {
                 playlistBuilder = playlistBuilder
                     .WithFieldsForList(playlist.Songs, x => x.Name, x => x.Url);
-            } else
+            }
+            else
             {
                 playlistBuilder = playlistBuilder
                     .WithDescription($"This playlist doesn't contain any songs. Use ```{Constants.CMD_PREFIX}playlist add <playlist name> <song or url>``` to add a song");
@@ -55,44 +59,43 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
 
         public async Task CreatePlaylistAsync(EduardoContext context, string playlistName)
         {
-            if (string.IsNullOrWhiteSpace(playlistName)) return;
+            if (string.IsNullOrWhiteSpace(playlistName))
+            {
+                return;
+            }
 
             CreatePlaylistResult result = await _playlistRepository.CreatePlaylistAsync((long)context.User.Id, playlistName);
 
-            switch (result)
+            await context.Channel.SendMessageAsync(result switch
             {
-                case CreatePlaylistResult.PlaylistExists:
-                    await context.Channel.SendMessageAsync("You have already created a playlist with this name");
-                    break;
-                case CreatePlaylistResult.MaxPlaylistsReached:
-                    await context.Channel.SendMessageAsync("You have reached the maximum number of playlists (5)");
-                    break;
-                default:
-                    await context.Channel.SendMessageAsync($"Playlist \"{playlistName}\" created successfully!");
-                    break;
-            }
+                CreatePlaylistResult.PlaylistExists => "You have already created a playlist with this name",
+                CreatePlaylistResult.MaxPlaylistsReached => "You have reached the maximum number of playlists (5)",
+                _ => $"Playlist \"{playlistName}\" created successfully!"
+            });
         }
 
         public async Task DeletePlaylistAsync(EduardoContext context, string playlistName)
         {
-            if (string.IsNullOrWhiteSpace(playlistName)) return;
+            if (string.IsNullOrWhiteSpace(playlistName))
+            {
+                return;
+            }
 
             DeletePlaylistResult result = await _playlistRepository.DeletePlaylistAsync((long)context.User.Id, playlistName);
 
-            switch (result)
+            await context.Channel.SendMessageAsync(result switch
             {
-                case DeletePlaylistResult.PlaylistNotFound:
-                    await context.Channel.SendMessageAsync("Playlist not found");
-                    break;
-                default:
-                    await context.Channel.SendMessageAsync($"Playlist \"{playlistName}\" deleted successfully!");
-                    break;
-            }
+                DeletePlaylistResult.PlaylistNotFound => "Playlist not found",
+                _ => $"Playlist '{playlistName}' deleted successfully!"
+            });
         }
 
         public async Task AddSongToPlaylistAsync(EduardoContext context, string playlistName, string query)
         {
-            if (string.IsNullOrWhiteSpace(playlistName) || string.IsNullOrWhiteSpace(query)) return;
+            if (string.IsNullOrWhiteSpace(playlistName) || string.IsNullOrWhiteSpace(query))
+            {
+                return;
+            }
 
             List<Video> videos = await VideoHelper.GetOrSearchVideoAsync(query);
 
@@ -107,7 +110,8 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
             if (videos.Count == 1)
             {
                 tcs.TrySetResult(videos[0].GetShortUrl());
-            } else
+            }
+            else
             {
                 await context.SendPaginatedMessageAsync(new PaginatedMessage
                 {
@@ -136,7 +140,10 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
 
             Video chosenVideo = videos.FirstOrDefault(v => v.GetShortUrl() == tcs.Task.Result);
 
-            if (chosenVideo == null) return;
+            if (chosenVideo == null)
+            {
+                return;
+            }
 
             AddSongResult result = await _playlistRepository.AddSongToPlaylistAsync((long)context.User.Id, playlistName, new PlaylistSong
             {
@@ -144,58 +151,46 @@ namespace EduardoBotv2.Core.Modules.Audio.Services
                 Url = chosenVideo.GetShortUrl()
             });
 
-            switch (result)
+            await context.Channel.SendMessageAsync(result switch
             {
-                case AddSongResult.PlaylistNotFound:
-                    await context.Channel.SendMessageAsync("Could not find the specified playlist");
-                    break;
-                case AddSongResult.SongAlreadyInPlaylist:
-                    await context.Channel.SendMessageAsync("Song already exists in playlist");
-                    break;
-                default:
-                    await context.Channel.SendMessageAsync($"Successfully added \"{chosenVideo.Title}\" to playlist \"{playlistName}\"");
-                    break;
-            }
+                AddSongResult.PlaylistNotFound => "Could not find the specified playlist",
+                AddSongResult.SongAlreadyInPlaylist => "Song already exists in playlist",
+                _ => $"Successfully added \"{chosenVideo.Title}\" to playlist \"{playlistName}\""
+            });
         }
 
         public async Task RemoveSongFromPlaylistAsync(EduardoContext context, string playlistName, string songName)
         {
-            if (string.IsNullOrWhiteSpace(playlistName) || string.IsNullOrWhiteSpace(songName)) return;
+            if (string.IsNullOrWhiteSpace(playlistName) || string.IsNullOrWhiteSpace(songName))
+            {
+                return;
+            }
 
             RemoveSongResult result = await _playlistRepository.RemoveSongFromPlaylistAsync((long)context.User.Id, playlistName, songName);
 
-            switch (result)
+            await context.Channel.SendMessageAsync(result switch
             {
-                case RemoveSongResult.PlaylistNotFound:
-                    await context.Channel.SendMessageAsync("Could not find the specified playlist");
-                    break;
-                case RemoveSongResult.SongNotInPlaylist:
-                    await context.Channel.SendMessageAsync("Specified song is not in playlist");
-                    break;
-                default:
-                    await context.Channel.SendMessageAsync($"Successfully removed \"{songName}\" from playlist \"{playlistName}\"");
-                    break;
-            }
+                RemoveSongResult.PlaylistNotFound => "Could not find the specified playlist",
+                RemoveSongResult.SongNotInPlaylist => "Specified song is not in playlist",
+                _ => $"Successfully removed \"{songName}\" from playlist \"{playlistName}\""
+            });
         }
 
         public async Task RemoveSongFromPlaylistByIndexAsync(EduardoContext context, string playlistName, int index)
         {
-            if (string.IsNullOrWhiteSpace(playlistName) || index <= 0) return;
+            if (string.IsNullOrWhiteSpace(playlistName) || index <= 0)
+            {
+                return;
+            }
 
             RemoveSongResult result = await _playlistRepository.RemoveSongFromPlaylistByIndexAsync((long)context.User.Id, playlistName, index);
 
-            switch (result)
+            await context.Channel.SendMessageAsync(result switch
             {
-                case RemoveSongResult.PlaylistNotFound:
-                    await context.Channel.SendMessageAsync("Could not find the specified playlist");
-                    break;
-                case RemoveSongResult.SongNotInPlaylist:
-                    await context.Channel.SendMessageAsync("Specified song is not in playlist");
-                    break;
-                default:
-                    await context.Channel.SendMessageAsync($"Successfully removed item {index} from playlist {playlistName}");
-                    break;
-            }
+                RemoveSongResult.PlaylistNotFound => "Could not find the specified playlist",
+                RemoveSongResult.SongNotInPlaylist => "Specified song is not in playlist",
+                _ => $"Successfully removed item {index} from playlist {playlistName}"
+            });
         }
     }
 }

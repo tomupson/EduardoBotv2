@@ -5,7 +5,7 @@ using EduardoBotv2.Core.Services;
 
 namespace EduardoBotv2.Core.Modules.Audio
 {
-    partial class Audio
+    public partial class Audio
     {
         [Group("queue")]
         [Name("Queue")]
@@ -40,7 +40,7 @@ namespace EduardoBotv2.Core.Modules.Audio
             [Summary("Clear the queue")]
             public Task ClearCommand()
             {
-                _service.ClearQueue();
+                _service.ClearQueue(Context);
                 return Task.CompletedTask;
             }
 

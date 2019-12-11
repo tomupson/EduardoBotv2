@@ -28,79 +28,63 @@ namespace EduardoBotv2.Core.Database
 
         public async Task ExecuteReaderAsync(ProcessRecordAsyncDelegate processor)
         {
-            using (SqlConnection conn = new SqlConnection(ConnectionString))
+            using SqlConnection conn = new SqlConnection(ConnectionString);
+            await conn.OpenAsync();
+
+            using SqlCommand cmd = SetupCommand(new SqlCommand(StoredProcedure, conn));
+
+            IDataReader reader = await cmd.ExecuteReaderAsync();
+
+            while (reader.Read())
             {
-                await conn.OpenAsync();
-
-                using (SqlCommand cmd = SetupCommand(new SqlCommand(StoredProcedure, conn)))
-                {
-                    IDataReader reader = await cmd.ExecuteReaderAsync();
-
-                    while (reader.Read())
-                    {
-                        await processor(reader);
-                    }
-                }
+                await processor(reader);
             }
         }
 
         public async Task ExecuteNonQueryAsync()
         {
-            using (SqlConnection conn = new SqlConnection(ConnectionString))
-            {
-                await conn.OpenAsync();
+            using SqlConnection conn = new SqlConnection(ConnectionString);
+            await conn.OpenAsync();
 
-                using (SqlCommand cmd = SetupCommand(new SqlCommand(StoredProcedure, conn)))
-                {
-                    await cmd.ExecuteNonQueryAsync();
-                }
-            }
+            using SqlCommand cmd = SetupCommand(new SqlCommand(StoredProcedure, conn));
+            await cmd.ExecuteNonQueryAsync();
         }
 
         public async Task<object> ExecuteScalarAsync()
         {
-            using (SqlConnection conn = new SqlConnection(ConnectionString))
-            {
-                await conn.OpenAsync();
+            using SqlConnection conn = new SqlConnection(ConnectionString);
+            await conn.OpenAsync();
 
-                using (SqlCommand cmd = SetupCommand(new SqlCommand(StoredProcedure, conn)))
-                {
-                    return await cmd.ExecuteScalarAsync();
-                }
-            }
+            using SqlCommand cmd = SetupCommand(new SqlCommand(StoredProcedure, conn));
+
+            return await cmd.ExecuteScalarAsync();
         }
 
         public async Task<object> ExecuteWithReturnValue()
         {
-            using (SqlConnection conn = new SqlConnection(ConnectionString))
+            using SqlConnection conn = new SqlConnection(ConnectionString);
+            await conn.OpenAsync();
+
+            using SqlCommand cmd = SetupCommand(new SqlCommand(StoredProcedure, conn));
+
+            cmd.Parameters.Add(new SqlParameter("@retVal", null)
             {
-                await conn.OpenAsync();
+                Direction = ParameterDirection.ReturnValue
+            });
 
-                using (SqlCommand cmd = SetupCommand(new SqlCommand(StoredProcedure, conn)))
-                {
-                    cmd.Parameters.Add(new SqlParameter("@retVal", null)
-                    {
-                        Direction = ParameterDirection.ReturnValue
-                    });
+            await cmd.ExecuteNonQueryAsync();
 
-                    await cmd.ExecuteNonQueryAsync();
-
-                    return cmd.Parameters["@retVal"].Value;
-                }
-            }
+            return cmd.Parameters["@retVal"].Value;
         }
 
         public async Task<XmlReader> ExecuteXmlReaderAsync()
         {
-            using (SqlConnection conn = new SqlConnection(ConnectionString))
-            {
-                await conn.OpenAsync();
+            using SqlConnection conn = new SqlConnection(ConnectionString);
+            await conn.OpenAsync();
 
-                using (SqlCommand cmd = SetupCommand(new SqlCommand(StoredProcedure, conn)))
-                {
-                    return await cmd.ExecuteXmlReaderAsync();
-                }
-            }
+            using SqlCommand cmd = SetupCommand(new SqlCommand(StoredProcedure, conn));
+
+            return await cmd.ExecuteXmlReaderAsync();
         }
 
         private SqlCommand SetupCommand(SqlCommand cmd,

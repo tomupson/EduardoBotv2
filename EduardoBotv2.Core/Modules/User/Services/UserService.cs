@@ -31,7 +31,7 @@ namespace EduardoBotv2.Core.Modules.User.Services
                 .WithThumbnailUrl(guildUser.GetAvatarUrl())
                 .AddField("User Info", userInfo)
                 .AddField("Member Info", memberInfo)
-                .AddField("Roles", roleInfo)
+                .AddConditionalField("Roles", roleInfo, !string.IsNullOrWhiteSpace(roleInfo))
                 .WithFooter($"Eduardo | {string.Format("{0:dddd MMM d}{1} {0:yyyy} at {0:h:m tt}", DateTime.Now, DateTime.Now.Day.GetDaySuffix())}",
                     context.User.AsSocketGuildUser().GetAvatarUrl());
 
@@ -43,7 +43,8 @@ namespace EduardoBotv2.Core.Modules.User.Services
             if (targetUser == null)
             {
                 await context.Channel.SendMessageAsync(context.User.GetAvatarUrl());
-            } else
+            }
+            else
             {
                 await context.Channel.SendMessageAsync(targetUser.GetAvatarUrl());
             }

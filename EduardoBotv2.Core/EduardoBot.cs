@@ -1,11 +1,10 @@
-﻿using Discord;
-using Discord.Net;
-using Discord.Commands;
-using Discord.WebSocket;
-using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Commands;
+using Discord.Net;
+using Discord.WebSocket;
 using EduardoBotv2.Core.Database;
 using EduardoBotv2.Core.Helpers;
 using EduardoBotv2.Core.Modules.Audio.Database.Playlist;
@@ -28,6 +27,7 @@ using EduardoBotv2.Core.Modules.User.Services;
 using EduardoBotv2.Core.Modules.Utility.Services;
 using EduardoBotv2.Core.Modules.YouTube.Services;
 using EduardoBotv2.Core.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Pubg.Net;
 using RedditSharp;
 using SpotifyAPI.Web;
@@ -88,12 +88,13 @@ namespace EduardoBotv2.Core
                 .AddSingleton<IMoneyRepository, DatabaseMoneyRepository>()
                 .AddSingleton<IGuildRepository, DatabaseGuildRepository>();
 
-            services.AddSingleton(new Reddit(new RefreshTokenWebAgent(_credentials.RedditRefreshToken, _credentials.RedditClientId, _credentials.RedditClientSecret, _credentials.RedditRedirectUri)));
+            services.AddSingleton(new Reddit(new RefreshTokenWebAgent(
+                _credentials.RedditRefreshToken,
+                _credentials.RedditClientId,
+                _credentials.RedditClientSecret,
+                _credentials.RedditRedirectUri)));
 
-            PubgApiConfiguration.Configure(config =>
-            {
-                config.ApiKey = _credentials.PUBGApiKey;
-            });
+            PubgApiConfiguration.Configure(config => config.ApiKey = _credentials.PUBGApiKey);
 
             IServiceProvider provider = services.BuildServiceProvider();
 
@@ -102,7 +103,8 @@ namespace EduardoBotv2.Core
             try
             {
                 await _client.LoginAsync(TokenType.Bot, _credentials.Token);
-            } catch (HttpException e)
+            }
+            catch (HttpException e)
             {
                 await Logger.Log("Failed to log in", e, LogSeverity.Critical);
                 Console.ReadLine();
@@ -111,7 +113,7 @@ namespace EduardoBotv2.Core
 
             await _client.StartAsync();
 
-            await _client.SetStatusAsync(UserStatus.DoNotDisturb);
+            await _client.SetStatusAsync(UserStatus.Online);
 
             await Task.Delay(-1, _appCancellationToken);
         }
